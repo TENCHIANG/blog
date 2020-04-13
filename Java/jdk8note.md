@@ -5,6 +5,7 @@
 * java会严格从CLASSPATH里面找
 * javac编译时，如果用到了其它class文件，也需要指定CLASSPATH（可以加速）
 * 可以把jar文件当做特殊的文件夹（必须指定jar名称或*代表所有jar文件）
+* **Windows用 ; 分隔，Linux用 : 分隔！**
 
 ```sh
 # ./Main.java调用了./classes/Console.class
@@ -74,57 +75,53 @@ java -cp classes Main
 
 ### 使用IDE
 
-* NetBeans
+* NetBeans 的优势
   * 直接使用已安装的JDK
   * 编译错误信息也是JDK显示的信息
-* netbeans版本号
-  * **jdk8最高只支持 netbeans9**
-    * 不知道为啥netbeans9不支持openjdk8，netbeans8却支持
-  * netbeans9在往上就必须得 jdk9了
 * 设置JDK目录：`netbeans\etc\netbeans.conf`
   
   * `netbeans_jdkhome="JDK的目录"`
-* 执行文件：`netbeans\bin\netbeans64.exe`
 * **尽量使用安装包而不是压缩包**
-* 创建Java项目的时候，会先Finding Feature一下
-  * 下载nv-javac（）
-  * 然后就可以启用Java的编辑功能啦
+* 创建Java项目的时候，会先**Finding Feature**一下
+  * 下载nv-javac（编辑java文件的插件）
+  * 装好插件后，以后再新建项目的时候，就没有 Finding Feature 了
 * **netbeans字体问题**
-  * 问题描述
-    * 默认字体设置为 `Monospaced` 虽然支持中文但很丑
-    * 如果设置为其它字体如 `Consolas` 中文又显示不了
-  * 最简单的方案：安装字体（又有英文又有中文）
-  * 本质解决方案
-    * 前面说了netbeans读取的是已安装的java环境
-    * 而字体读取的是`%JAVA_HOME%\jre\lib\fontconfig.properties.src`
-      * 可以看到默认字体 monospaced 的搜索顺序是 chinese-ms936 也就是宋体所以很丑
-      * 只需要把 chinese-ms936 放到后面就好了，然后另存为 `fontconfig.properties`
-      * 奇怪的是：[这对openjdk8好像不管用](https://www.oschina.net/question/3504093_2278507)
-        * OpenJDK字体处理问题很多，建议用Oracle的JDK
-        * JDK 运行没有问题，OpenJDK使用开源freetype，运行有误。
+  * 默认字体设置为 `Monospaced` 很丑，设置为其它字体如 `Consolas` 中文又显示不了
+  * 最简单的方案：安装字体（可能得重启才能显示）
+    * 立即生效：`jdk_home\jre\lib\fonts\fallback\`
+  * 本质解决方案（影响Java GUI程序）
+    * 前面说了netbeans读取的是已安装的java环境（`jdk_home\jre\lib\fontconfig.properties.src`）
+    * 可以看到默认字体 monospaced 的搜索顺序是 chinese-ms936 也就是宋体所以很丑
+    * 另存为 `fontconfig.properties`，然后改内容
+      * 注意：[openjdk用不了](https://www.oschina.net/question/3504093_2278507)（openjdk用的是开源freetype运行没效果）
+  * 修改 netbeans 界面字体：`netbeans -fontsize 12`
 
 ```
-monospaced.plain.alphabetic=Courier New
-monospaced.plain.chinese-ms950=MingLiU
-monospaced.plain.chinese-ms950-extb=MingLiU-ExtB
-monospaced.plain.hebrew=Courier New
-monospaced.plain.japanese=MS Gothic
-monospaced.plain.korean=GulimChe
+allfonts.chinese-ms936=Microsoft YaHei
+allfonts.chinese-ms936-extb=Microsoft YaHei
+allfonts.chinese-gb18030=Microsoft YaHei
+allfonts.chinese-gb18030-extb=Microsoft YaHei
+allfonts.chinese-hkscs=Microsoft YaHei
+allfonts.chinese-ms950-extb=Microsoft YaHei
 
-sequence.monospaced.GBK=chinese-ms936,alphabetic,dingbats,symbol,chinese-ms936-extb
+sequence.monospaced.GBK=alphabetic,chinese-ms936,dingbats,symbol,chinese-ms936-extb
+sequence.monospaced.GB18030=alphabetic,chinese-gb18030,dingbats,symbol,chinese-gb18030-extb
 
-allfonts.chinese-ms936=SimSun
-allfonts.chinese-ms936-extb=SimSun-ExtB
-allfonts.chinese-gb18030=SimSun-18030
-allfonts.chinese-gb18030-extb=SimSun-ExtB
-allfonts.chinese-hkscs=MingLiU_HKSCS
-allfonts.chinese-ms950-extb=MingLiU-ExtB
+monospaced.plain.alphabetic=Consolas
+monospaced.bold.alphabetic=Consolas Bold
+monospaced.bolditalic.alphabetic=Consolas Italic
+monospaced.bolditalic.alphabetic=Consolas Bold Italic
+
+filename.Consolas=CONSOLA.TTF
+filename.Consolas_Bold=CONSOLAB.TTF
+filename.Consolas_Italic=CONSOLAI.TTF
+filename.Consolas_Bold_Italic=CONSOLAZ.TTF
 ```
 
 * 参考：
-  * [NetBeans 字体设置_Java_zjl5231123的专栏-CSDN博客](https://blog.csdn.net/zjl5231123/article/details/83434021)
   * [Netbeans8.1设置Consola字体并解决中文乱码问题 - 白超华 - 博客园](https://www.cnblogs.com/bc8web/p/5767548.html)
-  * [Windows字体拯救计划(雅黑+monaco+mactype)_运维_云别-CSDN博客](https://blog.csdn.net/qq_35472880/article/details/81266199)
+  * [OpenJDK8编译后遇到字体绘制问题 - OSCHINA](https://www.oschina.net/question/3504093_2278507)
+  * [修改NetBeans默认字体 - 念月思灵 - 博客园](https://www.cnblogs.com/xxpal/articles/1219354.html)
 
 
 

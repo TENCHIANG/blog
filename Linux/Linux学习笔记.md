@@ -15,7 +15,7 @@
   * `export https_proxy=http://127.0.0.1:1080`
   * `cat ~/.bash_profile`
 * git
-  * `git config --global https.proxy http://127.0.0.1:1080`
+  * `git config --global http.proxy http://127.0.0.1:1080`
   * `git config --global https.proxy http://127.0.0.1:1080`
   * `git config --global --unset http.proxy`
   * `git config --global --unset https.proxy`
@@ -30,6 +30,13 @@ ssh-keygen -t rsa -b 4096 -C "备注或署名"
 
 * 一直回车就好了
 * 如果看到 `Overwrite (y/n)? y` 则说明以前生成过，是否覆盖生成新的
+
+### 使用ssh对github进行身份验证
+本机公钥设置到github后，还可以验证一下
+```sh
+$ ssh -T git@github.com
+Hi TENCHIANG! You've successfully authenticated, but GitHub does not provide shell access.
+```
 
 ### Git-Windows中文乱码
 
@@ -107,6 +114,28 @@ git rm -r --cached path/ # --cached 只删除版本库的 不删除本地的
 # 删除远程版本库中的文件
 git commit --amend
 git push origin dev --force
+```
+
+### 克隆私有仓库
+```sh
+git clone https://username:password@github.com/TENCHIANG/sdgs
+```
+
+### 个人常用配置
+```sh
+[user]
+        name = TENCHIANG
+        email = yy5209zz@gmail.com
+[core]
+        autocrlf = true # 换行符 crlf lf 自动转换
+        safecrlf = false # 忽略拒绝提交混合换行符 改成自动转换
+        quotepath = false # 防止windows中文乱码
+[color]
+        ui = auto
+[http]
+        proxy = http://127.0.0.1:1080
+[https]
+        proxy = https://127.0.0.1:1080
 ```
 
 参考：[Git 忽略提交 .gitignore](https://www.jianshu.com/p/74bd0ceb6182)

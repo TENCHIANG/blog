@@ -139,3 +139,13 @@ git clone https://username:password@github.com/TENCHIANG/sdgs
 ```
 
 参考：[Git 忽略提交 .gitignore](https://www.jianshu.com/p/74bd0ceb6182)
+
+### mv 命令无需两次键入文件名
+
+```sh
+touch file-aaa.txt
+mv file-{aaa,bbb}.txt # file-bbb.txt
+mv file-bbb{,-ccc}.txt # file-bbb-ccc.txt
+mv file-bbb-ccc.{txt,pdf} # file-bbb-ccc.pdf
+```
+

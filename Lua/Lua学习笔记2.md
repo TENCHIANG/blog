@@ -147,3 +147,78 @@ get("www.lua.org", "/ftp/lua-5.1.5.tar.gz")
 dispatch()
 ```
 
+## Lua模块与包
+
+* 模块（module）
+  * 本质上是 table
+  * Lua语言或C语言编写的代码 chunk
+  * **用 require 加载模块（用 module 创建）**
+  * 创建并返回一个 table （命名空间）
+    * 通常返回一个全局变量相当于 `math = require("math")`
+  * 所有标准库都是模块（自动提前导入）
+* 包（package）：一系列的模块
+
+### require小技巧
+
+* 加载模块的时候还可以改名：`local m = require "io"`
+* 只引入特定函数
+  * `local f = require "mod".f`
+  * `local f = (require("mod")).f`
+
+### require函数
+
+* 一般返回 模块，也可以是别的
+* require 的路径格式
+  * 分号分隔
+  * 问号代表模块名
+  * 文件扩展名由路径本身定义
+* 在表 package.loaded 检查模块是否已经加载
+  * 如果已加载则直接返回（模块只会被运行一次）
+* Lua启动时，环境变量 LUA_PATH 会初始化 package.path
+  * 环境变量中两个分号 ;; 代表默认路径
+  * 会将两个分号替换为默认路径
+  * 先找 Lua file 再找 C library（LUA_CPATH 和 package.cpath 同理）
+* 如果没有环境变量则用默认路径初始化（编译时定义）
+* 加载 Lua file 时，用 loadfile
+* 加载 C library 时，用 loadlib
+  * luaopen_模块名（Lua模块很容易改名，C库不行）
+  * 如果 require 时，C模块名包含连字符，则用连字符后的内容创建 luaopen_* 函数
+    * `require "a-b" -- luaopen_b`
+
+```lua
+package.path = LUA_PATH or default path
+package.cpath = LUA_CPATH or default path
+
+function require (name)
+    if not package.loaded[name] then -- module not loaded yet
+        local loader = findloader(name)
+        if not loader then 
+            error("unable to load module "..name)
+        end
+        package.loaded[name] = true -- 避免循环加载
+        local code = loader(name) -- only load it, without running it
+        local res = code(name) -- initialize module
+        if res then
+            package.loaded[name] = res
+        end
+    end
+   	return package.loaded[name]
+end
+
+function findloader (name)
+    local loader = package.preload[name]
+    if not loader
+       if hasfile(package.path, name) then
+            loader = loadfile
+       elseif hasfile(package.cpath, name) then
+            loader = loadlib
+       end
+    end
+    return loader
+end
+```
+
+* 避免循环加载 package.loaded[name] = true
+  * 假设加载模块 a 的时候，a 又加载 b，这就是循环加载
+  * 在加载 a 的时候，先设置为 true，然后再加载并运行a的代码
+  * 运行到 b 的加载 a 的时候，会立刻返回，避免了循环加载

@@ -365,3 +365,313 @@ module("a.b.c")
 -- 如果中间没有则创建 有则复用
 ```
 
+### 面向对象
+
+```lua
+
+Account = {}
+
+Account.balance = 0
+
+function Account:withdraw (v) -- 出账
+	if v > self.balance then error "余额不足" end
+	self.balance = self.balance - v
+end
+
+function Account:deposit (v) -- 进账
+	self.balance = self.balance + v
+end
+
+function Account:new (o)
+	o = o or {}
+	self.__index = self
+	setmetatable(o, self) -- 把self本身作为元表
+	return o
+end
+
+a = Account:new { balance = 2 }
+
+print(Account.balance) -- 0
+print(a.balance) -- 2
+
+-- 继承
+SpecialAccount = Account:new()
+
+-- 覆写
+function SpecialAccount:withdraw (v)
+	if v - self.balance >= self:getLimit() then -- 可透支
+		error "余额不足"
+	end
+	self.balance = self.balance - v
+end
+
+function SpecialAccount:getLimit ()
+	return self.limit or 0
+end
+
+s = SpecialAccount:new { limit = 1000 }
+
+-- 单个对象的特殊行为 无须创建新类
+function s:getLimit ()
+	return self.balance * 0.1
+end
+```
+
+### 多重继承
+
+* 元表的 __index 字段还可以是方法
+
+```lua
+function createClass (...)
+	local c = {} -- 新类
+	local parents = {...} -- 父类列表
+	
+	setmetatable(c, {__index = function (t, k)
+		for i = 1, #parents do -- parents 中找 k
+			local v = parents[i][k] -- 尝试第 i 个超类
+			if v then
+				t[k] = v -- 缓存 缺点是运行后修改方法的定义就很难了
+				return v
+			end
+		end
+	end})
+	
+	--c.__index = c -- 将新类c作为其实例的元表
+	
+	function c:new (o) -- 为新类定义一个新的构造函数
+		o = o or {}
+		self.__index = self
+		setmetatable(o, self)
+		--setmetatable(o, c)
+		return o
+	end
+	
+	return c -- 返回新类
+end
+
+
+Account = {}
+
+function Account:getBalance ()
+	return self.balance or 0
+end
+
+function Account:setBalance (v)
+	self.balance = tonumber(v) or 0
+end
+
+function Account:withdraw (v) -- 出账
+	local balance = self:getBalance()
+	if v > balance then error "余额不足" end
+	self:setBalance(balance - v)
+end
+
+function Account:deposit (v) -- 进账
+	self:setBalance(self:getBalance() + v)
+end
+
+Named = {}
+
+function Named:getName ()
+	return self.name
+end
+
+function Named:setName (n)
+	self.name = n
+end
+
+NamedAccount = createClass(Account, Named)
+
+account = NamedAccount:new()
+
+account:setName("yy")
+account:deposit(1000)
+
+print(account:getName(), account.balance)
+
+-- 搜索顺序 account -- （account.__index）NamedAccount -- （NamedAccount.__index是函数）Account -- Named
+```
+
+### 私有性
+
+## C  API
+
+* 应用代码：C 调用 Lua
+* 库代码：C 被 Lua 调用
+* 应用代码和库代码都使用相同的 API 与 Lua 语言通信（C API ）
+  * **lua.h** 基础库（lua_*）
+    * 基础库没有定义任何全局变量
+      * 所有状态都保存在 lua_State 结构体
+      * 所有函数都接受一个指向 lua_State 的指针作为参数（可重入、多线程）
+    * 创建行 Lua 环境
+    * 调用 Lua 函数（lua_pcall）
+      * 从栈中弹出编译后的函数，并以保护模式运行
+      * 没有错误返回 0，有则向栈中压入错误信息
+    * 错误处理
+      * `lua_string(L, -1)` 获取错误信息
+      * `lua_pop(L, 1)` 错误信息出栈
+    * 读写环境中的全局变量
+    * 注册能被 Lua 调用的 C 函数
+  * **lauxlib.h** 辅助库（luaL_*）
+    * 辅助库不能访问 Lua 的内部元素（只是基础库的封装）
+    * 编译 lua 代码段（luaL_loadstring）
+      * 没有错误返回零，出错则向栈压入错误信息
+      * 向栈中压入编译后的函数
+    * 创建 lua_State 状态（luaL_newstate）
+      * 不包含任何 Lua 标准库
+      * **lualib.h** 包含了打开标准库的函数
+      * luaL_openlibs 打开所有标准库
+
+### C API 中的错误处理
+
+* C API 提供的函数一般**不检查参数错误**：一旦出错，程序会直接崩溃
+* 错误处理一般通过压栈出栈的方式实现
+  * Lua核心不会向输出流写入数据，只返回错误代码错误信息
+  * 把错误处理的具体方式留给程序员
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+
+// 简单的错误处理示例
+void error (lua_State *L, const char *fmt, ...) {
+    va_list argp;
+    
+    va_start(argp, fmt);
+    vfprintf(stderr, fmt, argp); // 打印错误
+    va_end(argp);
+    
+    lua_close(L); // 关闭 Lua 状态
+    exit(EXIT_FAILURE); // 退出程序
+}
+```
+
+### 栈
+
+* Lua 和 C 之间的数据交换基于 stack
+* 栈可以存运算结果、函数、错误消息
+
+#### Lua 栈和 C 栈的区别
+
+* Lua 栈：严格按照 LIFO（Last In First Out），只有栈顶改变
+* C 栈：使用 index 更灵活，能对任意位置的元素操作
+
+#### Lua 和 C 通信的两个问题
+
+* 动态类型和静态类型
+  * 用能够存 Lua 所有类型的联合体
+    * 可能与其它语言不兼容
+    * 可能会被 lua垃圾回收
+  * 使用栈交换数据，栈的每个元素都能保存 lua 任意值
+    * 压栈出栈有多个 C 函数来适配 Lua 不同的类型（避免组合爆炸）
+    * 栈是 Lua 状态的一部分（避免垃圾回收）
+* 自动管理内存和手动管理内存
+
+#### 压入元素
+
+```c
+void lua_pushnil	(lua_State *L);
+void lua_pushboolean(lua_State *L, int bool);
+void lua_pushnumber	(lua_State *L, lua_Number n);
+void lua_pushinteger(lua_State *L, lua_Integer n);
+void lua_pushlstring(lua_State *L, const char *s, size_t len);
+void lua_pushstring	(lua_State *L, const char *s);
+```
+
+* lua_Number 默认为 double
+* lua_Integer 默认为 long long（64位有符号整型）
+* Small Lua：
+  * lua_Number 为 float
+  * lua_Integer 为 int
+  * **luaconf.h**
+* Lua 字符串不以 \0 结尾，所以要提供其长度，但是也兼容 \0 结尾的字符串
+* Lua 不会保留任何指向外部字符串或对象的指针（除了静态C函数）
+  * 要么生成一个内部副本，要么复用已有的
+  * 一旦 lua_pushlstring、lua_pushstring 返回，即可立刻释放或修改缓冲区
+
+#### 栈的空间大小
+
+* 一般栈有20个空位（lua.h 中的 LUA_MINSTACK）
+* `int lua_checkstack (lua_State *L, int sz);`
+  * 增加 sz 个空位，否则返回 0
+* `void luaL_checkstack (lua_State *L, int sz, const chat *msg);`
+  * 不会返回错误代码，而是用给定的错误信息报错
+
+#### 查询栈元素
+
+* C API 使用 index 操作栈元素
+  * 压栈：从 1 开始（正数）
+  * 出栈：从 -1 开始（倒数，-1表示栈顶）
+* 检查栈元素的类型：`int lua_is* (lua_State *L, int index);`
+  * lua_isnumber 不检查类型是否为number，而是检查能否转换为 number
+  * lua_isstring 同理，特别的，任何数字都为真
+* 返回栈元素的类型：`lua_type`（每种类型都对应常量表示）
+  * LUA_TNIL、LUA_TBOOLEAN、LUA_TNUMBER、LUA_TSTRING...
+  * 一般与 switch 连用 
+* 指定类型从栈中获取一个值：`lua_to*`（类型错误也不会报错，返回 0 或 NULL）
+  * `int lua_toboolean(lua_State *L, int index);`
+    * Lua nil、false 转为 0
+    * 其它转为 1
+  * `const char *lua_tolstring(lua_State *L, int index, size_t *len);`
+    * 返回字符串的内部副本指针
+      * 内部副本无法修改
+      * 对应字符串还在栈中，指针就是有效
+      * 当 Lua 调用的一个 C 函数返回时，对应的栈会被清空
+      * 所以不要把 Lua 字符串指针放到获取该指针的函数外
+    * 字符串长度存到 len 所指向的位置
+    * lua_tolstring 返回的所有字符串末尾有个额外的 \0
+    * 但是无法保证中间就没有 \0 所以还是得 len 表示长度
+
+```c
+size_t len;
+const char *s = lua_tolstring(L, -1, &len); // 栈顶存在字符串
+assert(s[len] == '\0'); // 最后一个字符肯定是 \0
+assert(strlen(s) <= len); // 中间可能包含 \0
+```
+
+* 输出整个栈的内容
+
+```c
+static void stackDump (lua_State *L) {
+    int top = lua_gettop(L);
+    
+    for (int i = 1; i <= top; i++) {
+        int t = lua_type(L, i);
+        switch (t) {
+            case LUA_TSTRING:
+                printf("'%s'", lua_tostring(L, i));
+                break;
+            case LUA_TBOOLEAN:
+                printf(lua_toboolean(L, i) ? "true" : "false");
+                break;
+            case LUA_TNUMBER:
+                printf("%g", lua_tonumber(L, i));
+                break;
+            default:
+                printf("%s", lua_typename(L, t));
+                break;
+        }
+        printf(" ");
+    }
+    print("\n");
+}
+```
+
+#### 其它栈操作
+
+* `int lua_gettop (lua_State *L);` 返回栈顶元素索引（元素个数）
+* `void lua_settop (lua_State *L, int index);` 将栈顶设置为指定的值（修改元素数量）
+  * 比之前少：丢弃
+  * 比之前多：nil 填充
+  * 为 0：清空栈 lua_settop(L, 0) 
+  * 为负数：用于弹出栈
+  * `#define lua_pop(L, n) lua_settop(L, -(n) - 1)` 弹出 n 个元素
+    * 包起 n 不是多此一举，n 有可能是表达式
+* `void lua_pushvalue (lua_State *L, int index);` 将索引上的元素副本压入栈
+* 5.3新函数 `void lua_rotate (lua_State *L, int index, int n);`
+  * 将指定元素移动 n 个位置
+  * n为正数：往栈顶移动
+  * n为负数：往栈底移动
+* `#define lua_remove(L, i) (lua_rotate(L, (i), -1), lua_pop(L, 1))`
+

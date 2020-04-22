@@ -2,24 +2,24 @@
 
 ### 基本设置
 
-* 如果你是**模拟器**先不要修改源！
+* 修改源（如果你是**模拟器**先不要 update upgrade）
+* **$PREFIX** 相当于 termux 提供环境的根目录（安卓真正的根目录不要随便改）
 
 ```sh
 vi ~/.bash_profile
 alias ll='ls -lhA'
-export EDITOR=vi
 
-exit
+source ~/.bash_profile
 
 # 修改源
-apt edit-sources
-vi  $PREFIX/etc/apt/sources.list
-deb https://mirrors.tuna.tsinghua.edu.cn/termux stable main
 
-apt-get update
+sed -i 's@^\(deb.*stable main\)$@#\1\ndeb https://mirrors.tuna.tsinghua.edu.cn/termux/termux-packages-24 stable main@' $PREFIX/etc/apt/sources.list
+
+# 申请内存卡权限
+termux-setup-storage
+
 ```
 
-* **$PREFIX** 相当于 termux 提供环境的根目录（安卓真正的根目录不要随便改）
 * **以下命令慎用！**（模拟器）
 
 ```sh
@@ -57,11 +57,31 @@ pkill sshd
 
 ### 编译 Lua
 
+* 没有 readline-static 也可以编译 liblua.a 但是 编译不出 lua 和 luac
+
 ```sh
-pkg install clang make readline-static libedit ncurses-static
-make linux
+pkg install -y curl clang make readline-static #libedit ncurses-static
+
+curl -R -O http://www.lua.org/ftp/lua-5.1.4.tar.gz
+tar zxf lua-5.1.4.tar.gz
+cd lua-5.1.4
+
+make linux test # Hello world, from Lua 5.1!
+
 cd src
 gcc stack.c -o stack.so -fPIC -shared -Wall -O2 -L/sdcard/Download/lua-5.1.5/src
+
+./lua # 测试 require
+```
+
+* 飞天助手调用c模块（放在**资源**文件夹下）
+
+```lua
+package.cpath = getrcpath().."/?.so;"..package.cpath
+lineprint(package.cpath)
+
+require "func"
+lineprint(func.isquare(2))
 ```
 
 
@@ -69,3 +89,6 @@ gcc stack.c -o stack.so -fPIC -shared -Wall -O2 -L/sdcard/Download/lua-5.1.5/src
 ### 参考
 
 [安卓手机的神器--Termux 个人使用全纪录_Python_a1246526429的博客-CSDN博客](https://blog.csdn.net/a1246526429/article/details/86564482)
+
+[Termux 高级终端安装使用配置教程 | 国光](https://www.sqlsec.com/2018/05/termux.html)
+

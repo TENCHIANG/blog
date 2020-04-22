@@ -675,7 +675,7 @@ static void stackDump (lua_State *L) {
   * n为负数：往栈底移动
 * `#define lua_remove(L, i) (lua_rotate(L, (i), -1), lua_pop(L, 1))`
 
-### Windows下编写 Lua C 模块
+### Windows 下编写 Lua C 模块
 
 * 安装 LuaForWindows（lua + 各种库）
 * 安装 TDM-GCC （32位）
@@ -696,5 +696,87 @@ static void stackDump (lua_State *L) {
 
 * 检查是否编译完好 `nm xx.dll` （TDM-GCC 自带工具）
 
+```cmd
+gcc stack.c -o stack.dll -fPIC -shared -Wall -O3 -Lsrc -llua51
+src\lua
+os.execute("echo %cd%") -- 查看当前目录
+require "stack"
+stack.look()
+```
 
+### Windows 下编写 Lua C 模块（无需 LuaForWindows）
 
+* 下载 [lua-5.1.4.tar.gz](https://www.lua.org/ftp/lua-5.1.4.tar.gz) 源代码并解压
+* 安装 TDM-GCC
+* 编译 Lua
+
+```cmd
+cd lua-5.1.4
+mingw32-make mingw test
+```
+
+* 编写 C 模块
+
+```c
+// stack.c
+#include <stdio.h>
+#include "src/lua.h"
+#include "src/lauxlib.h"
+#include "src/lualib.h"
+
+static int look (lua_State *L) {
+	
+	for (int i = 1; i <= 5; i++)
+		lua_pushnumber(L, i);
+	
+    int top = lua_gettop(L);
+    
+    for (int i = 1; i <= top; i++) {
+        int t = lua_type(L, i);
+        switch (t) {
+            case LUA_TSTRING:
+                printf("'%s'", lua_tostring(L, i));
+                break;
+            case LUA_TBOOLEAN:
+                printf(lua_toboolean(L, i) ? "true" : "false");
+                break;
+            case LUA_TNUMBER:
+                printf("%g", lua_tonumber(L, i));
+                break;
+            default:
+                printf("%s", lua_typename(L, t));
+                break;
+        }
+        printf(" ");
+    }
+    printf("\n");
+	
+    return 1;
+}
+
+static const struct luaL_Reg libs[] = {
+    {"look", look},
+    {NULL, NULL}
+};
+
+int luaopen_stack (lua_State *L) {
+    luaL_register(L, "stack", libs);
+    return 1;
+} 
+```
+
+* 编译 C 模块并调用
+
+```cmd
+gcc stack.c -o stack.dll -fPIC -shared -Wall -O3 -Lsrc -llua51
+nm stack.dll | findstr luaopen :: 查看
+
+src\lua
+os.execute("echo %cd%") -- 查看当前目录
+require "stack"
+stack.look()
+```
+
+* Linux 下编译 C 库参考 [Termux 最佳实践](/Linux/Termux最佳实践.md#编译-Lua)
+
+  

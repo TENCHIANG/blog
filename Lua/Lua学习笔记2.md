@@ -675,3 +675,26 @@ static void stackDump (lua_State *L) {
   * n为负数：往栈底移动
 * `#define lua_remove(L, i) (lua_rotate(L, (i), -1), lua_pop(L, 1))`
 
+### Windows下编写 Lua C 模块
+
+* 安装 LuaForWindows（lua + 各种库）
+* 安装 TDM-GCC （32位）
+* Lua\5.1\makelib.bat
+  * %~0 批处理文件本身的绝对路径
+  * %~1 批处理文件的第一个参数的绝对路径（或者**拖动**文件到批处理文件）
+  * %~nx1 只留文件名和扩展名
+  * -fPIC 表示编译为位置独立的代码，不用此选项的话编译后的代码是位置相关的所以动态载入时是通过代码拷贝的方式来满足不同进程的需要，而不能达到真正代码段共享的目的
+  * -shared 该选项指定生成动态连接库，不用该标志外部程序无法连接，相当于一个可执行文件
+
+```bat
+@if /i %~x1 == .c (
+	echo 编译成功
+	gcc %~nx1 -o %~n1.dll -fPIC -shared -Wall -O2 -Llib -llua51
+)
+@pause
+```
+
+* 检查是否编译完好 `nm xx.dll` （TDM-GCC 自带工具）
+
+
+

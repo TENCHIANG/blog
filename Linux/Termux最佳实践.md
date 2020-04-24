@@ -69,7 +69,8 @@ cd lua-5.1.4
 make linux test # Hello world, from Lua 5.1!
 
 cd src
-gcc stack.c -o stack.so -fPIC -shared -Wall -O2 -L/sdcard/Download/lua-5.1.5/src
+gcc stack.c -o stack.so -fPIC -shared -Wall -O2 #-L/sdcard/Download/lua-5.1.5/src
+#gcc -O3 -Wall -Wextra -Werror -g -fPIC -c ./a.c -o a.o
 
 ./lua # 测试 require
 ```
@@ -84,11 +85,35 @@ require "func"
 lineprint(func.isquare(2))
 ```
 
+* require 底层
 
+```lua
+path = "/sdcard/Download/lua-5.1.4/src/func.so"
+name = "luaopen_func"
+initLib = package.loadlib(path, name)
+
+print(func) -- nil
+initLib()
+print(func) -- table: 0xb6c83fe0
+
+for k, v in pairs(func) do
+    print(k, v)
+end
+--[[
+alert   function: 0xb6cd9a00
+isquare function: 0xb6c355a0
+]]
+```
+
+* Lua交互环境（Lua5.1）
+  * 一行语句就相当于一个 chunk ，= 号就相当于 return 语句（对于返回的会打印出来）
+  * 如果没有 = 号或者 return ，就不会返回，也就不会打印输出
 
 ### 参考
 
 [安卓手机的神器--Termux 个人使用全纪录_Python_a1246526429的博客-CSDN博客](https://blog.csdn.net/a1246526429/article/details/86564482)
 
 [Termux 高级终端安装使用配置教程 | 国光](https://www.sqlsec.com/2018/05/termux.html)
+
+[使用Termux把Android手机变成SSH服务器 | 《Linux就该这么学》](https://www.linuxprobe.com/termux-ssh-server.html)
 

@@ -150,3 +150,8 @@ get("www.lua.org", "/ftp/lua-5.1.5.tar.gz")
 
 dispatch()
 ```
+
+### 易错点
+
+* 空字符串不为 false！
+* 注意同名的变量！

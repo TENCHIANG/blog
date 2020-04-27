@@ -140,18 +140,23 @@ package.loaded[modname] = M
 
 * 完全不需要前缀：setfenv（把模块设置为全局环境）
 * 缺点：访问不了之前的所有全局变量
-  * 全局变量**继承**到模块：`setmetatable(M, { __index = G })`
+  * 全局变量**继承**到模块：`setmetatable(M, { __index = _G })`
     * 缺点：模块包含了所有全局变量（类 Perl）
   * 全局变量保存到**局部**变量：`local _G = _G`
     * 缺点：每次使用全局变量时要加前缀
   * 把要要用的全局变量先保存为局部变量：`local sqrt = math.sqrt`
 
 ```lua
-local modname = ...
-local M = {}
-_G[modname] = M
-package.loaded[modname] = M
-setfenv(1, M)
+local name = ... -- 名字根据 require 来
+local M = { __index = _G }
+setmetatable(M, M) -- 把全局环境继承到模块
+_G[name] = M
+package.loaded[name] = M -- 不用 return 模块了
+setfenv(1, M) -- 环境设置为模块
+
+function hello () -- 相当于 M.hello
+    print("hello") -- 继承了全局变量
+end
 
 function new (r, i) return { r = r, i = i } end
 i = new(0, 1)
@@ -170,13 +175,16 @@ function add  (c1, c2) return new(c1.r + c2.r, c1.i + c2.i) end
     * _PACKAGE：包的名称
 
 ```lua
-module(...)
+module(..., package.seeall)
+
 -- 相当于
-local name = ...
-local M = {}
+
+local name = ... -- 名字根据 require 来
+local M = { __index = _G }
+setmetatable(M, M) -- 把全局环境继承到模块
 _G[name] = M
-package.loaded[name] = M
-setfenv(1, M)
+package.loaded[name] = M -- 不用 return 模块了
+setfenv(1, M) -- 环境设置为模块
 ```
 
 ### 子模块与包

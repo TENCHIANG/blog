@@ -140,6 +140,20 @@ git clone https://username:password@github.com/TENCHIANG/sdgs
 
 参考：[Git 忽略提交 .gitignore](https://www.jianshu.com/p/74bd0ceb6182)
 
+### Github 仓库内的跳转
+
+* 用斜杠 / 作为目录分隔符
+* / 表示仓库根目录（无需加协议头）
+* 文件如果有空格，则用 %20 代替
+* 跳转到标题用 # 开头
+  * 如果标题有空格，则用 - 链接
+  * 如果有括号，则直接忽略括号
+
+```md
+### a (b)
+以上标题对应的链接就是 #a-b
+```
+
 ### mv 命令无需两次键入文件名
 
 ```sh
@@ -148,4 +162,48 @@ mv file-{aaa,bbb}.txt # file-bbb.txt
 mv file-bbb{,-ccc}.txt # file-bbb-ccc.txt
 mv file-bbb-ccc.{txt,pdf} # file-bbb-ccc.pdf
 ```
+
+### 文件与目录查看：ls
+
+* 隐藏文件：点 . 开头的文件（点文件）
+* -a：全部文件
+* -A：全部文件，不包括当前目录和上级目录
+* -h：容量大小易读
+* -R：子目录递归输出
+* -f：不排序（默认名称排序）
+* -r：反向排序
+* -S：大小升序
+* -t：时间排序
+* -d：只列出目录本身，而不是列出目录内的文件数据
+
+```sh
+ls -d # 只列出目录本身
+ls -d .* # 只显示当前目录下以点开头的文件
+ls ~/*/ # 只列出 ~ 目录下的目录
+```
+* 只列出隐藏文件
+
+```sh
+ls -d .*
+ls -a | grep "^\."
+ls -A | grep "^\."
+```
+
+* -F 附加信息到文件或文件夹后面（git for windwos 的 ls 默认是加 -F 的）
+  * 普通文件
+  * 可执行文件 *
+  * 目录 /
+  * socket 文件 =
+  * FIFO 文件 |
+  * 链接文件 @
+    * 如果是目录，@ 优先级大于 / * 
+* 最佳实践（列表显示、易读文件大小、显示隐藏文件、显示文件信息）
+
+```sh
+alias ll="ls -lhAF"
+```
+
+* 参考：[利用ls只查看隐藏文件_huage_新浪博客](http://blog.sina.com.cn/s/blog_716844910100qneb.html)
+
+### Linux 与 Windows 链接文件（快捷方式）
 

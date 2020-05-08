@@ -147,7 +147,8 @@ git clone https://username:password@github.com/TENCHIANG/sdgs
 * 文件如果有空格，则用 %20 代替
 * 跳转到标题用 # 开头
   * 如果标题有空格，则用 - 链接
-  * 如果有括号，则直接忽略括号
+  * 如果有符号，则直接忽略
+  * 可以直接去实际页面查看地址
 
 ```md
 ### a (b)

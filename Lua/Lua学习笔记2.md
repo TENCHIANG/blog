@@ -155,3 +155,95 @@ dispatch()
 
 * 空字符串不为 false！
 * 注意同名的变量！
+
+### 再论 空隙数组
+
+* 以前说过，但是没有深究：[table做数组]( Lua学习笔记.md#table做数组)
+* pairs 跳过 nil
+* ipairs nil 截止
+* #等价于 table.getn（连续数组的长度）
+* table.maxn 返回最大的数值索引
+* 显式初始化的不会出现空隙数组（除非最后一个为 nil）
+  * 初始化最后一个为 nil 时，在任何情况下都会被忽略且会造成空隙数组
+    * {1, 2, 3, nil} 的长度为3
+  * {1, 2, 3, nil, 4} 长度为 5
+  * {nil, 2, 3, nil, 4} 长度为 5
+* 空隙数组的出现是定义初始化之后 跳过很多位置再添加一个元素
+  * 空隙数组能够让原来不空隙的 nil 也变得空隙（不再连续）
+* 总体来说空隙数组就是：有 nil 在中间，且不连续
+  * 初始化时，中间插 nil，最后一个元素为 nil
+  * 在连续数组最后，再隔几个插入元素（也可以是 nil 虽然不作数）
+    * 这种情况在少数情况下不会产生空隙数组（长度包含初始化时的nil）
+
+```lua
+function len (list)
+	print(#list, table.getn(list), table.maxn(list))
+end
+
+len({1, 2, 3, nil, 5}) -- 5 5 5
+len({1, 2, 3, nil, 5, nil}) -- 3 3 5
+len({nil, 2, 3, nil, 5, nil}) -- 3 3 5
+len({nil, 2, 3, nil, 5}) -- 5 5 5
+len({nil, 3, nil}) -- 0 0 2
+len({nil, nil, nil}) -- 0 0 0
+```
+
+### some every 一次就好 和 我全都要
+
+* 类似于 js 中 Array.prototype 的 some 和 every
+* some：多次中一次就好就返回真，都为假才为假，类似 or
+* every：多次中所有都得为真，只要有一次为假就为假，类似 and
+
+```lua
+function some (n, action, ...)
+    n = tonumber(n) or 3
+    for i = 1, n do
+        if action(...) then return true end
+    end
+    return false
+end
+
+function every (n, action, ...)
+    n = tonumber(n) or 3
+    for i = 1, n do
+        if not action(...) then
+           break
+		elseif i == n then
+			return true
+        end
+    end
+    return false
+end
+
+function iterator (list)
+	local i = 1
+	return function ()
+		local res = list[i]
+		i = i + 1
+		return res
+	end
+end
+
+list = {1, 2, 3, nil, 4}
+length = table.maxn(list)
+=some(length, iterator(list))
+=every(length, iterator(list))
+```
+
+### 冒号运算符定义的函数怎么作为值呢
+
+* 其实冒号运算符只是**语法糖**，本质上还是**点运算符**，使用点运算符就可以赋值啦
+
+```lua
+DG = {}
+function DG:f ()
+	print(self == DG)
+end
+
+DG:f() -- true
+
+g = DG.f
+--DG:g() error
+g(DG) -- true
+```
+

@@ -193,12 +193,18 @@ len({nil, nil, nil}) -- 0 0 0
 * 类似于 js 中 Array.prototype 的 some 和 every
 * some：多次中一次就好就返回真，都为假才为假，类似 or
 * every：多次中所有都得为真，只要有一次为假就为假，类似 and
+* 改进之处：如果我要返回多个结果呢？
+  * 用表接收多重值，然后用 unpack 把表转为多重值返回
+  * 再改进：就算返回 false 我也要看函数究竟运行到了哪里（仍然返回结果）
+    * 把 res 提到循环外赋值 {}
+    * 把 return false 改为 return false, unpack(res)
 
 ```lua
 function some (n, action, ...)
     n = tonumber(n) or 3
     for i = 1, n do
-        if action(...) then return true end
+        local res = { action(...) }
+        if res[1] then return unpack(res) end
     end
     return false
 end
@@ -206,10 +212,11 @@ end
 function every (n, action, ...)
     n = tonumber(n) or 3
     for i = 1, n do
-        if not action(...) then
+        local res = { action(...) }
+        if not res[1] then
            break
 		elseif i == n then
-			return true
+			return unpack(res)
         end
     end
     return false
@@ -226,8 +233,8 @@ end
 
 list = {1, 2, 3, nil, 4}
 length = table.maxn(list)
-=some(length, iterator(list))
-=every(length, iterator(list))
+=some(length, iterator(list)) -- 1
+=every(length, iterator(list)) -- false
 ```
 
 ### 冒号运算符定义的函数怎么作为值呢
@@ -245,5 +252,31 @@ DG:f() -- true
 g = DG.f
 --DG:g() error
 g(DG) -- true
+```
+
+* “扁平化”的冒号运算符使用起来很麻烦
+  * 不如再用一个函数包起来（还可以做其它额外的操作）
+  * 如果每次调用嫌麻烦的话，再封装起来
+
+```lua
+-- 假设有函数 DG:f 且要传参数 true
+some(3, DG.f, DG, true) -- 麻烦
+some(3, function () -- 岂不美哉?
+	return DG:f(true)
+end)
+some(3, function () -- 做其它额外的操作
+	--xxx()
+    local res = DG:f(true)
+    --yyy()
+    return res
+end)
+function someF (...) -- 封装起来
+    return some(3, function () -- 做其它额外的操作
+        --xxx()
+        local res = DG:f(true)
+        --yyy()
+        return res
+    end)
+end
 ```
 

@@ -200,6 +200,7 @@ len({nil, nil, nil}) -- 0 0 0
     * 把 return false 改为 return false, unpack(res)
 
 ```lua
+-- 运行到返回 true 时停止
 function some (n, action, ...)
     n = tonumber(n) or 3
     for i = 1, n do
@@ -209,6 +210,7 @@ function some (n, action, ...)
     return false
 end
 
+-- 运行到返回 false 时停止
 function every (n, action, ...)
     n = tonumber(n) or 3
     for i = 1, n do
@@ -225,17 +227,41 @@ end
 function iterator (list)
 	local i = 1
 	return function ()
-		local res = list[i]
-		i = i + 1
-		return res
+        if i < table.maxn(list) then
+            local res = list[i]
+            i = i + 1
+            return res
+        end
+	end
+end
+
+-- 支持 可变参数 或者 表 两种形式
+-- 只支持一维数组
+function iterator2 (action, ...)
+	local i = 1
+    local list = {...}
+    if type(list[1]) == "table" then list = list[1] end
+    local maxn = table.maxn(list)
+	return function ()
+        if i < maxn then
+            local res = action(list[i])
+            i = i + 1
+            return res
+        end
 	end
 end
 
 list = {1, 2, 3, nil, 4}
 length = table.maxn(list)
+
 =some(length, iterator(list)) -- 1
 =every(length, iterator(list)) -- false
+
+=some(length, iterator2(tostring, list)) -- 1
+=every(length, iterator2(tostring, list)) -- false
 ```
+
+* [更规范的 some every](Lua元表和元方法.md#扩展表-map-some-every)
 
 ### 冒号运算符定义的函数怎么作为值呢
 

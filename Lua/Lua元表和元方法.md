@@ -116,13 +116,17 @@ function table.map (action, ...)
     local res = {}
     local args = {...}
     for i = 1, table.maxn(args) do
+        -- 缺陷1：要是我就是想打印 table 的字面值怎么办呢？
+        -- 缺陷2：调用 table.concat 报错
+        -- invalid value (table) at index 1 in table for 'concat'
         if type(args[i]) == "table" then
             res[i] = table.map(action, unpack(args[i]))
         else
 			res[i] = action(args[i])
         end
 	end
-   return #res > 0 and res or nil -- 如果没有一个返回则返回 nil
+    -- 缺陷：如果要传给 table.concat 的话 nil 会报错
+	return #res > 0 and res or nil -- 如果没有一个返回则返回 nil
 end
 
 t = table.map(tostring, 1, 2, nil, 3)

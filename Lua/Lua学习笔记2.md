@@ -159,9 +159,10 @@ dispatch()
 ### 再论 空隙数组
 
 * 以前说过，但是没有深究：[table做数组]( Lua学习笔记.md#table做数组)
-* pairs 跳过 nil
-* ipairs nil 截止
+* **pairs 跳过 nil**
+* **ipairs nil 截止**
 * #等价于 table.getn（连续数组的长度）
+  * 标准 lua 没有 getn 可能只是外部库
 * table.maxn 返回最大的数值索引
 * 显式初始化的不会出现空隙数组（除非最后一个为 nil）
   * 初始化最后一个为 nil 时，在任何情况下都会被忽略且会造成空隙数组
@@ -304,5 +305,37 @@ function someF (...) -- 封装起来
         return res
     end)
 end
+```
+
+### 可变参数放最后
+
+* 要把可变参数放在最后面，否则只会截取第一个
+
+```lua
+t = {1,2,3}
+print(unpack(t)) -- 1 2 3
+print(unpack(t), 4) -- 1 4
+print(0, unpack(t), 4) -- 0 1 4
+print(0, unpack(t)) -- 0 1 2 3
+```
+
+### 没有返回值的函数要谨慎
+
+* 类似于返回 nil 但是不能完全等价
+* 不能传给 tostring 因为没有任何值传进去
+* 函数里有 return 不代表一定会返回值
+* **无返回值函数类似 nil 但是不可以做函数参数**
+
+```lua
+function f () end
+
+=nil or 1 -- 1
+=f() or 1 -- 1
+
+=tostring(nil) -- nil
+=#tostring(nil) -- 3
+
+=tostring() -- bad argument #1 to 'tostring' (value expected)
+=tostring(f()) -- bad argument #1 to 'tostring' (value expected)
 ```
 

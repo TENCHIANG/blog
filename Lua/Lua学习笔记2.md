@@ -307,7 +307,7 @@ function someF (...) -- 封装起来
 end
 ```
 
-### 可变参数放最后
+### 可变参数的坑（只能放最后）
 
 * 要把可变参数放在最后面，否则只会截取第一个
 
@@ -317,6 +317,25 @@ print(unpack(t)) -- 1 2 3
 print(unpack(t), 4) -- 1 4
 print(0, unpack(t), 4) -- 0 1 4
 print(0, unpack(t)) -- 0 1 2 3
+
+--- 两点之间的距离
+function distance (x1, y1, x2, y2)
+	local a = math.pow(x1 - x2, 2)
+	local b = math.pow(y1 - y2, 2)
+	return math.floor(math.sqrt(a + b))
+end
+
+-- 常见错误
+-- stdin:3: attempt to perform arithmetic on local 'y2' (a nil value)
+-- 只接受了 3个 参数 123 432 657
+distance(unpack { 123, 456 }, unpack { 432, 657 })
+
+-- 正确方法
+x1, y1 = unpack { 123, 456 }
+x2, y2 = unpack { 432, 657 }
+distance(x1, y1, x2, y2) -- 368
+
+-- 或者干脆就不用可变参数 用表不香吗？
 ```
 
 ### 没有返回值的函数要谨慎

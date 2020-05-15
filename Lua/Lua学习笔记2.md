@@ -358,3 +358,7 @@ function f () end
 =tostring(f()) -- bad argument #1 to 'tostring' (value expected)
 ```
 
+### for循环的变量
+
+* for循环的变量 i 不会在循环体改变，循环体的 i 只是 for i  的副本
+* 想要修改 i 的值还得用 while

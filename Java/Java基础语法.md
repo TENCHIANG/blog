@@ -1,4 +1,4 @@
-## Java的类型、变量、运算符、类型转换、流程语句
+## Java基础语法
 
 ### 类型
 
@@ -71,7 +71,7 @@ Boolean true ~ false
     * 局部变量必须初始化
   * 成员变量（member variable）：也叫实例变量（对象），对象的创建到回收
     * 不用初始化（填充0）
-  * 静态变量（static variable）：也叫类变量，类的加载到卸载
+  * 静态变量（static variable）：也叫类变量，类的加载到卸载（程序本身的生命周期）
 
 ### 常量
 
@@ -233,6 +233,10 @@ public class BallGame extends JFrame {
 
 * 图片在这里：[1.8 30分钟完成桌球小游戏项目 | 速学堂教程 - 学的不仅是技术，更是梦想！--尚学堂旗下高端品牌](https://www.sxt.cn/Java_jQuery_in_action/Billiards_Games.html)
 
+![ball](D:\workspace\blog\Java\ball.png)
+
+![desk](D:\workspace\blog\Java\desk.jpg)
+
 ### 二元运算符规则
 
 * 左运算数
@@ -316,7 +320,7 @@ outer:for (int i = 101; i < 150; i++) {
 
 * 重载的方法，只是名字一样而已，实际上是不同的方法
 * 重载的特点：（传不同的参数，有不同的行为）
-  * 形参的类型、个数、顺序不同（与形参名称无关）
+  * 形参的**类型、个数、顺序**不同（与形参名称无关）
   * 只有返回值不同不构成重载（主要看形参）
 
 ### 递归

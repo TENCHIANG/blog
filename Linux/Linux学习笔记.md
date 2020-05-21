@@ -138,7 +138,11 @@ git clone https://username:password@github.com/TENCHIANG/sdgs
         proxy = https://127.0.0.1:1080
 ```
 
-参考：[Git 忽略提交 .gitignore](https://www.jianshu.com/p/74bd0ceb6182)
+参考：
+
+* [Git 忽略提交 .gitignore](https://www.jianshu.com/p/74bd0ceb6182)
+
+* [Git 中文详细安装教程_git_谢宗南的博客-CSDN博客](https://blog.csdn.net/sishen47k/article/details/80211002)
 
 ### Github 仓库内的跳转
 
@@ -207,4 +211,3 @@ alias ll="ls -lhAF"
 * 参考：[利用ls只查看隐藏文件_huage_新浪博客](http://blog.sina.com.cn/s/blog_716844910100qneb.html)
 
 ### Linux 与 Windows 链接文件（快捷方式）
-

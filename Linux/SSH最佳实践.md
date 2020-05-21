@@ -154,3 +154,8 @@ PubkeyAuthentication yes # ssh协议2的纯 rsa认证
 `man sshd_config`
 `man ssh`
 `man nc`
+
+### ssh超时问题解决：tmux
+
+* [tmux 终端复用神器 - Creaink - Build something for life](https://creaink.github.io/post/Devtools/Tools/tmux.html)
+* [Tmux 使用教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2019/10/tmux.html)

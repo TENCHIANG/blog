@@ -9,7 +9,7 @@
 vi ~/.bash_profile
 alias ll='ls -lhA'
 
-source ~/.bash_profile
+. ~/.bash_profile
 
 # 修改源
 

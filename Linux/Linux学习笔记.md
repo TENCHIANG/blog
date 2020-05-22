@@ -211,3 +211,10 @@ alias ll="ls -lhAF"
 * 参考：[利用ls只查看隐藏文件_huage_新浪博客](http://blog.sina.com.cn/s/blog_716844910100qneb.html)
 
 ### Linux 与 Windows 链接文件（快捷方式）
+
+### 已知私钥生成公钥
+
+```sh
+ssh-keygen -yf id_rsa > id_rsa.pub
+```
+

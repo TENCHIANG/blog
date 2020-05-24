@@ -121,13 +121,26 @@ git push origin dev --force
 git clone https://username:password@github.com/TENCHIANG/sdgs
 ```
 
+### git换行符问题
+
+* CR \r 0x0d
+* LF \n 0x0a
+* Windows CR LF
+* Unix/Linux LF
+* MacOS CR
+* core.autocrlf false 不对换行符做任何特殊处理
+* core.autocrlf true 提交时转换为LF，检出时转换为CRLF
+* core.autocrlf input 提交时转换为LF，检出时不转换（LF）
+* [Git中的core.autocrlf选项 - icuic - 博客园](https://www.cnblogs.com/outs/p/6909567.html)
+
 ### 个人常用配置
+
 ```sh
 [user]
         name = TENCHIANG
         email = yy5209zz@gmail.com
 [core]
-        autocrlf = true # 换行符 crlf lf 自动转换
+        autocrlf = input # 交时转换为LF，检出时不转换（LF）
         safecrlf = false # 忽略拒绝提交混合换行符 改成自动转换
         quotepath = false # 防止windows中文乱码
 [color]

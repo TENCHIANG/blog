@@ -6,6 +6,7 @@
 * 和 nodejs 很像
 * **co = coroutine.create(f)** 创建协程并返回
 * **status, ... = coroutine.resume(co, ...)**  启动协程并传入参数，当协程遇到 yield 时返回数据
+  * 参数传给 create 那里的 f
   * 相当于 resume 在等待 yield
   * 成功返回 true 以及 yield 过来的参数
   * 失败返回 false 以及 错误信息
@@ -48,3 +49,5 @@ ok
 ### 参考
 
 * [lua coroutine(协程) - 戴磊笔记](http://www.daileinote.com/computer/lua/15)
+* [Lua基础 coroutine —— Lua的多线程编程 - 冰尨 - 博客园](https://www.cnblogs.com/vagaband/p/4242624.html)
+* [Lua 协同程序(coroutine) | 菜鸟教程](https://www.runoob.com/lua/lua-coroutine.html)

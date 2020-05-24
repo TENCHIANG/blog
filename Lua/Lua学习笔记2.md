@@ -362,3 +362,11 @@ function f () end
 
 * for循环的变量 i 不会在循环体改变，循环体的 i 只是 for i  的副本
 * 想要修改 i 的值还得用 while
+
+### Lua 通过 io.tmpfile os.tmpname 使用临时文件
+
+* **io.tmpfile** 返回文件句柄，以**更新模式**打开临时文件，程序结束时自动关闭文件
+  * **"r+":** update mode, all previous data is preserved; 
+  * **"w+":** update mode, all previous data is erased; 
+  * **"a+":** append update mode, previous data is preserved, writing is only  allowed at the end of file. 
+* **os.tmpname** 只是返回在 /tmp 下的临时文件名，必须手动打开和关闭

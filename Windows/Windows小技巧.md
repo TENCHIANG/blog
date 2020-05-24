@@ -122,3 +122,10 @@ taskkill /f /im java.exe
 ### Typora最佳实践
 
 * 导出PDF：文件 - 导出 - PDF
+
+### Notepad++最佳实践
+
+* 设置 - 首选项 - 新建 - 格式 - Unix
+* 设置 - 首选项 - 新建 - 编码 - UTF-8（无BOM）
+  * 应用于打开 ANSI 文件
+* 设置 - 首选项 - 语言 - 替换为空格

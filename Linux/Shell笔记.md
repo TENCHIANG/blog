@@ -120,7 +120,7 @@ d
 ```sh
 echo `ps | awk '{print $2}'` # 列出所有PID
 echo `ps | awk '{print $2}'` # 列出所有PPID
-cat hello.txt | xargs # 另外的方法
+cat hello.txt | xargs # 另外的方法 好像不能和grep连用
 ```
 
 * 参考：[shell中将字符中换行符\\n替换为空格_shell_万里之书-CSDN博客](https://blog.csdn.net/guoyajie1990/article/details/73692526)
@@ -260,7 +260,7 @@ test -e ~/.bash_profile
 * -d DIR 存在目录
 * -f FILE 存在普通文件
 * -z STR 空字符串
-* -n STR 非空字符串（一定要用双引号包起来不然 null 也为真）
+* -n STR 非空字符串（一定要用**双引号包起来$**不然 null 也为真）
 * STR1 = STR2 等于（也可用于数值）
 * STR1 != STR2 不等于（也可用于数值）
 * ARG1 OP ARG2（整数）
@@ -363,10 +363,10 @@ done
 ### 特殊变量
 
 * $? 上一条命令的 Exit Status
-* $0 脚本文件的路径 argv[0]
+* $0 脚本文件名（argv[0]）
   * 如果是交互式那就是解释器的路径如 /usr/bin/bash
 * $1、$2、... 传给脚本的位置参数（Positional Parameter） argv[1]...
-* $# 参数的个数 argc - 1
+* $# 参数的个数（argc - 1，不算 $0）
 * $* 参数列表（双引号包起来是整体）
 * $@ 参数列表（双引号包起来不是整体）
 * $$ 当前Shell的PID
@@ -564,3 +564,8 @@ echo ${xxx?:errmsg}
 * 总结：多加冒号代表空字符串，且冒号放在前面
 
 * 参考：[[原创] Shell 参数传递 与 默认值 - 嘉兴Xing - 博客园](https://www.cnblogs.com/youjiaxing/p/10043063.html)
+
+### 经验之谈
+
+* Shell脚本里面的路径最好用绝对路径（除非就在本目录），因为 su 会改变当前路径为 /
+* kill 配合 ps 可以追踪 ppid

@@ -48,6 +48,7 @@ termux-chroot # 进入模拟的 root 环境
 * 如果是模拟器，先打开桥接网络
 * 默认只能用公钥登录
 * 默认端口号为 8022
+* 默认用户为 root
 
 ```sh
 pkg install openssh

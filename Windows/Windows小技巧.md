@@ -129,3 +129,14 @@ taskkill /f /im java.exe
 * 设置 - 首选项 - 新建 - 编码 - UTF-8（无BOM）
   * 应用于打开 ANSI 文件
 * 设置 - 首选项 - 语言 - 替换为空格
+
+### Windows 控制台编码 CHCP
+
+* adb shell windows控制台支持上下键但是会乱码，git for windows 不乱码但是不支持上下键
+* `chcp 65001`
+* CHCP命令，能够显示或设置活动代码页编号（虽然只是暂时的，当前会话生效的）
+* 65001  UTF-8代码页
+* 950 繁体中文
+* 936 简体中文默认的GBK
+* 437 MS-DOS 美国英语
+* [windows 控制台cmd乱码的解决办法_操作系统_taoshujian-CSDN博客](https://blog.csdn.net/taoshujian/article/details/60325996)

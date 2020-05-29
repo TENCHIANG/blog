@@ -370,3 +370,6 @@ function f () end
   * **"w+":** update mode, all previous data is erased; 
   * **"a+":** append update mode, previous data is preserved, writing is only  allowed at the end of file. 
 * **os.tmpname** 只是返回在 /tmp 下的临时文件名，必须手动打开和关闭
+* 窘境：
+  * io.tmpfile 获取不到文件名
+  * os.tmpname 在安卓下读写不了 /tmp/

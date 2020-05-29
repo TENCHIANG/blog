@@ -569,3 +569,34 @@ echo ${xxx?:errmsg}
 
 * Shell脚本里面的路径最好用绝对路径（除非就在本目录），因为 su 会改变当前路径为 /
 * kill 配合 ps 可以追踪 ppid
+* **三目运算符**：
+
+```sh
+res=`[ 1 == 2 ]` && echo 1 || echo 2
+```
+
+### Shell脚本加密
+
+* **gzexe**
+  * -d 解密文件
+  * 优点：可直接执行加密后的文件、系统自带、运行加密后的脚本速度快
+  * 缺点：加密太弱（本质就是压缩）
+
+```sh
+gzexe script.sh
+ls
+# script.sh加密后的文件 script.sh~源文件
+```
+
+* **shc**
+  * 优点：可直接执行加密后的文件、加密强度高
+  * 缺点：需要安装、运行加密后的脚本速度慢
+
+```sh
+shc -T -f script.sh
+ls
+# script.sh.x加密后的文件 script.sh源文件
+```
+
+* [shell脚本加密经验分享_shell_编程杂记-CSDN博客](https://blog.csdn.net/qq_35603331/article/details/83793475)
+* [Linux Shell-如何进行简单的加解密_shell_adamaday的专栏-CSDN博客](https://blog.csdn.net/adamaday/article/details/82085536)

@@ -588,6 +588,25 @@ ls
 # script.sh加密后的文件 script.sh~源文件
 ```
 
+* **tar**
+  * 既然都是压缩的话 tar 不香吗
+  * 优点：系统自带、tgz格式速度和压缩率都很不错
+  * 缺点：但是也可以通过 file、stat 命令轻易知道文件格式从而解密
+
+```sh
+tar czf .script script.sh # 加密为 .script
+tar xf .script # 解密
+```
+
+* **base64**
+  * 优点：系统自带、不能轻易发现格式信息（只能人工看）
+  * 缺点：加密后更大了
+
+```sh
+base64 script.sh > .script # 加密
+base64 -d .script > script.sh # 解密
+```
+
 * **shc**
   * 优点：可直接执行加密后的文件、加密强度高
   * 缺点：需要安装、运行加密后的脚本速度慢

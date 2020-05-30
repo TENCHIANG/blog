@@ -575,6 +575,15 @@ echo ${xxx?:errmsg}
 res=`[ 1 == 2 ]` && echo 1 || echo 2
 ```
 
+* `ls dir/` 只会显示文件夹下的文件
+* `ls dir/*` 在显示文件的基础前面加上文件夹名
+* 管道符是个好东西，使用管道符就无需临时文件了
+
+### 重定向和管道符的区别
+
+* 重定向 程序到文件
+* 管道符 程序到程序
+
 ### Shell脚本加密
 
 * **gzexe**
@@ -619,3 +628,50 @@ ls
 
 * [shell脚本加密经验分享_shell_编程杂记-CSDN博客](https://blog.csdn.net/qq_35603331/article/details/83793475)
 * [Linux Shell-如何进行简单的加解密_shell_adamaday的专栏-CSDN博客](https://blog.csdn.net/adamaday/article/details/82085536)
+
+### tar最佳实践
+
+* 打包：`tar cf *.tar *`（无任何压缩）
+* 压缩：`tar czf *.tgz *`
+  * -c 创建
+  * -z gzip格式 后缀为 tgz tar.gz
+  * -f 指定文件
+* 查看：`tar tf *.tgz`
+* 解压：`tar xzf *.tgz`
+  * -C 指定解压到目录，不然可能会覆盖
+  * -O 解压到标准输出，便于解压即改名
+* 追加：`tar -rf *.tar *`（tar文件才能追加?）
+* 查看过程：-v
+
+#### 各种压缩格式对比
+
+### xz最佳实践
+
+* xz 是基于 LZMA2 压缩算法的
+* 压缩：`xz -k *`
+  * -k -保留原文件
+  * -z 强制压缩
+* 解压：`xz -dk *.sh.xz`
+  * -d 必须指定-d才解压
+  * -k 保留压缩文件
+* -c 输出到标准输出（不删除输入文件，不用加-k）
+* -f 强制覆盖
+* 查看
+  * -l 查看压缩文件信息 如果不是xz压缩文件则返回 1 和打印错误信息
+  * -t 是xz压缩文件则返回 0, 否则返回 1 并打印错误信息
+  * -v -vv 查看详细输出
+  * -H 比 -h 更详细的帮助
+* 性能、压缩率相关
+  * 0 ~ 9 压缩级别 默认6级
+  * -e 更高的CPU优先级
+  * -T NUM 使用 NUM 个线程，默认1个，0表示使用与CPU内核一样多的线程
+
+### 临时文件 mktemp
+
+```sh
+tmpfile=`mktemp`
+tmpdir=`mktemp -d`
+```
+
+
+

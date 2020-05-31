@@ -507,29 +507,56 @@ errCode=$?
 
 #### kill命令：发送信号
 
-* kill -l 列出所有可用的信号
-* 常用信号：
+* **kill 命令格式**：
+  * `kill [-s sigspec | -n signum | -sigspec | -signum] pid | jobspec ...`
+  * `kill -l | -L [sigsepc]`
+* -s 指定信号名（或直接 `-信号名`）
+* -n 指定信号ID（或直接 `-信号ID`）
+* 不指定信号则默认为 -SIGTERM | -15 信号
+* -l -L 查看所有信号
+  * trap -l 也可以列出所有信号
+  * **stty -a** 列出可以由键盘发出的信号
 
-| 信号编号 | 信号名  | 注释     |
-| -------- | ------- | -------- |
-| 1        | SIGHUP  | 挂起     |
-| 2        | SIGINT  | Ctrl+C   |
-| 9        | SIGKILL | 强制退出 |
-| 15       | SIGTERM | 尝试退出 |
-| 20       | SIGTSTP | Ctrl+Z   |
+```
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>;
+eol2 = <undef>; swtch = ^Z; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R;
+werase = ^W; lnext = ^V; discard = ^O;
+```
 
-* 注意要先 SIGTERM 最后 SIGKILL，因为后者根本没有机会保存数据或者执行清理，直接就退出了
-* kill -s SIGNAL PID 指定信号名或编号
-  * 用 -s 是，信号编号直接就是数字
-  * kill 后面也可以接信号编号，但是要加 - 前缀表示选项
-  * -s 指定信号名可以忽略 SIG 前缀
-* kill PID1 PID2 ... 终止进程（SIGTERM）
+* 注意：
+  * 信号名前缀SIG是可选的
+  * 先 SIGTERM 最后 SIGKILL，因为后者根本没有机会保存数据或者执行清理，直接就退出了
+
+#### 常用信号（**前缀SIG是可选的**）
+
+| 信号编号 | 信号名  | 注释                      |
+| -------- | ------- | ------------------------- |
+| 1        | SIGHUP  | 挂起（终端退出）          |
+| 2        | SIGINT  | Ctrl+C interrupt INTR字符 |
+| 3        | SIGQUIT | Ctrl / QUIT字符           |
+| 9        | SIGKILL | 强制退出                  |
+| 15       | SIGTERM | 尝试退出 terminate        |
+| 20       | SIGTSTP | Ctrl+Z                    |
 
 #### trap命令：脚本处理信号
 
-* 格式：trap 'handler' signal_list
-  * handler 信号处理函数名
-  * signal_list 信号编号或信号名列表 空格分隔
+* trap是**内建命令**
+* 格式：`trap [-lp] [[arg] signal_spec ... ]`
+  * arg 表示命令或函数名
+  * signal_spec ... 信号名列表（**空格分隔**）
+  * -l 列出所有信号名和信号ID
+  * -p 查看所有绑定命令的信号，也可指定信号名查看
+* trap对信号处理的三种方式
+  * 执行一段命令来处理这信号 `trap "commands" signal-list`
+  * 接受信号默认的操作 `trap signal-list`（删除信号的命令绑定，单双破折号同理）
+  * 忽略这一信号 `trap "" signal-list`
+* 扩展的 signal_spec
+  * **EXIT | EXIT（0）** 脚本退出时运行arg
+  * **DEBUG** 简单命令，for语句，case语句，select命令，算法命令，在函数内的第一条命令
+  * **RETURN** 用.或source执行脚本或函数结束后
+  * **ERR** 任何简单命名执行完后返回值为非零值时
+* [Trap命令详解_shell_u014089899的博客-CSDN博客](https://blog.csdn.net/u014089899/article/details/80690707)
+* [Linux trap 命令用法详解-Linux命令大全（手册）](https://ipcmen.com/trap)
 
 ### 命令的参数风格
 
@@ -673,5 +700,13 @@ tmpfile=`mktemp`
 tmpdir=`mktemp -d`
 ```
 
+### 在后台运行Shell脚本 Ctrl+Z jobs bg fg & nohup
 
+* **&** 放命令最后，让命令在后台执行
+* **Ctrl + Z** 暂停前台命令并放到后台
+* **jobs** 查看后台运行的 job_spec
+* **fg** 将任务放到**前台** 可以指定 job_spec 默认为 1
+* **bg** 把任务放到**后台** 可以指定 job_spec 默认为 1
+* **nohup** 放命令前，让命令忽略 SIGHUP 信号（通常和 & 连用）
+* [前后台切换命令（ctrl+z jobs bg fg &）_操作系统_飘过的春风-CSDN博客](https://blog.csdn.net/u011630575/article/details/48288663)
 

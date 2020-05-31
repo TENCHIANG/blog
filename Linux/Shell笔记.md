@@ -70,8 +70,8 @@ echo $(date +%s%3N) # 毫秒级时间戳
 echo $(test -e README.md) # 啥都没
 ```
 
-* 脚本的 Exit Status：exit NUM（默认 exit 0）
-* 函数的返回码：return NUM（默认 return 0）
+* **脚本的退出码**：exit、return（.或source当作函数执行）、最后一条命令的退出码
+* **函数的退出码**：return、最后一条命令的退出码
 
 #### exit与return的区别
 
@@ -81,18 +81,20 @@ echo $(test -e README.md) # 啥都没
 
 #### 退出状态码约定
 
-| Exit Code Number | Meaning                                                    | Example                 | Comments                                                     |
-| ---------------- | ---------------------------------------------------------- | ----------------------- | ------------------------------------------------------------ |
-| 1                | Catchall for general errors                                | let “var1 = 1/0″        | Miscellaneous errors, such as ”divide by zero” and other impermissible operations |
-| 2                | Misuse of shell builtins (according to Bash documentation) | empty_function() {}     | Seldom seen, usually defaults to exit code 1                 |
-| 126              | Command invoked cannot execute                             |                         | Permission problem or command is not an executable           |
-| 127              | “command not found”                                        | illegal_command         | Possible problem with `$PATH` or a typo                      |
-| 128              | Invalid argument to exit                                   | exit 3.14159            | exit takes only integer args in the range 0 – 255 (see first footnote) |
-| 128+n            | Fatal error signal ”n”                                     | kill -9 $PPID of script | $? returns 137 (128 + 9)                                     |
-| 130              | Script terminated by Control-C                             |                         | Control-C is fatal error signal 2, (130 = 128 + 2, see above) |
-| 255*             | Exit status out of range                                   | exit -1                 | exit takes only integer args in the range 0 – 255            |
+| Exit Code Number | Meaning                                             | Example                 | Comments                                                     |
+| ---------------- | --------------------------------------------------- | ----------------------- | ------------------------------------------------------------ |
+| 1                | 通用错误，任何错误都可能使用这个退出码              | let “var1 = 1/0″        | 如除零错误                                                   |
+| 2                | shell内建命令使用错误                               | empty_function() {}     | Seldom seen, usually defaults to exit code 1                 |
+| 126              | 命令调用不能执行                                    |                         | Permission problem or command is not an executable           |
+| 127              | “command not found”                                 | illegal_command         | Possible problem with `$PATH` or a typo                      |
+| 128              | exit参数错误，exit只能以整数作为参数                | exit 3.14159            | exit takes only integer args in the range 0 – 255 (see first footnote) |
+| 128+n            | 信号"n"的致命错误                                   | kill -9 $PPID of script | 如kill -9 脚本的PID，则返回137（128+9）                      |
+| 130              | 用Control-C来结束脚本，用Control-C是信号2的致命错误 |                         | Control-C is fatal error signal 2, (130 = 128 + 2, see above) |
+| 255*             | Exit status out of range                            | exit -1                 | exit takes only integer args in the range 0 – 255            |
 
-* 参考：[exit(-1)或者return(-1)shell得到的退出码为什么是255_linux shell_脚本之家](https://www.jb51.net/article/73377.htm)
+* 当返回的退出码大于255时，会将其对256取模。return只能返回大于0的整数。exit可以返回任意整数，但是超过有效范围的值会对256取模
+* [exit(-1)或者return(-1)shell得到的退出码为什么是255_linux shell_脚本之家](https://www.jb51.net/article/73377.htm)
+* [Shell获取退出码（返回码）_shell_荣耀之路-CSDN博客](https://blog.csdn.net/asty9000/article/details/86681890)
 
 ### 使用变量 $ 或 ${}
 
@@ -367,11 +369,14 @@ done
   * 如果是交互式那就是解释器的路径如 /usr/bin/bash
 * $1、$2、... 传给脚本的位置参数（Positional Parameter） argv[1]...
 * $# 参数的个数（argc - 1，不算 $0）
-* $* 参数列表（双引号包起来是整体）
+* $* 参数列表（双引号包起来是整体）（合并）
 * $@ 参数列表（双引号包起来不是整体）
 * $$ 当前Shell的PID
 * $PPID 父进程PID
+* $! 后台运行的最后一个进程的进程ID号
+* $- 显示shell使用的当前选项，与set命令功能相同
 * $PS1 占位提示符
+* [linux shell中$0,$?,$!等的特殊用法 - Viviane未完 - 博客园](https://www.cnblogs.com/viviane/p/11101643.html)
 
 #### $* $@ 的区别
 
@@ -534,7 +539,7 @@ werase = ^W; lnext = ^V; discard = ^O;
 | 1        | SIGHUP  | 挂起（终端退出）          |
 | 2        | SIGINT  | Ctrl+C interrupt INTR字符 |
 | 3        | SIGQUIT | Ctrl / QUIT字符           |
-| 9        | SIGKILL | 强制退出                  |
+| 9        | SIGKILL | 强制退出（没办法trap）    |
 | 15       | SIGTERM | 尝试退出 terminate        |
 | 20       | SIGTSTP | Ctrl+Z                    |
 
@@ -606,10 +611,46 @@ res=`[ 1 == 2 ]` && echo 1 || echo 2
 * `ls dir/*` 在显示文件的基础前面加上文件夹名
 * 管道符是个好东西，使用管道符就无需临时文件了
 
-### 重定向和管道符的区别
+### cat最佳实践
 
-* 重定向 程序到文件
-* 管道符 程序到程序
+* cat 以 EOF 或 STOP 结束
+* 输入多行至文件（>> 就是追加了）
+
+```sh
+cat > love.txt << EOF
+> i love you
+> i love you so much 
+> i love you with all my heart
+> EOF
+
+echo '
+> i love you
+> i love you so much 
+> i love you with all my heart ' > love.txt
+```
+
+* [cat echo 输入多行文字至文本中-Just do it !-51CTO博客](https://blog.51cto.com/wjpinrain/937408)
+
+### 管道符、重定向、xargs
+
+* **管道符**（程序到程序）
+  * 只能处理标准输入输出
+  * 右边的命令必须能够处理标准输入
+  * 标准输出的命令 | 标准输入的命令
+  * **管道会创建子进程（进程与进程）**
+    * () 也会创建子进程
+    * 进程相当于一个独立的命令了
+* **重定向**（程序到文件）
+  * <> 重写 <<>> 追加
+  * 可以改变标准输入输出
+  * 文件：普通文件、文件描述符（stdio stdout stderr）、文件设备
+  * 标准输出命令 > 文件
+  * 标准输入命令 < 文件
+  * **重定向不会创建子进程（进程内部）**
+* **xargs**
+* [linux shell数据重定向(输入重定向与输出重定向)详细分析_linux shell_脚本之家](https://www.jb51.net/article/73397.htm)
+* [linux shell 管道命令(pipe)使用及与shell重定向区别_linux shell_脚本之家](https://www.jb51.net/article/73398.htm)
+* [xargs 命令教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html)
 
 ### Shell脚本加密
 
@@ -695,6 +736,8 @@ ls
 
 ### 临时文件 mktemp
 
+* 不加参数 返回
+
 ```sh
 tmpfile=`mktemp`
 tmpdir=`mktemp -d`
@@ -710,3 +753,17 @@ tmpdir=`mktemp -d`
 * **nohup** 放命令前，让命令忽略 SIGHUP 信号（通常和 & 连用）
 * [前后台切换命令（ctrl+z jobs bg fg &）_操作系统_飘过的春风-CSDN博客](https://blog.csdn.net/u011630575/article/details/48288663)
 
+### su最佳实践
+
+* `su [-] user [-c] cmd`
+
+```sh
+sh root cmd # 这里不要省略 root 不然会把 cmd 当作用户
+sh -c 'cmd'
+
+nohup sh root sh script.sh & # 在后台以root权限运行Shell脚本
+```
+
+* su - root 相当于登录到 root
+* [su - root -c 切换到root并获得root的环境变量及执行权限并执行命令_操作系统_打不死的小强lee的博客-CSDN博客](https://blog.csdn.net/wenqiangluyao/article/details/103776926)
+* [用shell 脚本写守护进程_shell_guoyilongedu的专栏-CSDN博客](https://blog.csdn.net/guoyilongedu/article/details/42835931)

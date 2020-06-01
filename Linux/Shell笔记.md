@@ -710,8 +710,16 @@ ls
   * -O 解压到标准输出，便于解压即改名
 * 追加：`tar -rf *.tar *`（tar文件才能追加?）
 * 查看过程：-v
+* [linux下tar.gz、tar、bz2、zip等解压缩、压缩命令小结_LINUX_操作系统_脚本之家](https://www.jb51.net/LINUXjishu/43356.html)
 
 #### 各种压缩格式对比
+
+* 综合起来，在压缩比率上： tar.bz2>tgz>tar
+* 占用空间与压缩比率成反比： tar.bz2<tgz<tar
+* 打包耗费时间：tar.bz2>tgz>tar
+* 解压耗费时间： tar.bz2>tar>tgz
+* 因此，Linux下对于占用空间与耗费时间的折衷多选用**tgz格式**，不仅压缩率较高，而且打包、解压的时间都较为快速，是较为理想的选择。
+* [Linux下常用压缩 解压命令和压缩比率对比 - joshua317 - 博客园](https://www.cnblogs.com/joshua317/p/6170839.html)
 
 ### xz最佳实践
 

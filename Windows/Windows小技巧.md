@@ -122,6 +122,7 @@ taskkill /f /im java.exe
 ### Typora最佳实践
 
 * 导出PDF：文件 - 导出 - PDF
+* 方便的管理文件：打开侧边栏 - 打开文件TAB - 右键选择文档树 - 再右上角打开文件夹
 
 ### Notepad++最佳实践
 

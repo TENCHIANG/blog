@@ -2,38 +2,28 @@
 
 ### Shell分为内建命令和外部命令
 
-* 内建命令
+* **内建命令**
   * 凡是用 which 命令查不到程序文件所在位置的命令都是内建命令
   * 内建命令不创建新的进程（相当于执行**当前进程**的函数）
   * 有状态码 Exit Status
-* 外部命令
+* **外部命令**
   * 通过man可以查到的命令
   * 执行外部命令 Shell会 fork 并 exec 该命令（新建一个**子进程**执行）
   * 有状态码 Exit Status
 * 上面都是在交互式模式说的
 
-### Shell脚本执行的两种方式
+### Shell叫本执行的3种方法 fork source exec
 
-* 在子进程执行
+重要区别就是是否创建了子进程
 
-```sh
-echo "#!/bin/sh" > script.sh
-sh script.sh # 方法一
-
-chmod +x script.sh
-./script.sh # 方式二 其实相当于方法一
-```
-
-* 直接在当前进程执行
-
-```sh
-echo "#!/bin/sh" > script.sh
-source script.sh
-. script.sh
-```
-
-* source 和 . 都是内置命令
-* 注意：在脚本文件里碰到外部命令也会生成一个子进程
+* **fork** 创建了子进程（继承父进程变量反之不然）：
+  * 使用 sh 执行脚本或给 +x 属性直接执行脚本（等价于前者）
+  * 在脚本里调用外部命令、使用了管道符、用括号包括了命令
+* **source** 不新建子进程（变量共享）
+  * `.` 和 `source` 命令等价，都是内置命令
+* **exec** 不新建子进程（变量共享）
+  * 与 source的区别：子脚本执行后，父脚本不会接着执行了
+* [三种shell脚本调用方法(fork, exec, source)](https://xstarcd.github.io/wiki/shell/fork_exec_source.html)
 
 ### Shell调用子进程详解
 
@@ -141,12 +131,8 @@ VARNAME=value # 2
 export VARNAME
 ```
 
-* 参考：[Linux 环境变量 - Creaink - Build something for life](https://creaink.github.io/post/Computer/Linux/Linux-env.html)
-
-#### 删除已定义的环境变量或本地变量
-
-* unset x
-* x=
+* **删除已定义的环境变量或本地变量**：unset x 或 x=
+* [Linux 环境变量 - Creaink - Build something for life](https://creaink.github.io/post/Computer/Linux/Linux-env.html)
 
 #### 变量未定义和已定义的区别
 
@@ -380,25 +366,47 @@ done
 
 #### $* $@ 的区别
 
-* 都是参数列表，都可以放在 for in 后面
-* 但是被双引号包住时
-  * $* 会将所有参数作为一个**整体** "$1 $2 ... $n"
-  * $@ 会将参数**分开** "$1" "$2" ... "$n"
-  * 只有在 for 循环里才体现的出来（循环一次和多次的区别）
-    * echo、变量赋值都体现不出来（作为字符串的整体）
+* 只在加了双引号时才有区别
+* **$*** 将所有参数当作一个**整体** "$1c$2c$3...c$n"（其中c为**IFS**第一个字符，一般为空格）
+* **$@** 会将参数**分开** "$1" "$2" ... "$n"（用的多）
+* 例子见：[内部字段分隔符 IFS](Shell笔记.md#内部字段分隔符-IFS)
+
+#### 内部字段分隔符 IFS
+
+* IFS是Shell自带的环境变量字符串，默认值为：空格符 32 0x20、制表符 9 0x09、换行符 10 0x0a
+* IFS是Shell把文本分割为一个个字段的（如用逗号分隔CSV文件，空格分隔字符串）
+* 使用IFS迭代一些文件的时候就无需额外对字符串进行处理了（IFSu也可以改变echo的行为）
 
 ```sh
-#!/bin/bash
-echo "print each param from \"\$*\""
-for var in "$*";do echo "$var"; done
+# 查看IFS
+echo $IFS | od -tu1 # ADB Shell的IFS只有一个换行符
 
-echo "print each param from \"\$@\""
-for var in "$@"; do echo "$var"; done
+f () {
+    for var in "$*"; do echo "$var"; done # 将所有参数当成一个整体
+    for var in "$@"; do echo "$var"; done # 单独处理每个参数
+}
+IFS=^$IFS
+f 1 2 3 4
+# 1^2^3^4 # 如果第一个字符不是可打印字符 默认为空格
+# 1
+# 2
+# 3
+# 4
 
-# script.sh 1 2 3 4
+# 反转IP地址
+ip=220.112.253.111
+bak=$IFS # 备份IFS
+IFS="." # 用点分割字段
+tmp=`echo $ip` # 220 112 253 111
+IFS=" " # 用空格分割字段
+echo $tmp | read a b c d # 通过管道传给4个变量
+IFS=$bak # 恢复IFS
+invert=$d.$c.$b.$a
 ```
 
-### shift 位置参数左移
+* [Shell中的IFS解惑_shell_Simple life-CSDN博客](https://blog.csdn.net/whuslei/article/details/7187639)
+
+#### shift 位置参数左移
 
 * shift N（默认为1），相当于抛弃第 [1, N] 的参数，从 N+1 开始从新算（除了 $0）
 
@@ -611,13 +619,13 @@ res=`[ 1 == 2 ]` && echo 1 || echo 2
 * `ls dir/*` 在显示文件的基础前面加上文件夹名
 * 管道符是个好东西，使用管道符就无需临时文件了
 
-### cat最佳实践
+### cat输入多行字符 here文档
 
-* cat 以 EOF 或 STOP 结束
+* cat遇到EOF或STOP结束
 * 输入多行至文件（>> 就是追加了）
 
 ```sh
-cat > love.txt << EOF
+cat > love.txt << EOF # 也可以是其他LABEL
 > i love you
 > i love you so much 
 > i love you with all my heart
@@ -651,6 +659,8 @@ echo '
 * [linux shell数据重定向(输入重定向与输出重定向)详细分析_linux shell_脚本之家](https://www.jb51.net/article/73397.htm)
 * [linux shell 管道命令(pipe)使用及与shell重定向区别_linux shell_脚本之家](https://www.jb51.net/article/73398.htm)
 * [xargs 命令教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html)
+* [xargs - 通过管道运行命令](https://xstarcd.github.io/wiki/shell/xargs.html)
+* [管道pipe](https://xstarcd.github.io/wiki/shell/pipe.html)
 
 ### Shell脚本加密
 
@@ -763,15 +773,19 @@ tmpdir=`mktemp -d`
 
 ### su最佳实践
 
-* `su [-] user [-c] cmd`
+* `su -c 'cmd &' -`
 
 ```sh
-sh root cmd # 这里不要省略 root 不然会把 cmd 当作用户
-sh -c 'cmd'
+su root cmd # 这里不要省略 root 不然会把 cmd 当作用户
+su -c 'cmd'
 
-nohup sh root sh script.sh & # 在后台以root权限运行Shell脚本
+su -c 'nophup cmd &' - # 在后台以root权限，使用root环境变量运行命令
 ```
 
 * su - root 相当于登录到 root
 * [su - root -c 切换到root并获得root的环境变量及执行权限并执行命令_操作系统_打不死的小强lee的博客-CSDN博客](https://blog.csdn.net/wenqiangluyao/article/details/103776926)
 * [用shell 脚本写守护进程_shell_guoyilongedu的专栏-CSDN博客](https://blog.csdn.net/guoyilongedu/article/details/42835931)
+
+### Shell数组
+
+* [shell 数组使用技巧](https://xstarcd.github.io/wiki/shell/shell_array.html)

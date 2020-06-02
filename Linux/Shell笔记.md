@@ -338,7 +338,7 @@ for FILENAME in chap?; do mv $FILENAME $FILENAME~; done
 for FILENAME in `ls chap?`; do mv $FILENAME $FILENAME~; done
 ```
 
-### while/do/done
+### while do done
 
 ```sh
 COUNTER=1
@@ -346,6 +346,13 @@ while [ "$COUNTER" -lt 10 ]; do
     echo "Here we go again"
     COUNTER=$(($COUNTER+1))
 done
+```
+
+### untile do done
+
+```sh
+# 直到条件为真才结束
+until :; do sleep 1; done
 ```
 
 ### 特殊变量

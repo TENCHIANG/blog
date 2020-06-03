@@ -796,3 +796,10 @@ su -c 'nophup cmd &' - # 在后台以root权限，使用root环境变量运行�
 ### Shell数组
 
 * [shell 数组使用技巧](https://xstarcd.github.io/wiki/shell/shell_array.html)
+
+### Shell后台运行函数
+
+* 直接在函数调用后面加 `&`
+* pid 与Shell文件相同
+* 也可用后台运行代码段`{ ... } &`
+* [shell中后台运行函数_mgxcool的专栏-CSDN博客](https://blog.csdn.net/mgxcool/article/details/50715864)

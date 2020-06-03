@@ -141,3 +141,11 @@ taskkill /f /im java.exe
 * 936 简体中文默认的GBK
 * 437 MS-DOS 美国英语
 * [windows 控制台cmd乱码的解决办法_操作系统_taoshujian-CSDN博客](https://blog.csdn.net/taoshujian/article/details/60325996)
+
+### Windows软硬链接
+
+### Everything
+
+* 设置 - 结果 - 搜索关键词为空时不显示搜索结果
+* 设置 - NTFS - 前三个都勾上
+* 设置 - 排除列表 - 前三个都勾上

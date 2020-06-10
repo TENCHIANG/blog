@@ -803,3 +803,19 @@ su -c 'nophup cmd &' - # 在后台以root权限，使用root环境变量运行�
 * pid 与Shell文件相同
 * 也可用后台运行代码段`{ ... } &`
 * [shell中后台运行函数_mgxcool的专栏-CSDN博客](https://blog.csdn.net/mgxcool/article/details/50715864)
+
+### shell获得子后台进程返回值的方法
+
+```shell
+#!/bin/bash
+command1 &
+command2 &
+command3 &
+for pid in $(jobs -p)
+do
+wait $pid
+[ "x$?" == "x0" ] && ((count++))
+done
+```
+
+* [shell获得子后台进程返回值的方法_奶牛_新浪博客](http://blog.sina.com.cn/s/blog_65a8ab5d0101fmnv.html)

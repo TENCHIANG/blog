@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #define BUFSIZE 128
 
@@ -66,6 +67,35 @@ int openProcMem (int pid) {
     return open(buf, O_RDWR, O_SYNC);
 }
 
+/**
+ * 读取maps文件 失败返回 -1
+ */
+int openProcMaps (int pid) {
+    char buf[BUFSIZE] = { 0 };
+    sprintf(buf, "/proc/%d/maps", pid);
+    FILE *fp = fopen(buf, "r");
+    if (!fp) {
+        perror(buf);
+        return -1;
+    }
+    unsigned long start, end, last;
+    int size = 0, total = 0;
+    while (fgets(buf, BUFSIZE, fp)) {
+        if (!strstr(buf, "rw") || strstr(buf, "deleted") 
+            || strstr(buf, ".so") || strstr(buf, "/dev") 
+            || strstr(buf, "/system") || strstr(buf, "/dalvik"))
+            continue;
+        sscanf(buf, "%lx-%lx", &start, &end);
+        size = end - start;
+        if (start != last && size > 0) {
+            total += size;
+            printf("%#lx %#lx %d %d\n", start, end, size, total);
+        }
+        last = end;
+    }
+    return fclose(fp);
+}
+
 // tsu -c 'gcc -Wall -O3 /sdcard/Pictures/mem.c -o /data/local/tmp/test/mem'
 // tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -a 82bb400e -o 3210'
 int main (int argc, char **argv) {
@@ -73,9 +103,10 @@ int main (int argc, char **argv) {
     int count = 4; // 字节数
     int offset = 0; // addr偏移
     char *pkg = 0;
+    int mode = 's'; // 默认为搜索模式
     
     int opt = -1;
-    while ((opt = getopt(argc, argv, "a:c:o:p:")) != -1)
+    while ((opt = getopt(argc, argv, "a:c:m:o:p:")) != -1)
         switch (opt) {
             case 'a':
                 sscanf(optarg, "%lx", &addr); // 加不加0x前缀都可以
@@ -83,12 +114,15 @@ int main (int argc, char **argv) {
             case 'c':
                 sscanf(optarg, "%d", &count);
                 break;
+            case 'm':
+                mode = *optarg;
+                break;
             case 'o':
                 sscanf(optarg, "%d", &offset);
                 break;
             case 'p':
                 pkg = optarg;
-                break;
+                break; 
             case '?':
                 fprintf(stderr, "Unknown option: %c\n", (char)optopt);
                 break;
@@ -118,6 +152,21 @@ int main (int argc, char **argv) {
     }
     
     int res;
+    
+    int start, end;
+    switch (mode) {
+        case 'r':
+        case 'w':
+        case 's':
+            start = clock();
+            res = openProcMaps(pid);
+            end = clock();
+            printf("openProcMaps = %d %gms\n", res, (1.0 * end - start) / 1000);
+            break;
+        default:
+            fprintf(stderr, "不支持的模式 %c\n", mode);
+            exit(1);
+    }
     
     //long data = 100;
     //res = pwrite64(fd, &data, sizeof(data), addr);

@@ -309,6 +309,8 @@ killall -STOP com.tencent.mobileqq # 暂停游戏进程
 * extern int optind argv的索引，从1开始（跳过 argv[0]）
 * extern int optopt 第一个未知选项（ASCII码值，getopt 碰到未知选项会返回 -1），默认为 63（'?'）
 * extern int opterr 如果不希望 getopt 打印出错信息，设为 0 即可，默认为 1
+  * 一般设置为 0（自己处理）
+  * 处理 `case '?'`，且报错（因为此时返回-1结束了循坏，可能有正确的选项没有被读取）
 * 选项成功找到，返回选项**字母**（忽略横杠）
 * 找到的选项不在 optstring 内，返回 '?'
 * 如果所有选项解析完了或碰到未知选项，返回 -1
@@ -338,6 +340,7 @@ int offset = 0; // addr偏移
 char *pkg = 0;
 
 int opt = -1;
+opterr = 0; // 自己处理错误
 while ((opt = getopt(argc, argv, "a:c:o:p:")) != -1)
     switch (opt) {
         case 'a':
@@ -354,7 +357,7 @@ while ((opt = getopt(argc, argv, "a:c:o:p:")) != -1)
             break;
         case '?':
             fprintf(stderr, "Unknown option: %c\n", (char)optopt);
-            break;
+            exit(1); // 可能有选项没读到
     }
 if (optind < 5) {
     fprintf(stderr, "Usage: %s -a addr [-c count] -p pkg [-o offset]\n", argv[0]);

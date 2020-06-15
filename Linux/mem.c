@@ -9,8 +9,8 @@
 
 #define ATTRSIZE 5
 #define BUFSIZE 128
-#define BLOCKSIZE 4096 // 单位分块长度（提速）
-#define USAGE "Usage: %s -p pkg -T r|w|s -a addr [-c count] [-o offset] -t i|u|f-n\n"
+#define BLOCKSIZE 1024 // 单位分块长度（提速）
+#define USAGE "Usage: %s -p pkg -T r|w|s -a addr [-o offset] -t <i|u|f><1|2|4|8>[-val]\n"
 
 #define VM_READ 8 // r -
 #define VM_WRITE 4 // w -
@@ -45,8 +45,8 @@ typedef union Value {
     short i2;
     unsigned short u2;
     
-    long i4;
-    unsigned long u4;
+    int i4;
+    unsigned u4;
     
     long long i8;
     unsigned long long u8;
@@ -55,18 +55,61 @@ typedef union Value {
     double f8;
 } Value;
 
-#define refer(t, v) ( \
-    (t == I1) ? (v.i1) : \
-    (t == U1) ? (v.u1) : \
-    (t == I2) ? (v.i2) : \
-    (t == U2) ? (v.u2) : \
-    (t == I4) ? (v.i4) : \
-    (t == U4) ? (v.u4) : \
-    (t == I8) ? (v.i8) : \
-    (t == U8) ? (v.u8) : \
-    (t == F4) ? (v.f4) : \
-    (t == F8) ? (v.f8) : \
-    error("不支持的类型 %d\n", t) \
+/**
+ * error: print an error message and die（限制挺多）
+ * 一个程序同时打开的文件限制为 20（包括 1 2 3吗）
+ * close和fclose的区别：close没有flush（从内存刷新数据到文件）
+ * exit或从主函数退出：所有打开的文件将被关闭（包括 1 2 3吗）
+ * int char 0和指针可以无缝转换
+ * 子程序可以没有返回值 可以直接退出程序 函数相反 函数一般不用全局变量 不做错误处理
+ */
+void error(char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    fprintf(stderr, "error: ");
+    vfprintf(stderr, fmt, args);
+    fprintf(stderr, "\n");
+    va_end(args);
+    exit(1);
+}
+
+#define refer(t, v) ({ \
+    (t) == I1 ? (v).i1 : \
+    (t) == U1 ? (v).u1 : \
+    (t) == I2 ? (v).i2 : \
+    (t) == U2 ? (v).u2 : \
+    (t) == I4 ? (v).i4 : \
+    (t) == U4 ? (v).u4 : \
+    (t) == I8 ? (v).i8 : \
+    (t) == U8 ? (v).u8 : \
+    (t) == F4 ? (v).f4 : \
+    (v).f8; \
+})
+
+#define referp(t, v) ({ \
+    (t) == I1 ? &(v).i1 : \
+    (t) == U1 ? &(v).u1 : \
+    (t) == I2 ? &(v).i2 : \
+    (t) == U2 ? &(v).u2 : \
+    (t) == I4 ? &(v).i4 : \
+    (t) == U4 ? &(v).u4 : \
+    (t) == I8 ? &(v).i8 : \
+    (t) == U8 ? &(v).u8 : \
+    (t) == F4 ? &(v).f4 : \
+    &(v).f8; \
+})
+
+#define printVal(t, v) ( \
+    (t) == I1 ? printf("%d\n", (v).i1) : \
+    (t) == U1 ? printf("%u\n", (v).u1) : \
+    (t) == I2 ? printf("%d\n", (v).i2) : \
+    (t) == U2 ? printf("%u\n", (v).u2) : \
+    (t) == I4 ? printf("%d\n", (v).i4) : \
+    (t) == U4 ? printf("%u\n", (v).u4) : \
+    (t) == I8 ? printf("%lld\n", (v).i8) : \
+    (t) == U8 ? printf("%llu\n", (v).u8) : \
+    (t) == F4 ? printf("%f\n", (v).f4) : \
+    printf("%lf\n", (v).f8) \
 )
 
 typedef struct Res {
@@ -94,35 +137,20 @@ typedef struct Res {
 
 // 不要把带参宏当成函数 且只在编译时有效 宏更像子程序
 #define printMap(p) printf("%#x %#x %d %dk\n", (p)->start, (p)->end, (p)->attr, (p)->size / 1000)
-#define printRes(p) printf("%#x %d\n", (p)->addr, refer((p)->typ, (p)->val))
+#define printRes(p) do { \
+    printf("%#x ", (p)->addr); \
+    printVal((p)->typ, (p)->val); \
+} while(0)
 
-#define showMaps(t, h) do { \
-    t *p = (h); \
+#define showMaps(h) do { \
+    typeof(h) p = (h); \
     traverse(p, printMap(p)); \
 } while (0)
 
-#define showRes(t, h) do { \
-    t *p = (h); \
+#define showRes(h) do { \
+    typeof(h) p = (h); \
     traverse(p, printRes(p)); \
 } while (0)
-
-/**
- * error: print an error message and die（限制挺多）
- * 一个程序同时打开的文件限制为 20（包括 1 2 3吗）
- * close和fclose的区别：close没有flush（从内存刷新数据到文件）
- * exit或从主函数退出：所有打开的文件将被关闭（包括 1 2 3吗）
- * int char 0和指针可以无缝转换
- * 子程序可以没有返回值 可以直接退出程序 函数相反 函数一般不用全局变量 不做错误处理
- */
-void error(char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    fprintf(stderr, "error: ");
-    vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-    exit(1);
-}
 
 /**
  * 运行Shell命令并获取结果
@@ -144,12 +172,27 @@ int shell (char *cmd, char *buf, int len) {
 }
 
 /**
- * 绕过游戏监控
+ * 绕过游戏监控(先于游戏运行一次)
+ * r  只读方式打开，将文件指针指向文件头。
+ * r+ 读写方式打开，将文件指针指向文件头。
+ * w  写入方式打开，将文件指针指向文件头并将文件大小截为零。如果文件不存在则尝试创建之。
+ * w+ 读写方式打开，将文件指针指向文件头并将文件大小截为零。如果文件不存在则尝试创建之。
+ * a  写入方式打开，将文件指针指向文件末尾。如果文件不存在则尝试创建之。
+ * a+ 读写方式打开，将文件指针指向文件末尾。如果文件不存在则尝试创建之。
  */
 void byPass () {
     char *path = "/proc/sys/fs/inotify/max_user_watches";
-    FILE *fp = fopen(path, "w");
-    int res = fputc('0', fp);
+    FILE *fp = fopen(path, "w+");
+    
+    int res = fgetc(fp);
+    if (res == '0') {
+        printf("为0不写入\n");
+        return;
+    }
+    
+    printf("非0则写入\n");
+    res = fputc('0', fp);
+    
     fclose(fp);
     if (res == EOF) error("写入文件 %s 失败\n", path);
 }
@@ -268,7 +311,7 @@ Map *loadMaps (int pid) {
         } else
             i = j;
     
-    //showMaps(Map, mapHead);
+    //showMaps(mapHead);
     
     fclose(fp);
     return mapHead;
@@ -290,6 +333,14 @@ char *reverse (char *s) {
     return s;
 }
 
+// addr [offset] val
+#define memRead(fd, addr, offset, val) ({ \
+    typeof(addr) a = (addr) + (offset); \
+    if (pread64((fd), &(val), sizeof(val), a) == -1) \
+        error("读取内存 %#x 失败\n", a); \
+    (val); \
+})
+
 /**
  * 搜索mem文件 失败返回 NULL
  * @param {int} pid 要搜索的进程号
@@ -309,8 +360,8 @@ Res *memSearch (int pid, int fd, Type typ, Value val) {
         for (int i = 0; i < blockLen; i++) {
             Addr addr = p->start + i * BLOCKSIZE;
             Value tmp;
-            printf("Value %d\n", tmp.u1);
             // 这里的错误不严重 可忽略(可能是因为值为0)
+            //if (pread64(fd, referp(typ, tmp), sizeof(refer(typ, tmp)), addr) == -1) {
             if (pread64(fd, &tmp, sizeof(tmp), addr) == -1) {
                 printMap(p);
                 error("读取内存 %x 失败\n", addr);
@@ -331,11 +382,18 @@ Res *memSearch (int pid, int fd, Type typ, Value val) {
 }
 
 // tsu -c 'gcc -Wall -O3 /sdcard/Pictures/mem.c -o /data/local/tmp/test/mem'
-// tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -a 82bb400e -o 3210'
+// tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T r -a 0E1FD8B0 -o 0 -t i4'
+// tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -t i4-161'
+// -p pkg
+// -T r|w|s
+// a addr
+// o offset
+// b 
 int main (int argc, char **argv) {
     char *pkg = NULL;
+    
     Addr addr = 0;
-    int count = 4; // 字节数
+    int offset = 0;
     
     Mode mode = READ; // 默认为读内存
     
@@ -344,8 +402,7 @@ int main (int argc, char **argv) {
     
     int opt = -1;
     opterr = 0; // 自己处理错误
-    //while ((opt = getopt(argc, argv, "p:a:c:o:s:w:")) != -1)
-    while ((opt = getopt(argc, argv, "p:T:a:o:b:t:v:")) != -1)
+    while ((opt = getopt(argc, argv, "p:T:a:o:t:")) != -1)
         switch (opt) {
             case 'p':
                 pkg = optarg;
@@ -365,18 +422,12 @@ int main (int argc, char **argv) {
                         error("不支持的操作 %c\n", *optarg);
                 }
                 break;
-            case 'a': {
-                Addr tmp;
-                sscanf(optarg, "%x", &tmp); // 加不加0x前缀都可以
-                addr += tmp;
+            case 'a':
+                sscanf(optarg, "%x", &addr); // 加不加0x前缀都可以
                 break;
-            }
-            case 'o': {
-                int offset;
+            case 'o':
                 sscanf(optarg, "%d", &offset);
-                addr += offset;
                 break;
-            }
             case 't':
                 switch (optarg[1]) {
                     case '1':
@@ -415,39 +466,15 @@ int main (int argc, char **argv) {
                         sscanf(optarg + 3, "%lf", &val.f8); break;
                     default: error("不支持的类型 %s\n", optarg);
                 }
-                /*switch (typ) {
-                    case I1: sscanf("%*c%*d-%d", &val.i1); break;
-                    case U1: sscanf("%*c%*d-%u", &val.u1); break;
-                    case I2: sscanf("%*c%*d-%h", &val.i2); break;
-                    case U2: sscanf("%*c%*d-%uh", &val.u2); break;
-                    case I4: sscanf("%*c%*d-%d", &val.i4); break;
-                    case U4: sscanf("%*c%*d-%u", &val.u4); break;
-                    case I8: sscanf("%*c%*d-%lld", &val.u8); break;
-                    case U8: sscanf("%*c%*d-%llu", &val.u8); break;
-                    case F4: sscanf("%*c%*d-%f", &val.f4); break;
-                    case F8: sscanf("%*c%*d-%lf", &val.f8); break;
-                    default: error("不支持的类型 %s\n", optarg);
-                }*/
+                printf("typ %d %d\n", typ, val.i4);
                 break;
-            
-            /*case 'c':
-                sscanf(optarg, "%d", &count);
-                if (count <= 0 || count % 2 != 0) error("count %d\n", count);
-                break;
-            case 's': {
-                sscanf(optarg, "%d", &searchFor);
-                mode = SEARCH;
-                break;
-            }
-            case 'w':
-                mode = WRITE;
-                break;*/
                 
             case '?':
                 error("Unknown option: %c\n", (char)optopt); // 可能有选项没读到
         }
     
-    if (!pkg) error(USAGE, argv[0]);
+    // 有typ必有val
+    if (!pkg || typ == -1) error(USAGE, argv[0]);
     
 	int pid = getPid(pkg);
     
@@ -455,24 +482,17 @@ int main (int argc, char **argv) {
     
     int fd = openMem(pid, mode);
     switch (mode) {
-        case READ: {
+        case READ: { // addr [offset] val
             if (!addr) error(USAGE, argv[0]);
-            
-            Byte buf[BUFSIZE] = { 0 };
-            if (pread64(fd, buf, count, addr) == -1)
-                error("读取内存 %#x 失败 pid = %d\n", addr, pid);
-            printf("%#x %d %#x %g ", addr, *(int *)buf, *(Addr *)buf, *(double *)buf);
-            // 直接打印要反转(小端) cb 66 ad dc fd d6 c0 53 --> 53 c0 d6 fd dc ad 66 cb
-            reverse((char *)buf);
-            for (int i = 0; i < count; i++)
-                printf("%02x ", buf[i]);
-            printf("\n");
+            memRead(fd, addr, offset, val);
+            printf("%#x ", addr + offset);
+            printVal(typ, val);
             break;
         }
         case SEARCH: {
             int start = clock();
             Res *res = memSearch(pid, fd, typ, val);
-            //showRes(Res, res);
+            showRes(res);
             double ms = (1.0 * clock() - start) / 1000;
             printf("memSearch %gms\n", ms);
             break;

@@ -9,8 +9,8 @@
 
 #define ATTRSIZE 5
 #define BUFSIZE 128
-#define BLOCKSIZE 1024 // 单位分块长度（提速）
-#define USAGE "Usage: %s -p pkg -T r|w|s -a addr [-o offset] -t <i|u|f><1|2|4|8>[-val]\n"
+#define BLOCKSIZE 256 // 单位分块长度（提速）
+#define USAGE "Usage: %s -p pkg -T r|w|s -a addr [-o offset] -t <i|u|f><1|2|4|8>[-val] [-n n] [-b block]\n"
 
 #define VM_READ 8 // r -
 #define VM_WRITE 4 // w -
@@ -18,7 +18,7 @@
 #define VM_MAYSHARE 1 // s p
 
 // 防止负数溢出
-typedef unsigned int Addr; // 不知道为啥 unsigned int 只能截取一半明明长度一样
+typedef unsigned int Addr; // 用 unsigned long ?
 typedef unsigned char Byte;
 
 typedef enum {
@@ -55,6 +55,104 @@ typedef union Value {
     double f8;
 } Value;
 
+#define refer(t, v) ( \
+    (t) == I1 ? (v).i1 : \
+    (t) == U1 ? (v).u1 : \
+    (t) == I2 ? (v).i2 : \
+    (t) == U2 ? (v).u2 : \
+    (t) == I4 ? (v).i4 : \
+    (t) == U4 ? (v).u4 : \
+    (t) == I8 ? (v).i8 : \
+    (t) == U8 ? (v).u8 : \
+    (t) == F4 ? (v).f4 : \
+    (v).f8 \
+)
+
+#define referp(t, v) ( \
+    (t) == I1 ? &(v).i1 : \
+    (t) == U1 ? &(v).u1 : \
+    (t) == I2 ? &(v).i2 : \
+    (t) == U2 ? &(v).u2 : \
+    (t) == I4 ? &(v).i4 : \
+    (t) == U4 ? &(v).u4 : \
+    (t) == I8 ? &(v).i8 : \
+    (t) == U8 ? &(v).u8 : \
+    (t) == F4 ? &(v).f4 : \
+    &(v).f8 \
+)
+
+#define printVal(t, v) ( \
+    (t) == I1 ? printf("%d\n", (v).i1) : \
+    (t) == U1 ? printf("%u\n", (v).u1) : \
+    (t) == I2 ? printf("%d\n", (v).i2) : \
+    (t) == U2 ? printf("%u\n", (v).u2) : \
+    (t) == I4 ? printf("%d\n", (v).i4) : \
+    (t) == U4 ? printf("%u\n", (v).u4) : \
+    (t) == I8 ? printf("%lld\n", (v).i8) : \
+    (t) == U8 ? printf("%llu\n", (v).u8) : \
+    (t) == F4 ? printf("%g\n", (v).f4) : \
+    printf("%g\n", (v).f8) \
+)
+
+#define inputVal(t, v, s) ({ \
+    int res; \
+    switch (t) { \
+        case I1: case I2: case I4: case I8: \
+            res = sscanf((s), "%lld", &(v).i8); break; \
+        case U1: case U2: case U4: case U8: \
+            res = sscanf((s), "%llu", &(v).u8); break; \
+        case F4: res = sscanf((s), "%f", &(v).f4); break; \
+        case F8: res = sscanf((s), "%lf", &(v).f8); break; \
+        default: error("不支持的类型 %d %s\n", (t), (s)); \
+    } \
+    if (res != 1) error("数值格式错误 %d %s\n", (t), (s)); \
+})
+
+typedef struct Res {
+    Addr addr;
+    Type typ;
+    Value val;
+    struct Res *next;
+} Res;
+
+// 连接下一个节点
+#define link(head, cur, p) do { \
+    if (head) { \
+        (cur)->next = (p); \
+        (cur) = (p); \
+    } else \
+        (head) = (cur) = (p); \
+} while(0)
+
+#define traverse(p, f) ({ \
+    int count = 0; \
+    while (p) { \
+        f; \
+        (p) = (p)->next; \
+        count++; \
+    } \
+    count; \
+})
+
+#define linkCount(p) traverse(p, 0)
+
+// 不要把带参宏当成函数 且只在编译时有效 宏更像子程序
+#define printMap(p) printf("%#x %#x %d %dk\n", (p)->start, (p)->end, (p)->attr, (p)->size / 1000)
+#define printRes(p) do { \
+    printf("%#x ", (p)->addr); \
+    printVal((p)->typ, (p)->val); \
+} while(0)
+
+#define showMaps(h) do { \
+    typeof(h) p = (h); \
+    printf("total %d\n", traverse(p, printMap(p))); \
+} while (0)
+
+#define showRes(h) ({ \
+    typeof(h) p = (h); \
+    traverse(p, printRes(p)); \
+})
+
 /**
  * error: print an error message and die（限制挺多）
  * 一个程序同时打开的文件限制为 20（包括 1 2 3吗）
@@ -73,85 +171,6 @@ void error(char *fmt, ...) {
     exit(1);
 }
 
-#define refer(t, v) ({ \
-    (t) == I1 ? (v).i1 : \
-    (t) == U1 ? (v).u1 : \
-    (t) == I2 ? (v).i2 : \
-    (t) == U2 ? (v).u2 : \
-    (t) == I4 ? (v).i4 : \
-    (t) == U4 ? (v).u4 : \
-    (t) == I8 ? (v).i8 : \
-    (t) == U8 ? (v).u8 : \
-    (t) == F4 ? (v).f4 : \
-    (v).f8; \
-})
-
-#define referp(t, v) ({ \
-    (t) == I1 ? &(v).i1 : \
-    (t) == U1 ? &(v).u1 : \
-    (t) == I2 ? &(v).i2 : \
-    (t) == U2 ? &(v).u2 : \
-    (t) == I4 ? &(v).i4 : \
-    (t) == U4 ? &(v).u4 : \
-    (t) == I8 ? &(v).i8 : \
-    (t) == U8 ? &(v).u8 : \
-    (t) == F4 ? &(v).f4 : \
-    &(v).f8; \
-})
-
-#define printVal(t, v) ( \
-    (t) == I1 ? printf("%d\n", (v).i1) : \
-    (t) == U1 ? printf("%u\n", (v).u1) : \
-    (t) == I2 ? printf("%d\n", (v).i2) : \
-    (t) == U2 ? printf("%u\n", (v).u2) : \
-    (t) == I4 ? printf("%d\n", (v).i4) : \
-    (t) == U4 ? printf("%u\n", (v).u4) : \
-    (t) == I8 ? printf("%lld\n", (v).i8) : \
-    (t) == U8 ? printf("%llu\n", (v).u8) : \
-    (t) == F4 ? printf("%f\n", (v).f4) : \
-    printf("%lf\n", (v).f8) \
-)
-
-typedef struct Res {
-    Addr addr;
-    Type typ;
-    Value val;
-    struct Res *next;
-} Res;
-
-// 连接下一个节点
-#define link(head, cur, p) do { \
-    if (head) { \
-        (cur)->next = (p); \
-        (cur) = (p); \
-    } else \
-        (head) = (cur) = (p); \
-} while(0)
-    
-#define traverse(p, f) do { \
-    while (p) { \
-        f; \
-        (p) = (p)->next; \
-    } \
-} while (0)
-
-// 不要把带参宏当成函数 且只在编译时有效 宏更像子程序
-#define printMap(p) printf("%#x %#x %d %dk\n", (p)->start, (p)->end, (p)->attr, (p)->size / 1000)
-#define printRes(p) do { \
-    printf("%#x ", (p)->addr); \
-    printVal((p)->typ, (p)->val); \
-} while(0)
-
-#define showMaps(h) do { \
-    typeof(h) p = (h); \
-    traverse(p, printMap(p)); \
-} while (0)
-
-#define showRes(h) do { \
-    typeof(h) p = (h); \
-    traverse(p, printRes(p)); \
-} while (0)
-
 /**
  * 运行Shell命令并获取结果
  * 返回命令的状态码 失败返回 -1
@@ -163,12 +182,30 @@ int shell (char *cmd, char *buf, int len) {
 
     memset(buf, 'a', len);
     FILE *fp = popen(cmd, "r");
-    if (!fgets(buf, len, fp))
-        error("获取Shell命令 %s 结果失败\n", cmd);
+    if (!fgets(buf, len, fp)) return -1;
+        //error("获取Shell命令 %s 结果失败\n", cmd);
     
     int res = pclose(fp);
     if (res == -1) perror("关闭管道失败");
     return res % 255; // 0 ~ 254
+}
+
+/**
+ * 获取指定包名的PID
+ * 失败返回 0
+ */
+int getPid (char *pkg) {
+    char buf[BUFSIZE] = { 0 };
+    
+    char cmd[BUFSIZE] = { 0 };
+    sprintf(cmd, "pidof -s %s", pkg);
+    
+    int code = shell(cmd, buf, sizeof buf);
+    int pid = 0;
+    sscanf(buf, "%d", &pid);
+    if (code != 0 || pid <= 0) error("%s 没有运行 %d\n", pkg, code);
+    
+    return pid;
 }
 
 /**
@@ -185,35 +222,12 @@ void byPass () {
     FILE *fp = fopen(path, "w+");
     
     int res = fgetc(fp);
-    if (res == '0') {
-        printf("为0不写入\n");
-        return;
-    }
+    if (res == '0') return;
     
-    printf("非0则写入\n");
     res = fputc('0', fp);
     
     fclose(fp);
     if (res == EOF) error("写入文件 %s 失败\n", path);
-}
-
-/**
- * 获取指定包名的PID
- * 失败返回 0
- */
-int getPid (char *pkg) {
-    char buf[BUFSIZE] = { 0 };
-    
-    char cmd[BUFSIZE] = { 0 };
-    sprintf(cmd, "pidof -s %s", pkg);
-    
-    int code = shell(cmd, buf, sizeof buf);
-    int pid = 0;
-    sscanf(buf, "%d", &pid);
-    if (code != 0 || pid <= 0)
-        error("获取 %s PID失败 PID %d 状态码 %d\n", pkg, pid, code);
-    
-    return pid;
 }
 
 /**
@@ -227,10 +241,10 @@ int openMem (int pid, Mode mode) {
     switch (mode) {
         case READ:
         case SEARCH:
-            fd = open(buf, O_RDONLY);
+            fd = open64(buf, O_RDONLY);
             break;
         case WRITE:
-            fd = open(buf, O_WRONLY, O_SYNC);
+            fd = open64(buf, O_WRONLY, O_SYNC);
             break;
         default:
             error("openMem参数错误 %d\n", mode);
@@ -333,36 +347,133 @@ char *reverse (char *s) {
     return s;
 }
 
-// addr [offset] val
-#define memRead(fd, addr, offset, val) ({ \
+/**
+ * 读取8个字节
+ * 返回读取的字节数
+ */
+#define memRead(fd, val, addr, offset) ({ \
     typeof(addr) a = (addr) + (offset); \
-    if (pread64((fd), &(val), sizeof(val), a) == -1) \
-        error("读取内存 %#x 失败\n", a); \
-    (val); \
+    int res = pread64((fd), &(val), sizeof(val), a); \
+    if (res == -1) error("读取内存 %#x 失败\n", a); \
+    (res); \
 })
 
 /**
- * 搜索mem文件 失败返回 NULL
- * @param {int} pid 要搜索的进程号
- * @param {int} fd 已打开的内存句柄
- * @param {Type} typ
- * @param {Value} val
+ * 读取len个字节
+ * 返回读取的字节数
  */
-Res *memSearch (int pid, int fd, Type typ, Value val) {
+#define memReadByte(fd, buf, len, addr, offset) ({ \
+    typeof(addr) a = (addr) + (offset); \
+    int res = pread64((fd), &(buf), (len), a); \
+    if (res == -1) error("读取内存 %#x 失败\n", a); \
+    (res); \
+})
+
+/**
+ * 字节数组比较 类似strcmp
+ */
+int byteCmp (Byte *a, Byte *b, int len) {
+    int i;
+    for (i = 0; a[i] == b[i]; i++)
+        if (i >= len) return 0;
+    return a[i] - b[i];
+}
+
+#define bytePrint(a, len) ({ \
+    for (int i = 0; i < len; i++) \
+        printf("%02x ", a[i]); \
+    printf("\n"); \
+})
+
+/*#define valToByte(t, v, s) ({ \
+    int res; \
+    switch (t) { \
+        case I1: sprintf((s), "%02x", (v).i1); break; \
+        case I2: sprintf((s), "%04x", (v).i2); break; \
+        case I4: sprintf((s), "%08x", (v).i4); break; \
+        case I8: sprintf((s), "%016x", (v).i8); break; \
+        case I1: case I2: case I4: case I8: \
+            res = sprintf((s), "%lld", (v).i8); break; \
+        case U1: case U2: case U4: case U8: \
+            res = sprintf((s), "%llu", (v).u8); break; \
+        case F4: res = sprintf((s), "%f", (v).f4); break; \
+        case F8: res = sprintf((s), "%lf", (v).f8); break; \
+        default: error("不支持的类型 %d\n", (t)); \
+    } \
+    if (res != 1) error("val转byte失败 %d\n", (t)); \
+    (s); \
+})
+
+Byte *valToByte (Type typ, Value val, char *buf, int len) {
+    switch (typ) {
+        case I1:
+        case U1:
+        case I2:
+        case U2:
+        case I4:
+        case U4:
+        case I8:
+        case U8:
+        case F4:
+        case F8:
+        default: error("不支持的类型 %d\n", type);
+    }
+}*/
+
+Res *memSearchByte (int pid, int fd, Byte *bytes, int len, int n, int block) {
+    Map *mapHead = loadMaps(pid);
+    if (!mapHead) error("读取 /proc/%d/maps 失败\n", pid);
+    
+    Byte buf[block];
+    Res *resHead = NULL, *resCur = NULL;
+    int lenPerBlk = block / len; // 每个块里有多少个值
+    
+    for (Map *p = mapHead; p && n; p = p->next) {
+        int blkPerChunk = p->size / block; // 每个内存段分多少个块
+        for (int i = 0; i < blkPerChunk && n; i++) {
+            Addr addr = p->start + i * block;
+            memReadByte(fd, buf, block, addr, 0); // 一次读一整块
+            for (int j = 0; j < lenPerBlk && n; j++) {
+                int off = j * len;
+                Byte *bufoff = buf + off;
+                if (!byteCmp(bufoff, bytes, len)) {
+                    addr += off;
+                    printf("start=%x addr=%x blkPerChunk=%d lenPerBlk=%d\n" , p->start, addr, blkPerChunk, lenPerBlk);
+                    bytePrint(bufoff, len);
+                    Res *res = calloc(1, sizeof(Res));
+                    res->addr = addr;
+                    //res->typ = typ;
+                    //res->val = val;
+                    link(resHead, resCur, res);
+                    if (n > -1) n--; // -1或以下取全部
+                }
+            }
+        }
+    }
+    
+    return resHead;
+}
+
+/**
+ * 搜索mem文件 失败返回 NULL
+ */
+Res *memSearch (int pid, int fd, Type typ, Value val, int n, int block) {
     
     Map *mapHead = loadMaps(pid);
     if (!mapHead) error("读取 /proc/%d/maps 失败\n", pid);
     
+    Byte buf[block];
     Res *resHead = NULL, *resCur = NULL;
+    int size = sizeof(refer(typ, val));
+    int sizePerBlk = block / size; // 每个块里有多少个值
     
-    for (Map *p = mapHead; p; p = p->next) {
-        int blockLen = p->size / BLOCKSIZE;
-        for (int i = 0; i < blockLen; i++) {
-            Addr addr = p->start + i * BLOCKSIZE;
+    for (Map *p = mapHead; p && n; p = p->next) {
+        int blockLen = p->size / block;
+        for (int i = 0; i < blockLen && n; i++) {
+            Addr addr = p->start + i * block;
             Value tmp;
             // 这里的错误不严重 可忽略(可能是因为值为0)
-            //if (pread64(fd, referp(typ, tmp), sizeof(refer(typ, tmp)), addr) == -1) {
-            if (pread64(fd, &tmp, sizeof(tmp), addr) == -1) {
+            if (memRead(fd, tmp, addr, 0) == -1) {
                 printMap(p);
                 error("读取内存 %x 失败\n", addr);
                 //continue;
@@ -372,23 +483,18 @@ Res *memSearch (int pid, int fd, Type typ, Value val) {
                 res->addr = addr;
                 res->typ = typ;
                 res->val = val;
-                
                 link(resHead, resCur, res);
+                if (n > -1) n--; // -1或以下取全部
             }
         }
     }
-        
+    
     return resHead;
 }
 
 // tsu -c 'gcc -Wall -O3 /sdcard/Pictures/mem.c -o /data/local/tmp/test/mem'
 // tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T r -a 0E1FD8B0 -o 0 -t i4'
-// tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -t i4-161'
-// -p pkg
-// -T r|w|s
-// a addr
-// o offset
-// b 
+// tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -t i4-161 -n -1 -b 4096'
 int main (int argc, char **argv) {
     char *pkg = NULL;
     
@@ -400,26 +506,22 @@ int main (int argc, char **argv) {
     Type typ = -1;
     Value val;
     
+    int n = -1; // 代表获取所有搜索结果
+    int block = BLOCKSIZE; // 分块大小
+    
     int opt = -1;
     opterr = 0; // 自己处理错误
-    while ((opt = getopt(argc, argv, "p:T:a:o:t:")) != -1)
+    while ((opt = getopt(argc, argv, "p:T:a:o:t:n:b:")) != -1)
         switch (opt) {
             case 'p':
                 pkg = optarg;
                 break;
             case 'T':
                 switch (*optarg) {
-                    case 'r':
-                        mode = READ;
-                        break;
-                    case 'w':
-                        mode = WRITE;
-                        break;
-                    case 's':
-                        mode = SEARCH;
-                        break;
-                    default:
-                        error("不支持的操作 %c\n", *optarg);
+                    case 'r': mode = READ; break;
+                    case 'w': mode = WRITE; break;
+                    case 's': mode = SEARCH; break;
+                    default: error("不支持的操作 %c\n", *optarg);
                 }
                 break;
             case 'a':
@@ -428,7 +530,7 @@ int main (int argc, char **argv) {
             case 'o':
                 sscanf(optarg, "%d", &offset);
                 break;
-            case 't':
+            case 't': {
                 switch (optarg[1]) {
                     case '1':
                         switch (optarg[0]) {
@@ -457,18 +559,21 @@ int main (int argc, char **argv) {
                         }
                         break;
                 }
-                switch (typ) {
-                    case I1: case I2: case I4: case I8:
-                        sscanf(optarg + 3, "%lld", &val.i8); break;
-                    case U1: case U2: case U4: case U8:
-                        sscanf(optarg + 3, "%llu", &val.u8); break;
-                    case F4: case F8:
-                        sscanf(optarg + 3, "%lf", &val.f8); break;
-                    default: error("不支持的类型 %s\n", optarg);
+                // READ模式无需输入值
+                // 也意味着 要先读取 -T 选项
+                if (mode != READ) {
+                    inputVal(typ, val, optarg + 3);
+                    //printVal(typ, val);
                 }
-                printf("typ %d %d\n", typ, val.i4);
                 break;
-                
+            }    
+            case 'n':
+                sscanf(optarg, "%d", &n);
+                break;
+            case 'b':
+                sscanf(optarg, "%d", &block);
+                if (block <= 0 || block % 2 != 0) error("块大小要2的倍数 %d %% 2 == %d\n", block, block % 2);
+                break;
             case '?':
                 error("Unknown option: %c\n", (char)optopt); // 可能有选项没读到
         }
@@ -476,25 +581,34 @@ int main (int argc, char **argv) {
     // 有typ必有val
     if (!pkg || typ == -1) error(USAGE, argv[0]);
     
-	int pid = getPid(pkg);
-    
     byPass();
+    
+	int pid = getPid(pkg);
     
     int fd = openMem(pid, mode);
     switch (mode) {
         case READ: { // addr [offset] val
             if (!addr) error(USAGE, argv[0]);
-            memRead(fd, addr, offset, val);
+            memRead(fd, val, addr, offset);
             printf("%#x ", addr + offset);
             printVal(typ, val);
             break;
         }
         case SEARCH: {
             int start = clock();
-            Res *res = memSearch(pid, fd, typ, val);
+            
+            char bytes[BUFSIZE];
+            sprintf(bytes, "%llx", val);
+            printf("bytes %s\n", bytes);
+            break;
+            
+            Res *res = memSearchByte(pid, fd, bytes, strlen(bytes), n, block);
+            //Res *res = memSearchByte(pid, fd, typ, val, n, block);
             showRes(res);
+            //int tot = showRes(res);
+            //printf("tot = %d\n", tot);
             double ms = (1.0 * clock() - start) / 1000;
-            printf("memSearch %gms\n", ms);
+            printf("memSearchByte %gms\n", ms);
             break;
         }
         case WRITE:

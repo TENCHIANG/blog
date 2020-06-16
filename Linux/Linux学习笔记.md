@@ -421,3 +421,112 @@ int getPid (char *pkg) {
 }
 ```
 
+### 大端与小端
+
+* 内存的单位是1字节，大端和小端是指多个字节在内存的两种放置方法
+* 举例：1234
+* 0x04d2 Big-Endian: 低字节在高地址(对内存是反的)
+* 0xd204 Little-Endian: 低字节在低地址(对于人是反的)
+
+```c
+#include <stdio.h>
+#include <string.h> // memcpy
+#include <stdlib.h> // strtol
+
+#define BUFSIZE 128
+
+typedef unsigned char Byte;
+
+/**
+ * 打印字节数组
+ * @param b {void *} 一般是Byte * 也可以是 int *
+ * @param n {int} b的长度
+ */
+#define bytePrint(b, n) ({ \
+    Byte *p = (Byte *)b; \
+    for (int i = 0; i < (n); i++) \
+        printf("%02x ", p[i]); \
+    printf("\n"); \
+})
+
+/**
+ * 字节数组转字符串
+ * @param b {void *} 一般是Byte * 也可以是 int *
+ * @param n {int} b的长度
+ * @param s {char *} 以 1a aa 10 形式存储的字符串
+ * @return {char *} 返回字符串
+ * (s)[i * 3 - 1] 最后一个空格
+ */
+#define byteToStr(b, n, s) ({ \
+    Byte *p = (Byte *)b; \
+    int i; \
+    for (i = 0; i < (n); i++) \
+        sprintf((s) + i * 3, "%02x ", p[i]); \
+    (s)[i * 3 - 1] = 0; \
+    (s); \
+})
+
+/**
+ * 字符串转字节数组
+ * @param b {void *} 一般是Byte * 也可以是 int *
+ * @param n {int} b的长度
+ * @param s {char *} 以 1a aa 10 形式存储的字符串
+ * @return {Byte *} 返回字节数组指针
+ */
+#define strToByte(b, n, s) ({ \
+    Byte *p = (Byte *)b; \
+    for (int i = 0, j = 0; s[i] && j < n; i += 3, j++) { \
+        s[i + 2] = 0; \
+        p[j] = (Byte)strtol(s + i, NULL, 16); \
+        s[i + 2] = ' '; \
+    } \
+    (p); \
+})
+
+/**
+ * 数组反转(字符串、字节数组皆可)
+ * @param b {void *} 一般是Byte * 也可以是 int *
+ * @param n {int} b的长度
+ * @return {Byte *} 返回字节数组指针
+ */
+#define byteRev(b, n) ({ \
+    Byte *p = (Byte *)(b); \
+    Byte t; \
+    for (int i = 0, j = (n) - 1; i < j; i++, j--) { \
+        t = (p)[i]; \
+        (p)[i] = (p)[j]; \
+        (p)[j] = t; \
+    } \
+    (p); \
+})
+
+/**
+ * 字节数组比较 也可以比较字符串 类似strcmp
+ */
+#define byteCmp(a, b, n) ({ \
+    Byte *p = (Byte *)a; \
+    Byte *q = (Byte *)b; \
+    int i; \
+    for (i = 0; i < (n) && p[i] == q[i]; i++) \
+        continue; \
+    p[i] - q[i]; \
+})
+
+int main (void) {
+    Byte bytes[BUFSIZE];
+    
+    int i = 1234;
+    int len = sizeof(int);
+    
+    char s[BUFSIZE];
+    byteToStr(&i, len, s);
+    printf("[%s]\n", s); // [d2 04 00 00]
+    
+    int d = *(int *)strToByte(bytes, len, s);
+    bytePrint(bytes, len); // d2 04 00 00
+    printf("%d\n", d); // 1234
+    
+    return 0;
+}
+```
+

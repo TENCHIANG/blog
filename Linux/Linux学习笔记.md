@@ -296,6 +296,16 @@ killall -STOP com.tencent.mobileqq # 暂停游戏进程
 * [游戏安全实验室 游戏漏洞 外挂分析](https://gslab.qq.com/article-21-1.html)
 * [Linux proc详解 - - ITeye博客](https://www.iteye.com/blog/luckyclouds-675711)
 
+### 访问内存的三种方式
+
+* **memcpy** 只能访问自己的 访问别人会导致段错误
+* **ptrace** GDB的调试原理
+* **pread64** 目前的方案
+  * 先解析 /proc/pid/maps
+  * 再 open /proc/pid/mem
+  * 再 pread64 pwrite64
+* [Android 使用ptrace查看其它进程的内存数据_muzhengjun的博客-CSDN博客](https://blog.csdn.net/muzhengjun/article/details/46925209?utm_source=blogxgwz9)
+
 ### 命令行选项解析 getopt
 
 * getopt 可以解析**短选项**（单横杠单字母如 -h xxx）
@@ -427,106 +437,70 @@ int getPid (char *pkg) {
 * 举例：1234
 * 0x04d2 Big-Endian: 低字节在高地址(对内存是反的)
 * 0xd204 Little-Endian: 低字节在低地址(对于人是反的)
+* 字节字符的操作如 stdlib.h 的 memcpy memcmp
+
+### 分割字符串 strtok strtok_r strtok_s
+
+* strtok 会改变原字符数组
+* strtok_r 不会改变字符数组（Linux）
+* strtok_s 不会改变字符数组（Windows）
+* 它们都会写原字符数组，所以不能给常量
 
 ```c
-#include <stdio.h>
-#include <string.h> // memcpy
-#include <stdlib.h> // strtol
-
-#define BUFSIZE 128
-
-typedef unsigned char Byte;
-
+#include <string.h>
 /**
- * 打印字节数组
- * @param b {void *} 一般是Byte * 也可以是 int *
- * @param n {int} b的长度
+ * 把str用delim分割成若干份，分别保存到save里，保存n个
+ * 返回保存了几份 i < cnt 其实直接save[i]也行
+ * 也可以直接传一个函数
  */
-#define bytePrint(b, n) ({ \
-    Byte *p = (Byte *)b; \
-    for (int i = 0; i < (n); i++) \
-        printf("%02x ", p[i]); \
-    printf("\n"); \
-})
-
-/**
- * 字节数组转字符串
- * @param b {void *} 一般是Byte * 也可以是 int *
- * @param n {int} b的长度
- * @param s {char *} 以 1a aa 10 形式存储的字符串
- * @return {char *} 返回字符串
- * (s)[i * 3 - 1] 最后一个空格
- */
-#define byteToStr(b, n, s) ({ \
-    Byte *p = (Byte *)b; \
-    int i; \
-    for (i = 0; i < (n); i++) \
-        sprintf((s) + i * 3, "%02x ", p[i]); \
-    (s)[i * 3 - 1] = 0; \
-    (s); \
-})
-
-/**
- * 字符串转字节数组
- * @param b {void *} 一般是Byte * 也可以是 int *
- * @param n {int} b的长度
- * @param s {char *} 以 1a aa 10 形式存储的字符串
- * @return {Byte *} 返回字节数组指针
- */
-#define strToByte(b, n, s) ({ \
-    Byte *p = (Byte *)b; \
-    for (int i = 0, j = 0; s[i] && j < n; i += 3, j++) { \
-        s[i + 2] = 0; \
-        p[j] = (Byte)strtol(s + i, NULL, 16); \
-        s[i + 2] = ' '; \
-    } \
-    (p); \
-})
-
-/**
- * 数组反转(字符串、字节数组皆可)
- * @param b {void *} 一般是Byte * 也可以是 int *
- * @param n {int} b的长度
- * @return {Byte *} 返回字节数组指针
- */
-#define byteRev(b, n) ({ \
-    Byte *p = (Byte *)(b); \
-    Byte t; \
-    for (int i = 0, j = (n) - 1; i < j; i++, j--) { \
-        t = (p)[i]; \
-        (p)[i] = (p)[j]; \
-        (p)[j] = t; \
-    } \
-    (p); \
-})
-
-/**
- * 字节数组比较 也可以比较字符串 类似strcmp
- */
-#define byteCmp(a, b, n) ({ \
-    Byte *p = (Byte *)a; \
-    Byte *q = (Byte *)b; \
-    int i; \
-    for (i = 0; i < (n) && p[i] == q[i]; i++) \
-        continue; \
-    p[i] - q[i]; \
-})
-
-int main (void) {
-    Byte bytes[BUFSIZE];
+int split (char *str, char *delim, char **save, int n) {
+    char *next;
+    char *sub = strtok_r(str, delim, &next);
     
-    int i = 1234;
-    int len = sizeof(int);
-    
-    char s[BUFSIZE];
-    byteToStr(&i, len, s);
-    printf("[%s]\n", s); // [d2 04 00 00]
-    
-    int d = *(int *)strToByte(bytes, len, s);
-    bytePrint(bytes, len); // d2 04 00 00
-    printf("%d\n", d); // 1234
-    
-    return 0;
+    int cnt;
+    for (cnt = 0; cnt < n && sub; cnt++) {
+        save[cnt] = sub;
+        sub = strtok_r(NULL, delim, &next);
+    }
+    return cnt;
 }
 ```
 
+* [到处是“坑”的strtok()—解读strtok()的隐含特性_梦想专栏-CSDN博客](https://blog.csdn.net/vevenlcf/article/details/100582959)
+* [字符串分割利器—strtok_r函数_烟花易冷-CSDN博客](https://blog.csdn.net/zhouzhenhe2008/article/details/74011399)
+
+### 浮点数 IEEE 754
+
+* 单精度32位 **-1^S * 2^(E-127) * 1 + M**
+  * S 符号位 1bit
+  * E 指数位 8bit，减一个固定值127（正负）
+    * **2^(n-1)-1** = 2^(8-1)-1 = 2^7-1 = 128-1 = **127**
+  * M 分数位 23bit
+    * 隐藏始终为1的高位，所以要加1（1.xxx * 2^n 表示而不是 0.1xxx * 2^n-1）
+  * 精度：小数点后 **6~7** 位
+* 双精度64位 **-1^S * 2^(E-1023) * 1 + M**
+  * S 符号位 1bit
+  * E 指数位 10bit
+  * M 分数位 52bit
+  * 精度：小数点后 **15 ~ 16** 位
+* 特殊值
+
+|    形式    |    指数     |    小数部分    |
+| :--------: | :---------: | :------------: |
+|     零     |      0      |       0        |
+| 非规约形式 |      0      |   大于0小于1   |
+|  规约形式  | 1 ~ 2^e - 2 | 大于等于1小于2 |
+|    无穷    |   2^e - 1   |       0        |
+|    NaN     |   2^e - 1   |      非0       |
+
+* 规约形式的浮点数
+  * 指数部分非0，使用科学表示法，分数为 1.xxx 的形式（因为高位固定为1所以省略只存小数部分）
+  * “规约”是指用唯一确定的浮点形式去表示一个值
+* 非规约形式的浮点数
+  * 指数部分的为0，分数部分非零（某个数字**相当**接近零时的表示）
+* [浮点数的二进制表示 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2010/06/ieee_floating-point_representation.html)
+* [IEEE 754 - 维基百科，自由的百科全书](https://zh.wikipedia.org/wiki/IEEE_754#非规约形式的浮点数)
+* [float和double的精度 - A_C_PRIMER - 博客园](https://www.cnblogs.com/c-primer/p/5992696.html)
+* [从科学记数法到浮点数标准IEEE 754](https://mp.weixin.qq.com/s/mf1mH-aGWgcC6v2R8ijE8A)
+* [IEEE-754 浮点数 - 知乎](https://zhuanlan.zhihu.com/p/108142465)
+* [IEEE754标准 单精度(32位)/双精度(64位)浮点数解码_jocks的专栏-CSDN博客](https://blog.csdn.net/jocks/article/details/7800861)

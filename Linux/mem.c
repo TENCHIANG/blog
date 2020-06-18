@@ -268,12 +268,16 @@ int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
  * @param n 要对比多少个字节
  * @param m 字节数组 蒙版 如果传NULL 则使用 memcmp 否则在蒙版的基础上对比
  * @return {int} 相等返回 0
- * 注意：memcmp的返回值不能用作*a和*b的距离
+ * 注意：memcmp只返回 -1 0 1
  */
 int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
-    if (!m) return memcmp(a, b, n); // 0x11 - 0x00 == 1
-    while (--n > 0 && (*a & *m) == (*b & *m)) a++, b++, m++;
-    return (*a & *m) - (*b & *m); // 0x11 - 0x00 == 0x11
+    int p, q;
+    for (int i = 0; i < n; i++) {
+        p = m ? (a[i] & m[i]) : a[i];
+        q = m ? (b[i] & m[i]) : b[i];
+        if (p != q) return p - q;
+    }
+    return 0;
 }
 
 /**
@@ -518,23 +522,25 @@ Map *loadMaps (int pid) {
  * 读取len个字节
  * 返回读取的字节数
  */
-#define memRead(fd, buf, len, addr, offset) ({ \
-    typeof(addr) a = (addr) + (offset); \
-    int cnt = pread64((fd), &(buf), (len), a); \
-    if (cnt == -1 || cnt != (len)) error("读取内存 %#x 失败 cnt=%d\n", a, cnt); \
-    (cnt); \
-})
+int memRead (int fd, void *data, int len, Addr addr, int offset) {
+    Byte *bytes = (Byte *)data;
+    addr += offset;
+    int cnt = pread64(fd, bytes, len, addr);
+    if (cnt == -1 || cnt != len) error("读取内存 %#x 失败 cnt=%d\n", addr, cnt);
+    return cnt;
+}
 
 /**
  * 写入len个字节
  * 返回写入的字节数
  */
-#define memWrite(fd, buf, len, addr, offset) ({ \
-    typeof(addr) a = (addr) + (offset); \
-    int cnt = pwrite64((fd), (buf), (len), a); \
-    if (cnt == -1 || cnt != (len)) error("写入内存 %#x 失败 cnt=%d\n", a, cnt); \
-    (cnt); \
-})
+int memWrite (int fd, void *data, int len, Addr addr, int offset) {
+    Byte *bytes = (Byte *)data;
+    addr += offset;
+    int cnt = pwrite64(fd, bytes, len, addr);
+    if (cnt == -1 || cnt != len) error("写入内存 %#x 失败 cnt=%d\n", addr, cnt);
+    return cnt;
+}
      
 /**
  * 搜索mem文件 失败返回 NULL
@@ -580,16 +586,15 @@ int typeToByte (Byte *bp, Type typ, Value val) {
         case I1: case I2: case I4:
         case U1: case U2: case U4: case F4: 
             len = 4;
-            memcpy(bp, &val, len);
             break;
         case I8: case U8: case F8:
             len = 8;
-            memcpy(bp, &val, len);
             break;
         default:
             error("不支持的类型 typ=%d\n", typ);
     }
     if (len <= 0 || !bp) error("typeToByte typ=%d len=%d bp=%p\n", typ, len, bp);
+    memcpy(bp, &val, len);
     return len;
 }
 
@@ -722,7 +727,7 @@ int main (int argc, char **argv) {
     switch (mode) {
         case READ: { // addr [offset] val
             if (!addr) error(USAGE, argv[0]);
-            memRead(fd, val, sizeof(val), addr, offset);
+            memRead(fd, &val, sizeof(val), addr, offset);
             printf("%#x ", addr + offset);
             printVal(typ, val);
             bytePrint(&val, sizeof(val), "");

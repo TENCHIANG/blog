@@ -57,6 +57,24 @@ typedef union Value {
     double f8;
 } Value;
 
+/**
+ * error: print an error message and die（限制挺多）
+ * 一个程序同时打开的文件限制为 20（包括 1 2 3吗）
+ * close和fclose的区别：close没有flush（从内存刷新数据到文件）
+ * exit或从主函数退出：所有打开的文件将被关闭（包括 1 2 3吗）
+ * int char 0和指针可以无缝转换
+ * 子程序可以没有返回值 可以直接退出程序 函数相反 函数一般不用全局变量 不做错误处理
+ */
+void error (char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    fprintf(stderr, "error: ");
+    vfprintf(stderr, fmt, args);
+    fprintf(stderr, "\n");
+    va_end(args);
+    exit(1);
+}
+
 #define printVal(t, v) ( \
     (t) == I1 ? printf("%d\n", (v).i1) : \
     (t) == U1 ? printf("%u\n", (v).u1) : \
@@ -132,13 +150,15 @@ typedef struct Res {
 
 /**
  * 打印字节数组
- * @param b {void *} 一般是Byte * 也可以是 int *
+ * @param b {Byte *} 字节数组
  * @param n {int} b的长度
+ * @param d {char *} 分隔符 一般通过 strToByte 获取
+ * 最后一个分隔符不输出
  */
-#define bytePrint(b, n) ({ \
+#define bytePrint(b, n, d) ({ \
     Byte *p = (Byte *)b; \
     for (int i = 0; i < (n); i++) \
-        printf("%02x ", p[i]); \
+        printf("%02x%s", p[i], i + 1 == n ? "" : d); \
     printf("\n"); \
 })
 
@@ -167,38 +187,56 @@ char *byteToStr (Byte *ba, int baSize, char *sa, int saSize, char *dlm) {
  * 字符到数字的映射(支持16进制)
  * @param c {char|int} 要映射的字符
  * @return {int} 返回字符所代表的数字
+ * 注意 如果有 ? 指挥替换为 0 而不会报错
  */
 #define charMap(c) ({ \
     int r = (c); \
     if (r >= '0' && r <= '9') r -= '0'; \
-    else if (r >= 'a' && r <= 'z') r = r - 'a' + 10; \
-    else if (r >= 'A' && r <= 'Z') r = r - 'A' + 10; \
-    else error("不支持的字符 %c\n", r); \
+    else if (r >= 'a' && r <= 'f') r = r - 'a' + 10; \
+    else if (r >= 'A' && r <= 'F') r = r - 'A' + 10; \
+    else if (r == '?') r = 0; \
+    else error("不支持的字符 [%c]\n", r); \
     r; \
 })
 
+#define maskMap(c) ((c) == '?' ? 0 : 0xf)
+
+#define isByte(c) ( \
+    ((c) >= '0' && (c) <= '9') || \
+    ((c) >= 'a' && (c) <= 'f') || \
+    ((c) >= 'A' && (c) <= 'F') || \
+    ((c) == '?') \
+)
+
 /**
  * 字符串转字节数组
- * @param b {void *} 一般是Byte * 也可以是 int *
- * @param n {int} 拷贝n个字节 -1表示由字符串决定其长度
- * @param s {char *} 以 1a aa 10 形式存储的字符串(不要求是字符串数组可以写)
- * @return {Byte *} 返回拷贝了多少个字节
+ * @param b 字节数组
+ * @param n 拷贝n个字节 -1表示由字符串决定其长度
+ * @param s 字节码字符串(自动识别分隔符)
+ * @param mask 蒙版数组 如果不为空 则再生成蒙版 其长度与字节数组一致
+ * @param dlm 获取字节码字符串的分隔符
+ * @return {int} 返回拷贝了多少个字节
  * 自动检测分隔符长度，要求 1.分隔符起码长度相同 2.分隔符不能为数字字符或字母字符
  */
-#define strToByte(b, n, s) ({ \
-    int off = 2; /* 2个字节 + 自动检测分隔符长度 */ \
-    for (int i = off; (s)[i] && !isdigit((s)[i]) && !isalpha((s)[i]); i++, off++) \
-        continue; \
-    Byte *p = (Byte *)b; \
-    int cnt = (n); \
-    Byte h, l; \
-    for (int i = 0; s[i] && cnt > 0; i += off, cnt--) { \
-        h = charMap(s[i]) << 4; /* 高字节 */ \
-        l = charMap(s[i + 1]); \
-        p[i / off] = h + l; \
-    } \
-    (n) - cnt; \
-})
+int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
+    int off = 2; // 2个字节 + 自动检测分隔符长度
+    for (; s[off] && !isByte(s[off]); off++)
+        if (dlm) *dlm++ = s[off];
+    int cnt = n;
+    int slen = strlen(s);
+    Byte h, l;
+    for (int i = 0; i < slen && cnt; i += off, cnt--) {
+        h = charMap(s[i]) << 4;
+        l = charMap(s[i + 1]);
+        b[i / off] = h + l;
+        if (mask) {
+            h = maskMap(s[i]) << 4;
+            l = maskMap(s[i + 1]);
+            mask[i / off] = h + l;
+        }
+    }
+    return n - cnt;
+}
 
 /**
  * 数组反转(字符串、字节数组皆可)
@@ -218,31 +256,18 @@ char *byteToStr (Byte *ba, int baSize, char *sa, int saSize, char *dlm) {
 })
 
 /**
- * 字节数组比较 也可以比较字符串 基于 memcmp 优化 也类似strcmp
- * [memcmp源码_barry_yan-CSDN博客](https://blog.csdn.net/barry_yan/article/details/8453525)
+ * 字节数组比较 也可以比较字符串(memcmp strcmp)
+ * @param a 字节数组
+ * @param b 字节数组
+ * @param n 要对比多少个字节
+ * @param m 字节数组 蒙版 如果传NULL 则使用 memcmp 否则在蒙版的基础上对比
+ * @return {int} 相等返回 0
+ * 注意：memcmp的返回值不能用作*a和*b的距离
  */
-#define byteCmp(p, q, n) ({ \
-    Byte *a = (Byte *)(p), *b = (Byte *)(q); \
-    for (int i = (n); --i > 0 && *a == *b; a++, b++) continue; \
-    *a - *b; \
-})
-
-/**
- * error: print an error message and die（限制挺多）
- * 一个程序同时打开的文件限制为 20（包括 1 2 3吗）
- * close和fclose的区别：close没有flush（从内存刷新数据到文件）
- * exit或从主函数退出：所有打开的文件将被关闭（包括 1 2 3吗）
- * int char 0和指针可以无缝转换
- * 子程序可以没有返回值 可以直接退出程序 函数相反 函数一般不用全局变量 不做错误处理
- */
-void error (char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    fprintf(stderr, "error: ");
-    vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-    exit(1);
+int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
+    if (!m) return memcmp(a, b, n); // 0x11 - 0x00 == 1
+    while (--n > 0 && (*a & *m) == (*b & *m)) a++, b++, m++;
+    return (*a & *m) - (*b & *m); // 0x11 - 0x00 == 0x11
 }
 
 /**
@@ -508,7 +533,7 @@ Map *loadMaps (int pid) {
 /**
  * 搜索mem文件 失败返回 NULL
  */
-Res *memSearch (Map *map, int fd, Byte *bytes, int len, int n, int blkSize) {
+Res *memSearch (Map *map, int fd, Byte *bytes, int len, int n, int blkSize, Byte *mask) {
     int lenPerBlk = blkSize / len; // 每个块里有多少个值
     Res *resHead = NULL, *resCur = NULL;
     Byte blk[BLOCKSIZE]; // 直接申请块的最大容量
@@ -521,12 +546,11 @@ Res *memSearch (Map *map, int fd, Byte *bytes, int len, int n, int blkSize) {
             for (int j = 0; j < lenPerBlk && n; j++) {
                 int off = j * len;
                 Byte *blkoff = blk + off;
-                if (!byteCmp(blkoff, bytes, len)) {
+                if (!byteCmp(blkoff, bytes, len, mask)) {
                     addr += off;
                     memRead(fd, blk, len, addr, 0); // 再次确认
-                    if (byteCmp(blk, bytes, len)) { // 暂不清楚为啥会误识别(也许是对齐的问题?)
+                    if (byteCmp(blk, bytes, len, mask)) { // 暂不清楚为啥会误识别(也许是对齐的问题?)
                         //printf("start=%x end=%x addr=%x blkPerChunk=%d lenPerBlk=%d off=%d\n" , p->start, p->end, addr, blkPerChunk, lenPerBlk, off);
-                        //bytePrint(blk, len);
                         continue;
                     }
                     Res *res = calloc(1, sizeof(Res));
@@ -570,6 +594,7 @@ tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T r -a 0x67453000 -o 0 -
 tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -t i4-161 -n -1 -B 4096'
 
 tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -n 10 -b "A6 00 00 00 FB 53 90 0C 0C A1 00 00 00 00 00 00 00 00 00 12 00 00 00 00 05 29 11 E3"'
+tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -n 10 -bA6000000FB53900C0CA100000000000000000012000000000529??E3'
 
 tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T w -a 0E0BB780 -o 0 -t i4-162'
 */
@@ -587,6 +612,8 @@ int main (int argc, char **argv) {
     int n = -1; // 代表获取所有搜索结果
     int blkSize = BLOCKSIZE; // 分块大小
     
+    Byte mask[BUFSIZE];
+    memset(mask, 0xff, sizeof(mask)); // 0x00才起作用
     Byte bytes[BUFSIZE] = { 0 };
     int btlen = 0;
     
@@ -661,18 +688,10 @@ int main (int argc, char **argv) {
                 if (blkSize > BLOCKSIZE || blkSize <= 0 || blkSize % 2 != 0)
                     error("块大小应为2的倍数且不能超过%d %d %% 2 == %d\n", BLOCKSIZE, blkSize, blkSize % 2);
                 break;
-            case 'b': {
-                int btCnt = strlen(optarg) / 3 + 1;
-                if (btCnt > BUFSIZE) error("字节最多 %d 现有 %d\n", BUFSIZE, btCnt);
-                
-                printf("optarg=%s btCnt=%d strlen=%d\n", optarg, btCnt, strlen(optarg));
-            
-                btlen = strToByte(bytes, btCnt, optarg);
-                bytePrint(bytes, btlen);
-                
-                if (!btlen) error(USAGE, argv[0]);
+            case 'b':
+                if (!(btlen = strToByte(bytes, -1, optarg, mask, NULL))) error(USAGE, argv[0]);
+                printf("%s\n", optarg);
                 break;
-            }
             case '?':
                 error("Unknown option: %c\n", (char)optopt); // 可能有选项没读到
         }
@@ -694,7 +713,7 @@ int main (int argc, char **argv) {
             memRead(fd, val, sizeof(val), addr, offset);
             printf("%#x ", addr + offset);
             printVal(typ, val);
-            bytePrint(&val, sizeof(val));
+            bytePrint(&val, sizeof(val), " ");
             break;
         }
         case SEARCH: {
@@ -702,20 +721,20 @@ int main (int argc, char **argv) {
             if (btlen <= 0) btlen = typeToByte(bytes, typ, val);
             
             Map *map = loadMaps(pid);
-            Res *res = memSearch(map, fd, bytes, btlen, n, blkSize);
+            Res *res = memSearch(map, fd, bytes, btlen, n, blkSize, mask);
             
             int tot = showRes(res);
             printf("tot=%d\n", tot);
             
             printf("type=%d btlen=%d\n", typ, btlen);
-            printVal(typ, val);
-            bytePrint(bytes, btlen);
+            bytePrint(bytes, btlen, "");
+            bytePrint(mask, btlen, "");
             break;
         }
         case WRITE: {
             if (!addr) error(USAGE, argv[0]);
             btlen = typeToByte(bytes, typ, val);
-            bytePrint(bytes, btlen);
+            bytePrint(bytes, btlen, " ");
             memWrite(fd, bytes, btlen, addr, offset);
             break;
         }

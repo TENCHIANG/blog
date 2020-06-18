@@ -10,13 +10,15 @@ typedef unsigned char Byte;
 
 /**
  * 打印字节数组
- * @param b {void *} 一般是Byte * 也可以是 int *
+ * @param b {Byte *} 字节数组
  * @param n {int} b的长度
+ * @param d {char *} 分隔符 一般通过 strToByte 获取
+ * 最后一个分隔符不输出
  */
-#define bytePrint(b, n) ({ \
+#define bytePrint(b, n, d) ({ \
     Byte *p = (Byte *)b; \
     for (int i = 0; i < (n); i++) \
-        printf("%02x ", p[i]); \
+        printf("%02x%s", p[i], i + 1 == n ? "" : d); \
     printf("\n"); \
 })
 
@@ -36,50 +38,56 @@ void error (char *fmt, ...) {
  * 字符到数字的映射(支持16进制)
  * @param c {char|int} 要映射的字符
  * @return {int} 返回字符所代表的数字
+ * 注意 如果有 ? 指挥替换为 0 而不会报错
  */
 #define charMap(c) ({ \
     int r = (c); \
     if (r >= '0' && r <= '9') r -= '0'; \
-    else if (r >= 'a' && r <= 'z') r = r - 'a' + 10; \
-    else if (r >= 'A' && r <= 'Z') r = r - 'A' + 10; \
-    else error("不支持的字符 %c\n", r); \
+    else if (r >= 'a' && r <= 'f') r = r - 'a' + 10; \
+    else if (r >= 'A' && r <= 'F') r = r - 'A' + 10; \
+    else if (r == '?') r = 0; \
+    else error("不支持的字符 [%c]\n", r); \
     r; \
 })
 
+#define maskMap(c) ((c) == '?' ? 0 : 0xf)
+
+#define isByte(c) ( \
+    ((c) >= '0' && (c) <= '9') || \
+    ((c) >= 'a' && (c) <= 'f') || \
+    ((c) >= 'A' && (c) <= 'F') || \
+    ((c) == '?') \
+)
+
 /**
  * 字符串转字节数组
- * @param b {void *} 一般是Byte * 也可以是 int *
- * @param n {int} 拷贝n个字节 -1表示由字符串决定其长度
- * @param s {char *} 以 1a aa 10 形式存储的字符串(不要求是字符串数组可以写)
- * @return {Byte *} 返回拷贝了多少个字节
+ * @param b 字节数组
+ * @param n 拷贝n个字节 -1表示由字符串决定其长度
+ * @param s 字节码字符串(自动识别分隔符)
+ * @param mask 蒙版数组 如果不为空 则再生成蒙版 其长度与字节数组一致
+ * @param dlm 获取字节码字符串的分隔符
+ * @return {int} 返回拷贝了多少个字节
  * 自动检测分隔符长度，要求 1.分隔符起码长度相同 2.分隔符不能为数字字符或字母字符
  */
-#define strToByte(b, n, s) ({ \
-    int off = 2; /* 2个字节 + 自动检测分隔符长度 */ \
-    for (int i = off; (s)[i] && !isdigit((s)[i]) && !isalpha((s)[i]); i++, off++) \
-        continue; \
-    Byte *p = (Byte *)b; \
-    int cnt = (n); \
-    Byte h, l; \
-    for (int i = 0; s[i] && cnt > 0; i += off, cnt--) { \
-        h = charMap(s[i]) << 4; /* 高字节 */ \
-        l = charMap(s[i + 1]); \
-        p[i / off] = h + l; \
-    } \
-    (n) - cnt; \
-})
-
-/*#define strToByte(b, n, s, d) ({ \
-    Byte *p = (Byte *)b; \
-    char buf[3] = { 0 }; \
-    int cnt = (n); \
-    int off = 2 + strlen(d); \
-    for (int i = 0; s[i] && cnt > 0; i += off, cnt--) { \
-        memcpy(buf, s + i, sizeof(buf) - 1); \
-        (p[i / off] = (Byte)strtol(buf, NULL, 16); \
-    } \
-    (n) - cnt; \
-})*/
+int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
+    int off = 2; // 2个字节 + 自动检测分隔符长度
+    for (; s[off] && !isByte(s[off]); off++)
+        if (dlm) *dlm++ = s[off];
+    int cnt = n;
+    int slen = strlen(s);
+    Byte h, l;
+    for (int i = 0; i < slen && cnt; i += off, cnt--) {
+        h = charMap(s[i]) << 4;
+        l = charMap(s[i + 1]);
+        b[i / off] = h + l;
+        if (mask) {
+            h = maskMap(s[i]) << 4;
+            l = maskMap(s[i + 1]);
+            mask[i / off] = h + l;
+        }
+    }
+    return n - cnt;
+}
 
 /**
  * 把str用delim分割成若干份，分别保存到save里，保存n个
@@ -96,7 +104,6 @@ int split (char *str, char *delim, char **save, int n) {
     }
     return cnt;
 }
-
 
 /**
  * 字节数组转字符串
@@ -119,23 +126,54 @@ char *byteToStr (Byte *ba, int baSize, char *sa, int saSize, char *dlm) {
     return sa;
 }
 
+/*#define byteCmp(p, q, n, m) ({ \
+    Byte *a = (Byte *)(p), *b = (Byte *)(q); \
+    for (int i = (n); --i > 0 && *a & *m == *b & *m; a++, b++, m++) continue; \
+    *a - *b; \
+})*/
+
+/**
+ * 字节数组比较 也可以比较字符串(memcmp strcmp)
+ * @param a 字节数组
+ * @param b 字节数组
+ * @param n 要对比多少个字节
+ * @param m 字节数组 蒙版 如果传NULL 则使用 memcmp 否则在蒙版的基础上对比
+ * @return {int} 相等返回 0
+ * 注意：memcmp的返回值不能用作*a和*b的距离
+ */
+int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
+    if (!m) return memcmp(a, b, n); // 0x11 - 0x00 == 1
+    while (--n > 0 && (*a & *m) == (*b & *m)) a++, b++, m++;
+    return (*a & *m) - (*b & *m); // 0x11 - 0x00 == 0x11
+}
+
 /*,
 tsu -c 'gcc -Wall -O3 /sdcard/Pictures/test.c -o /data/local/tmp/test/test'
 tsu -c '/data/local/tmp/test/test'
 */
 int main (void) {
-    char buf[BLOCKSIZE] = { 0 };
-    //double *addr = (double *)0x67453000;
+    Byte buf[BLOCKSIZE] = { 0 };
+    Byte buf2[BLOCKSIZE] = { 0 };
     
-    char *btStr = "A6 00 00 00 FB 53 90 0C 0C A1 00 00 00 00 00 00 00 00 00 12 00 00 00 00 05 29 11 E3";
+    char *btStr = "????????FBFFFFFF0000000000000000????????F7FFFFFF????????FBFFFFFF000000000000000000000000002CBA40";
+    char *btStr2 = "a6  00  00  00  fb  53  90  0c  0c  a1  00  00  00  00  00  00  00  00  00  12  00  00  00  00  05  29  ??  e3";
     
-    int len = strToByte(buf, strlen(btStr) / 3 + 1, btStr);
-    bytePrint(buf, len);
-    printf("%d %d\n", len, strlen(btStr) / 3 + 1);
+    Byte mask[BLOCKSIZE];
+    memset(mask, 0xff, sizeof(mask));
     
-    char str[BLOCKSIZE] = { 0 };
+    char dlm[BLOCKSIZE] = { 0 };
+    int len = strToByte(buf, -1, btStr, NULL, dlm);
+    int len2 = strToByte(buf2, -1, btStr2, mask, NULL);
+    bytePrint(buf, len, "");
+    bytePrint(mask, len, "");
+    bytePrint(buf2, len, "");
+    printf("len=%d dlm=[%s]\n", len, dlm);
+    
+    printf("%d\n", byteCmp(buf, buf2, len, mask));
+    
+    /*char str[BLOCKSIZE] = { 0 };
     byteToStr(buf, len, str, sizeof(str), "--");
-    printf("%s\nlen=%d\n", str, len);
+    printf("%s\nlen=%d\n", str, len);*/
     
     return 0;
 }

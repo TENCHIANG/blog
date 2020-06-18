@@ -7,6 +7,7 @@
 #include <time.h> // clock
 #include <stddef.h> // NULL
 #include <math.h> // pow
+#include <ctype.h> // isdigit isalpha
 
 #define ATTRSIZE 5
 #define BUFSIZE 128
@@ -66,7 +67,8 @@ typedef union Value {
     (t) == I8 ? printf("%lld\n", (v).i8) : \
     (t) == U8 ? printf("%llu\n", (v).u8) : \
     (t) == F4 ? printf("%g\n", (v).f4) : \
-    (t) == F4 ? printf("%g\n", (v).f8) : error("不支持的类型 %d\n", t) \
+    (t) == F4 ? printf("%g\n", (v).f8) : \
+    fprintf(stderr, "printVal 不支持的类型 %d\n", t) \
 )
 
 #define inputVal(t, v, s) ({ \
@@ -78,7 +80,7 @@ typedef union Value {
             res = sscanf((s), "%llu", &(v).u8); break; \
         case F4: res = sscanf((s), "%f", &(v).f4); break; \
         case F8: res = sscanf((s), "%lf", &(v).f8); break; \
-        default: error("不支持的类型 t=[%d] s=[%s]\n", (t), (s)); \
+        default: error("inputVal 不支持的类型 t=[%d] s=[%s]\n", (t), (s)); \
     } \
     if (res != 1) error("inputVal t=[%d] s=[%s]\n", (t), (s)); \
 })
@@ -142,35 +144,58 @@ typedef struct Res {
 
 /**
  * 字节数组转字符串
- * @param b {void *} 一般是Byte * 也可以是 int *
- * @param n {int} b的长度
- * @param s {char *} 以 1a aa 10 形式存储的字符串
- * @return {char *} 返回字符串
- * (s)[i * 3 - 1] 最后一个空格
+ * @param ba 字节数组
+ * @param baSize 字节数组的长度
+ * @param sa 字符数组
+ * @param saSize 字符数组的长度 sizeof而非strlen
+ * @param dlm 分隔符
+ * @return 返回传过来的字符数组
+ * 一个字符数组能存 saSize / off + 1 个字节 或 saSize / (dlen + 1)
+ * 为什么不用宏 就算用 ({}) 包起来同名变量也会互相干扰
  */
-#define byteToStr(b, n, s) ({ \
-    Byte *p = (Byte *)b; \
-    int i; \
-    for (i = 0; i < (n); i++) \
-        sprintf((s) + i * 3, "%02x ", p[i]); \
-    (s)[i * 3 - 1] = 0; \
-    (s); \
+char *byteToStr (Byte *ba, int baSize, char *sa, int saSize, char *dlm) {
+    int dlen = strlen(dlm);
+    int off = dlen + 2;
+    int next = 0; // 下一个字节(相当于i * off)
+    for (int i = 0; i < baSize && next < saSize; i++, next += off)
+        sprintf(sa + next, "%02x%s", ba[i], dlm);
+    sa[next - dlen] = 0; // 上一个分隔符的第一个字符置零
+    return sa;
+}
+
+/**
+ * 字符到数字的映射(支持16进制)
+ * @param c {char|int} 要映射的字符
+ * @return {int} 返回字符所代表的数字
+ */
+#define charMap(c) ({ \
+    int r = (c); \
+    if (r >= '0' && r <= '9') r -= '0'; \
+    else if (r >= 'a' && r <= 'z') r = r - 'a' + 10; \
+    else if (r >= 'A' && r <= 'Z') r = r - 'A' + 10; \
+    else error("不支持的字符 %c\n", r); \
+    r; \
 })
 
 /**
  * 字符串转字节数组
  * @param b {void *} 一般是Byte * 也可以是 int *
- * @param n {int} 拷贝n个字节 没办法只用字符串表示长度因为跨度为3
+ * @param n {int} 拷贝n个字节 -1表示由字符串决定其长度
  * @param s {char *} 以 1a aa 10 形式存储的字符串(不要求是字符串数组可以写)
  * @return {Byte *} 返回拷贝了多少个字节
+ * 自动检测分隔符长度，要求 1.分隔符起码长度相同 2.分隔符不能为数字字符或字母字符
  */
 #define strToByte(b, n, s) ({ \
+    int off = 2; /* 2个字节 + 自动检测分隔符长度 */ \
+    for (int i = off; (s)[i] && !isdigit((s)[i]) && !isalpha((s)[i]); i++, off++) \
+        continue; \
     Byte *p = (Byte *)b; \
-    char buf[3] = { 0 }; \
     int cnt = (n); \
-    for (int i = 0; s[i] && cnt > 0; i += 3, cnt--) { \
-        memcpy(buf, s + i, sizeof(buf) - 1); \
-        p[i / 3] = (Byte)strtol(buf, NULL, 16); \
+    Byte h, l; \
+    for (int i = 0; s[i] && cnt > 0; i += off, cnt--) { \
+        h = charMap(s[i]) << 4; /* 高字节 */ \
+        l = charMap(s[i + 1]); \
+        p[i / off] = h + l; \
     } \
     (n) - cnt; \
 })
@@ -538,7 +563,7 @@ int typeToByte (Byte *bp, Type typ, Value val) {
 }
 
 /*
-tsu -c 'gcc -Wall -O3 /sdcard/Pictures/mem.c -o /data/local/tmp/test/mem'
+tsu -c 'gcc -Wall -O3 /sdcard/Pictures/mem.c -o /data/local/tmp/test/mem && cp /data/local/tmp/test/mem /sdcard/Pictures/mem'
 tsu -c 'gcc -Wall -O3 /sdcard/Pictures/mem.c -o /sdcard/Pictures/mem'
 
 tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T r -a 0x67453000 -o 0 -t i4'

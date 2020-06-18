@@ -12,7 +12,7 @@
 #define ATTRSIZE 5
 #define BUFSIZE 128
 #define BLOCKSIZE 4096 // 单位分块长度（提速）
-#define USAGE "Usage: %s -p pkg -T r|w|s -a addr [-o offset] -t <i|u|f><1|2|4|8>[-val] [-n n] [-B blkSize] [-b bytes]\n"
+#define USAGE "Usage: %s -p pkg -T r|w|s -a addr [-o offset] -t <i|u|f><1|2|4|8>[-val] [-n n] [-B blkSize] [-b bytes] [-v verbose]\n"
 
 #define VM_READ 8 // r -
 #define VM_WRITE 4 // w -
@@ -75,19 +75,21 @@ void error (char *fmt, ...) {
     exit(1);
 }
 
-#define printVal(t, v) ( \
-    (t) == I1 ? printf("%d\n", (v).i1) : \
-    (t) == U1 ? printf("%u\n", (v).u1) : \
-    (t) == I2 ? printf("%d\n", (v).i2) : \
-    (t) == U2 ? printf("%u\n", (v).u2) : \
-    (t) == I4 ? printf("%d\n", (v).i4) : \
-    (t) == U4 ? printf("%u\n", (v).u4) : \
-    (t) == I8 ? printf("%lld\n", (v).i8) : \
-    (t) == U8 ? printf("%llu\n", (v).u8) : \
-    (t) == F4 ? printf("%g\n", (v).f4) : \
-    (t) == F4 ? printf("%g\n", (v).f8) : \
-    fprintf(stderr, "printVal 不支持的类型 %d\n", t) \
-)
+#define printVal(t, v) ({ \
+    switch (t) { \
+        case I1: printf("%d\n", (v).i1); break; \
+        case U1: printf("%u\n", (v).u1); break; \
+        case I2: printf("%d\n", (v).i2); break; \
+        case U2: printf("%u\n", (v).u2); break; \
+        case I4: printf("%d\n", (v).i4); break; \
+        case U4: printf("%u\n", (v).u4); break; \
+        case I8: printf("%lld\n", (v).i8); break; \
+        case U8: printf("%llu\n", (v).u8); break; \
+        case F4: printf("%g\n", (v).f4); break; \
+        case F8: printf("%g\n", (v).f8); break; \
+        default: error("printVal 不支持的类型 t=[%d]\n", (t)); \
+    } \
+})
 
 #define inputVal(t, v, s) ({ \
     int res; \
@@ -137,8 +139,8 @@ typedef struct Res {
 #define printByte(b) printf("i4=%d u4=%u i8=%lld u8=%llu f4=%g f8=%g\n", (b).i4, (b).u4, (b).i8, (b).u8, (b).f4, (b).f8)
 
 #define printRes(p) do { \
-    printf("addr=%#010x ", (p)->addr); \
-    printByte((p)->val); \
+    printf("%#010x\n", (p)->addr); \
+    /*printByte((p)->val);*/ \
     /*printVal((p)->typ, (p)->val);*/ \
 } while(0)
 
@@ -623,9 +625,11 @@ int main (int argc, char **argv) {
     Byte bytes[BUFSIZE] = { 0 };
     int btlen = 0;
     
+    int verbose = 0; // 打印详细信息
+    
     int opt = -1;
     opterr = 0; // 自己处理错误
-    while ((opt = getopt(argc, argv, "p:T:a:o:t:n:B:b:")) != -1)
+    while ((opt = getopt(argc, argv, "p:T:a:o:t:n:B:b:v:")) != -1)
         switch (opt) {
             case 'p':
                 pkg = optarg;
@@ -697,6 +701,9 @@ int main (int argc, char **argv) {
             case 'b':
                 if (!(btlen = strToByte(bytes, -1, optarg, mask, NULL))) error(USAGE, argv[0]);
                 break;
+            case 'v':
+                verbose = 1;
+                break;
             case '?':
                 error("Unknown option: %c\n", (char)optopt); // 可能有选项没读到
         }
@@ -718,7 +725,7 @@ int main (int argc, char **argv) {
             memRead(fd, val, sizeof(val), addr, offset);
             printf("%#x ", addr + offset);
             printVal(typ, val);
-            bytePrint(&val, sizeof(val), " ");
+            bytePrint(&val, sizeof(val), "");
             break;
         }
         case SEARCH: {
@@ -728,26 +735,30 @@ int main (int argc, char **argv) {
             Map *map = loadMaps(pid);
             Res *res = memSearch(map, fd, bytes, btlen, n, blkSize, mask);
             
-            int tot = showRes(res);
-            printf("tot=%d\n", tot);
-            
-            printf("type=%d btlen=%d\n", typ, btlen);
-            printf("bytes="); bytePrint(bytes, btlen, "");
-            printf(" mask="); bytePrint(mask, btlen, "");
+            int tot = 0;
+            tot = showRes(res);
+            if (verbose) {
+                printf("tot=%d\n", tot);
+                printf("type=%d btlen=%d\n", typ, btlen);
+                printf("bytes="); bytePrint(bytes, btlen, "");
+                printf(" mask="); bytePrint(mask, btlen, "");
+            }
             break;
         }
         case WRITE: {
             if (!addr) error(USAGE, argv[0]);
             btlen = typeToByte(bytes, typ, val);
-            bytePrint(bytes, btlen, " ");
+            bytePrint(bytes, btlen, "");
             memWrite(fd, bytes, btlen, addr, offset);
             break;
         }
         default:
             error("不支持的模式 %d\n", mode);
     }
-    double ms = (1.0 * clock() - start) / 1000;
-    printf("耗时=%gms\n", ms);
+    if (verbose) {
+        double ms = (1.0 * clock() - start) / 1000;
+        printf("耗时=%gms\n", ms);
+    }
     
     close(fd);
 	exit(0);

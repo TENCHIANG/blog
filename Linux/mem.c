@@ -106,7 +106,7 @@ void error (char *fmt, ...) {
 typedef struct Res {
     Addr addr;
     //Type typ;
-    //Value val;
+    Value val;
     struct Res *next;
 } Res;
 
@@ -133,8 +133,12 @@ typedef struct Res {
 
 // 不要把带参宏当成函数 且只在编译时有效 宏更像子程序
 #define printMap(p) printf("%#x %#x %d %dk\n", (p)->start, (p)->end, (p)->attr, (p)->size / 1000)
+
+#define printByte(b) printf("i4=%d u4=%u i8=%lld u8=%llu f4=%g f8=%g\n", (b).i4, (b).u4, (b).i8, (b).u8, (b).f4, (b).f8)
+
 #define printRes(p) do { \
-    printf("%#010x\n", (p)->addr); \
+    printf("addr=%#010x ", (p)->addr); \
+    printByte((p)->val); \
     /*printVal((p)->typ, (p)->val);*/ \
 } while(0)
 
@@ -555,6 +559,7 @@ Res *memSearch (Map *map, int fd, Byte *bytes, int len, int n, int blkSize, Byte
                     }
                     Res *res = calloc(1, sizeof(Res));
                     res->addr = addr;
+                    memcpy(&res->val, blkoff, sizeof(res->val));
                     //res->typ = typ;
                     //res->val = val;
                     link(resHead, resCur, res);
@@ -595,6 +600,7 @@ tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -t i4-161 -n -1 -B 4
 
 tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -n 10 -b "A6 00 00 00 FB 53 90 0C 0C A1 00 00 00 00 00 00 00 00 00 12 00 00 00 00 05 29 11 E3"'
 tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -n 10 -bA6000000FB53900C0CA100000000000000000012000000000529??E3'
+tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -n 10 -b02000?000?000000'
 
 tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T w -a 0E0BB780 -o 0 -t i4-162'
 */
@@ -690,7 +696,6 @@ int main (int argc, char **argv) {
                 break;
             case 'b':
                 if (!(btlen = strToByte(bytes, -1, optarg, mask, NULL))) error(USAGE, argv[0]);
-                printf("%s\n", optarg);
                 break;
             case '?':
                 error("Unknown option: %c\n", (char)optopt); // 可能有选项没读到
@@ -727,8 +732,8 @@ int main (int argc, char **argv) {
             printf("tot=%d\n", tot);
             
             printf("type=%d btlen=%d\n", typ, btlen);
-            bytePrint(bytes, btlen, "");
-            bytePrint(mask, btlen, "");
+            printf("bytes="); bytePrint(bytes, btlen, "");
+            printf(" mask="); bytePrint(mask, btlen, "");
             break;
         }
         case WRITE: {

@@ -262,18 +262,6 @@ int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
 })
 
 /**
- * 蒙版化
- * 返回已蒙版化了多少个字节
- */
-#define maskify(a, m, n) ({ \
-    int i; \
-    int mlen = strlen(m); \
-    for (i = 0; i < (n) && i < mlen; i++) \
-        (a)[i] &= (m)[i]; \
-    i; \
-})
-
-/**
  * 字节数组比较 也可以比较字符串(memcmp strcmp)
  * @param a 字节数组
  * @param b 字节数组
@@ -282,7 +270,7 @@ int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
  * @return {int} 相等返回 0
  * 注意：memcmp只返回 -1 0 1
  */
-/*int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
+int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
     int p, q;
     for (int i = 0; i < n; i++) {
         p = m ? (a[i] & m[i]) : a[i];
@@ -290,7 +278,7 @@ int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
         if (p != q) return p - q;
     }
     return 0;
-}*/
+}
 
 /**
  * 把str用delim分割成若干份，分别保存到save里，保存n个
@@ -534,12 +522,11 @@ Map *loadMaps (int pid) {
  * 读取len个字节
  * 返回读取的字节数
  */
-int memRead (int fd, void *data, int len, Addr addr, int offset, Byte *mask) {
+int memRead (int fd, void *data, int len, Addr addr, int offset) {
     Byte *bytes = (Byte *)data;
     addr += offset;
     int cnt = pread64(fd, bytes, len, addr);
-    if (cnt == -1 || cnt != len) error("读取内存 %#x 失败 cnt=%d\n", addr, cnt);
-    if (mask) maskify(data, mask, cnt);
+    //if (cnt == -1 || cnt != len) error("读取内存 %#x 失败 cnt=%d\n", addr, cnt);
     return cnt;
 }
 
@@ -559,28 +546,32 @@ int memWrite (int fd, void *data, int len, Addr addr, int offset) {
  * 搜索mem文件 失败返回 NULL
  */
 Res *memSearch (Map *map, int fd, Byte *bytes, int len, int n, int blkSize, Byte *mask) {
-    int lenPerBlk = blkSize - len; // blkSize / len
     Res *resHead = NULL, *resCur = NULL;
     Byte blk[BLOCKSIZE]; // 直接申请块的最大容量
+    Byte tmp[BLOCKSIZE];
+    
+    //int miniBlock = len < 8 ? len : 8;
+    int miniBlock = len;
+    int lenPerBlk = blkSize / miniBlock;
     
     for (Map *p = map; p && n; p = p->next) {
         int blkPerChunk = p->size / blkSize; // 每个内存段分多少个块
         for (int i = 0; i < blkPerChunk && n; i++) {
             Addr addr = p->start + i * blkSize;
-            memRead(fd, blk, blkSize, addr, 0, mask); // 一次读一整块
+            memRead(fd, blk, blkSize, addr, 0); // 一次读一整块
             for (int j = 0; j < lenPerBlk && n; j++) {
-                int off = j; // j * len
+                int off = j * miniBlock;
                 Byte *blkoff = blk + off;
-                if (!memcmp(blkoff, bytes, len)) {
+                if (!byteCmp(blkoff, bytes, len, mask)) {
                     addr += off;
-                    memRead(fd, blk, len, addr, 0, mask); // 再次确认
-                    if (memcmp(blk, bytes, len)) { // 暂不清楚为啥会误识别(也许是对齐的问题?)
+                    memRead(fd, tmp, len, addr, 0); // 再次确认
+                    if (byteCmp(tmp, bytes, len, mask)) { // 暂不清楚为啥会误识别(也许是对齐的问题?)
                         printf("start=%x end=%x addr=%x blkPerChunk=%d lenPerBlk=%d off=%d\n" , p->start, p->end, addr, blkPerChunk, lenPerBlk, off);
                         continue;
                     }
                     Res *res = calloc(1, sizeof(Res));
                     res->addr = addr;
-                    memcpy(&res->val, blkoff, sizeof(res->val));
+                    memcpy(&res->val, tmp, sizeof(res->val));
                     //res->typ = typ;
                     //res->val = val;
                     link(resHead, resCur, res);
@@ -590,6 +581,26 @@ Res *memSearch (Map *map, int fd, Byte *bytes, int len, int n, int blkSize, Byte
         }
     }
     
+    return resHead;
+}
+
+Res *memSeaByt (Map *map, int fd, Byte *bytes, int len, int n, int blkSize, Byte *mask) {
+    Byte blk[BLOCKSIZE]; // 直接申请块的最大容量
+    Res *resHead = NULL, *resCur = NULL;
+    for (Map *p = map; p && n; p = p->next) {
+        int lenPerBlk = p->size / len;
+        for (int i = 0; i < lenPerBlk && n; i++) {
+            Addr addr = p->start + i * len;
+            memRead(fd, blk, len, addr, 0);
+            if (!memcmp(blk, bytes, len)) {
+                Res *res = calloc(1, sizeof(Res));
+                res->addr = addr;
+                memcpy(&res->val, blk, sizeof(res->val));
+                link(resHead, resCur, res);
+                if (n > -1) n--;
+            }
+        }
+    }
     return resHead;
 }
 
@@ -615,14 +626,12 @@ int typeToByte (Byte *bp, Type typ, Value val) {
 tsu -c 'gcc -Wall -O3 /sdcard/Pictures/mem.c -o /data/local/tmp/test/mem && cp /data/local/tmp/test/mem /sdcard/Pictures/mem'
 tsu -c 'gcc -Wall -O3 /sdcard/Pictures/mem.c -o /sdcard/Pictures/mem'
 
-tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T r -a 0x67453000 -o 0 -t i4'
-tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -t i4-161 -n -1 -B 4096'
+tsu -c '/data/local/tmp/test/mem -pcom.tencent.lycqsh -Tr -a 0x67453000 -o0 -ti4 -v1'
+tsu -c '/data/local/tmp/test/mem -pcom.tencent.lycqsh -Ts -ti4-161 -n10 -v1'
 
-tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -n 10 -b "A6 00 00 00 FB 53 90 0C 0C A1 00 00 00 00 00 00 00 00 00 12 00 00 00 00 05 29 11 E3"'
-tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -n 10 -bA6000000FB53900C0CA100000000000000000012000000000529??E3'
-tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T s -n 10 -b02000?000?000000'
+tsu -c '/data/local/tmp/test/mem -pcom.tencent.lycqsh -Ts -b0200010006000000 -n10 -v1' 65538D
 
-tsu -c '/data/local/tmp/test/mem -p com.tencent.lycqsh -T w -a 0E0BB780 -o 0 -t i4-162'
+tsu -c '/data/local/tmp/test/mem -pcom.tencent.lycqsh -Tw -a0E0BB780 -o0 -ti4-162'
 */
 int main (int argc, char **argv) {
     char *pkg = NULL;
@@ -740,7 +749,7 @@ int main (int argc, char **argv) {
     switch (mode) {
         case READ: { // addr [offset] val
             if (!addr) error(USAGE, argv[0]);
-            memRead(fd, &val, sizeof(val), addr, offset, NULL);
+            memRead(fd, &val, sizeof(val), addr, offset);
             printf("%#x ", addr + offset);
             printVal(typ, val);
             bytePrint(&val, sizeof(val), "");
@@ -748,7 +757,13 @@ int main (int argc, char **argv) {
         }
         case SEARCH: {
             // 搜索有两种：1.搜索类型 2.搜索特征码
-            if (btlen <= 0) btlen = typeToByte(bytes, typ, val);
+            if (btlen <= 0) {
+                btlen = typeToByte(bytes, typ, val);
+                if (verbose) {
+                    printf("搜索类型模式\n");
+                    printf("bytes="); bytePrint(bytes, btlen, "");
+                }
+            }
             
             Map *map = loadMaps(pid);
             Res *res = memSearch(map, fd, bytes, btlen, n, blkSize, mask);

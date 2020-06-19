@@ -77,6 +77,7 @@ int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
     int slen = strlen(s);
     Byte h, l; // 最起码保留2个字符
     for (int i = 0; i < slen && s[i] && s[i + 1] && cnt; i += off, cnt--) {
+        
         h = charMap(s[i]) << 4;
         l = charMap(s[i + 1]);
         b[i / off] = h + l;
@@ -151,11 +152,25 @@ int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
  */
 #define maskify(a, m, n) ({ \
     int i; \
-    int mlen = strlen(m); \
-    for (i = 0; i < (n) && i < mlen; i++) \
-        (a)[i] &= (m)[i]; \
+    int mlen = strlen((char *)m); \
+    for (i = 0; i < (n); i++) \
+        (a)[i] &= (m)[i % mlen]; \
     i; \
 })
+
+/**
+ * 字节数组比较 返回 t在s中的第一个下标 类似strstr
+ */
+int memmem (Byte *s, int sn, Byte *t, int tn) {
+    int i, j, k;
+    for (i = 0; i < sn; i++) {
+        for (j = i, k = 0; k < tn && s[j] == t[k]; j++, k++)
+            continue;
+        if (k > 0 && k >= tn)
+            return i;
+    }
+    return -1;
+}
 
 /*,
 tsu -c 'gcc -Wall -O3 /sdcard/Pictures/test.c -o /data/local/tmp/test/test'
@@ -186,6 +201,11 @@ int main (void) {
     printf("before="); bytePrint(a, len, "");
     printf("maskify=%d\n", maskify(a, mask, len));
     printf("after ="); bytePrint(a, len, "");
+    
+    len2 = strToByte(buf2, -1, "3f", NULL, dlm);
+    printf("buf="); bytePrint(buf, len, "");
+    printf("buf2="); bytePrint(buf2, len2, "");
+    printf("%d\n", memmem(buf, len, buf2, len2));
     
     /*char str[BLOCKSIZE] = { 0 };
     byteToStr(buf, len, str, sizeof(str), "--");

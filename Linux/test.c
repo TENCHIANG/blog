@@ -46,7 +46,7 @@ void error (char *fmt, ...) {
     else if (r >= 'a' && r <= 'f') r = r - 'a' + 10; \
     else if (r >= 'A' && r <= 'F') r = r - 'A' + 10; \
     else if (r == '?') r = 0; \
-    else error("不支持的字符 [%c]\n", r); \
+    else error("不支持的字符 ASCII=%d %c\n", r, r); \
     r; \
 })
 
@@ -75,8 +75,8 @@ int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
         if (dlm) *dlm++ = s[off];
     int cnt = n;
     int slen = strlen(s);
-    Byte h, l;
-    for (int i = 0; i < slen && cnt; i += off, cnt--) {
+    Byte h, l; // 最起码保留2个字符
+    for (int i = 0; i < slen && s[i] && s[i + 1] && cnt; i += off, cnt--) {
         h = charMap(s[i]) << 4;
         l = charMap(s[i + 1]);
         b[i / off] = h + l;
@@ -126,12 +126,6 @@ char *byteToStr (Byte *ba, int baSize, char *sa, int saSize, char *dlm) {
     return sa;
 }
 
-/*#define byteCmp(p, q, n, m) ({ \
-    Byte *a = (Byte *)(p), *b = (Byte *)(q); \
-    for (int i = (n); --i > 0 && *a & *m == *b & *m; a++, b++, m++) continue; \
-    *a - *b; \
-})*/
-
 /**
  * 字节数组比较 也可以比较字符串(memcmp strcmp)
  * @param a 字节数组
@@ -139,13 +133,29 @@ char *byteToStr (Byte *ba, int baSize, char *sa, int saSize, char *dlm) {
  * @param n 要对比多少个字节
  * @param m 字节数组 蒙版 如果传NULL 则使用 memcmp 否则在蒙版的基础上对比
  * @return {int} 相等返回 0
- * 注意：memcmp的返回值不能用作*a和*b的距离
+ * 注意：memcmp只返回 -1 0 1
  */
 int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
-    if (!m) return memcmp(a, b, n); // 0x11 - 0x00 == 1
-    while (--n > 0 && (*a & *m) == (*b & *m)) a++, b++, m++;
-    return (*a & *m) - (*b & *m); // 0x11 - 0x00 == 0x11
+    int p, q;
+    for (int i = 0; i < n; i++) {
+        p = m ? (a[i] & m[i]) : a[i];
+        q = m ? (b[i] & m[i]) : b[i];
+        if (p != q) return p - q;
+    }
+    return 0;
 }
+
+/**
+ * 蒙版化
+ * 返回已蒙版化了多少个字节
+ */
+#define maskify(a, m, n) ({ \
+    int i; \
+    int mlen = strlen(m); \
+    for (i = 0; i < (n) && i < mlen; i++) \
+        (a)[i] &= (m)[i]; \
+    i; \
+})
 
 /*,
 tsu -c 'gcc -Wall -O3 /sdcard/Pictures/test.c -o /data/local/tmp/test/test'
@@ -155,7 +165,7 @@ int main (void) {
     Byte buf[BLOCKSIZE] = { 0 };
     Byte buf2[BLOCKSIZE] = { 0 };
     
-    char *btStr = "????????FBFFFFFF0000000000000000????????F7FFFFFF????????FBFFFFFF000000000000000000000000002CBA40";
+    char *btStr = "0000000F0000000000000000000000000000023000000000000000000000023FFFFFFFF00000000";
     char *btStr2 = "a6  00  00  00  fb  53  90  0c  0c  a1  00  00  00  00  00  00  00  00  00  12  00  00  00  00  05  29  ??  e3";
     
     Byte mask[BLOCKSIZE];
@@ -164,12 +174,18 @@ int main (void) {
     char dlm[BLOCKSIZE] = { 0 };
     int len = strToByte(buf, -1, btStr, NULL, dlm);
     int len2 = strToByte(buf2, -1, btStr2, mask, NULL);
-    bytePrint(buf, len, "");
-    bytePrint(mask, len, "");
-    bytePrint(buf2, len, "");
+    printf("buf="); bytePrint(buf, len, "");
+    printf("mask="); bytePrint(mask, len, "");
+    printf("buf2="); bytePrint(buf2, len, "");
     printf("len=%d dlm=[%s]\n", len, dlm);
     
     printf("%d\n", byteCmp(buf, buf2, len, mask));
+    
+    Byte a[BLOCKSIZE];
+    memset(a, 0xff, BLOCKSIZE);
+    printf("before="); bytePrint(a, len, "");
+    printf("maskify=%d\n", maskify(a, mask, len));
+    printf("after ="); bytePrint(a, len, "");
     
     /*char str[BLOCKSIZE] = { 0 };
     byteToStr(buf, len, str, sizeof(str), "--");

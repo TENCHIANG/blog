@@ -201,7 +201,7 @@ char *byteToStr (Byte *ba, int baSize, char *sa, int saSize, char *dlm) {
     else if (r >= 'a' && r <= 'f') r = r - 'a' + 10; \
     else if (r >= 'A' && r <= 'F') r = r - 'A' + 10; \
     else if (r == '?') r = 0; \
-    else error("不支持的字符 [%c]\n", r); \
+    else error("不支持的字符 ASCII=%d\n", r); \
     r; \
 })
 
@@ -230,8 +230,8 @@ int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
         if (dlm) *dlm++ = s[off];
     int cnt = n;
     int slen = strlen(s);
-    Byte h, l;
-    for (int i = 0; i < slen && cnt; i += off, cnt--) {
+    Byte h, l; // 最起码保留2个字符
+    for (int i = 0; i < slen && s[i] && s[i + 1] && cnt; i += off, cnt--) {
         h = charMap(s[i]) << 4;
         l = charMap(s[i + 1]);
         b[i / off] = h + l;
@@ -262,6 +262,18 @@ int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
 })
 
 /**
+ * 蒙版化
+ * 返回已蒙版化了多少个字节
+ */
+#define maskify(a, m, n) ({ \
+    int i; \
+    int mlen = strlen(m); \
+    for (i = 0; i < (n) && i < mlen; i++) \
+        (a)[i] &= (m)[i]; \
+    i; \
+})
+
+/**
  * 字节数组比较 也可以比较字符串(memcmp strcmp)
  * @param a 字节数组
  * @param b 字节数组
@@ -270,7 +282,7 @@ int strToByte (Byte *b, int n, char *s, Byte *mask, char *dlm) {
  * @return {int} 相等返回 0
  * 注意：memcmp只返回 -1 0 1
  */
-int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
+/*int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
     int p, q;
     for (int i = 0; i < n; i++) {
         p = m ? (a[i] & m[i]) : a[i];
@@ -278,7 +290,7 @@ int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
         if (p != q) return p - q;
     }
     return 0;
-}
+}*/
 
 /**
  * 把str用delim分割成若干份，分别保存到save里，保存n个
@@ -522,11 +534,12 @@ Map *loadMaps (int pid) {
  * 读取len个字节
  * 返回读取的字节数
  */
-int memRead (int fd, void *data, int len, Addr addr, int offset) {
+int memRead (int fd, void *data, int len, Addr addr, int offset, Byte *mask) {
     Byte *bytes = (Byte *)data;
     addr += offset;
     int cnt = pread64(fd, bytes, len, addr);
     if (cnt == -1 || cnt != len) error("读取内存 %#x 失败 cnt=%d\n", addr, cnt);
+    if (mask) maskify(data, mask, cnt);
     return cnt;
 }
 
@@ -546,7 +559,7 @@ int memWrite (int fd, void *data, int len, Addr addr, int offset) {
  * 搜索mem文件 失败返回 NULL
  */
 Res *memSearch (Map *map, int fd, Byte *bytes, int len, int n, int blkSize, Byte *mask) {
-    int lenPerBlk = blkSize / len; // 每个块里有多少个值
+    int lenPerBlk = blkSize - len; // blkSize / len
     Res *resHead = NULL, *resCur = NULL;
     Byte blk[BLOCKSIZE]; // 直接申请块的最大容量
     
@@ -554,15 +567,15 @@ Res *memSearch (Map *map, int fd, Byte *bytes, int len, int n, int blkSize, Byte
         int blkPerChunk = p->size / blkSize; // 每个内存段分多少个块
         for (int i = 0; i < blkPerChunk && n; i++) {
             Addr addr = p->start + i * blkSize;
-            memRead(fd, blk, blkSize, addr, 0); // 一次读一整块
+            memRead(fd, blk, blkSize, addr, 0, mask); // 一次读一整块
             for (int j = 0; j < lenPerBlk && n; j++) {
-                int off = j * len;
+                int off = j; // j * len
                 Byte *blkoff = blk + off;
-                if (!byteCmp(blkoff, bytes, len, mask)) {
+                if (!memcmp(blkoff, bytes, len)) {
                     addr += off;
-                    memRead(fd, blk, len, addr, 0); // 再次确认
-                    if (byteCmp(blk, bytes, len, mask)) { // 暂不清楚为啥会误识别(也许是对齐的问题?)
-                        //printf("start=%x end=%x addr=%x blkPerChunk=%d lenPerBlk=%d off=%d\n" , p->start, p->end, addr, blkPerChunk, lenPerBlk, off);
+                    memRead(fd, blk, len, addr, 0, mask); // 再次确认
+                    if (memcmp(blk, bytes, len)) { // 暂不清楚为啥会误识别(也许是对齐的问题?)
+                        printf("start=%x end=%x addr=%x blkPerChunk=%d lenPerBlk=%d off=%d\n" , p->start, p->end, addr, blkPerChunk, lenPerBlk, off);
                         continue;
                     }
                     Res *res = calloc(1, sizeof(Res));
@@ -727,7 +740,7 @@ int main (int argc, char **argv) {
     switch (mode) {
         case READ: { // addr [offset] val
             if (!addr) error(USAGE, argv[0]);
-            memRead(fd, &val, sizeof(val), addr, offset);
+            memRead(fd, &val, sizeof(val), addr, offset, NULL);
             printf("%#x ", addr + offset);
             printVal(typ, val);
             bytePrint(&val, sizeof(val), "");

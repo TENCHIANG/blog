@@ -146,31 +146,67 @@ int byteCmp (Byte *a, Byte *b, int n, Byte *m) {
     return 0;
 }
 
-/**
- * 蒙版化
- * 返回已蒙版化了多少个字节
- */
-#define maskify(a, m, n) ({ \
-    int i; \
-    int mlen = strlen((char *)m); \
-    for (i = 0; i < (n); i++) \
-        (a)[i] &= (m)[i % mlen]; \
-    i; \
-})
+int fastMemmem (Byte *a, int alen, Byte *b, int blen) {
+    int tag[256] = { 0 };
+    
+    int i, j, k, match;
+    for (i = 0; i < blen; i++) tag[b[i]] = 1;
+    
+    for (i = 0; i < alen; i++) {
+        for (j = i + blen - 1, k = blen - 1, match = 1; k >= 0; j--, k--) {
+            if (!tag[a[j]]) {
+                match = 0;
+                i = j;
+                break;
+            }
+            if (match && a[j] != b[k]) match = 0;
+        }
+        if (match) return i;
+    }
+    
+    return -1;
+}
 
 /**
- * 字节数组比较 返回 t在s中的第一个下标 类似strstr
+ * 8字节数组比较(类似strstr memmem)
+ * 返回 t在s中的第一个下标(返回的还是1字节下标)
  */
-int memmem (Byte *s, int sn, Byte *t, int tn) {
+int memmem8b (void *a, int sn, void *b, int tn, void *mask, int mn) {
+    unsigned long long *s = (unsigned long long *)a, *t = (unsigned long long *)b, *ma = (unsigned long long *)mask;
+    if (tn < 8) { // 对齐
+        ma[0] ^= 0xffffffffffffffff << 8 * tn;
+        tn = 8; // 除8时直接变1
+    }
+    sn /= 8; tn /= 8;
     int i, j, k;
     for (i = 0; i < sn; i++) {
-        for (j = i, k = 0; k < tn && s[j] == t[k]; j++, k++)
+        for (j = i, k = 0; k < tn && (s[j] & ma[k % mn]) == (t[k] & ma[k % mn]); j++, k++)
             continue;
+        //printf("ma[0]=[%016llx] i=%d j=%d k=%d s[j]=[%016llx] t[k]=[%016llx]\n", ma[0], i, j, k, s[j] & ma[j % mn], t[k] & ma[k % mn]);
         if (k > 0 && k >= tn)
-            return i;
+            return i * 8;
     }
     return -1;
 }
+
+/**
+ * b蒙版化a
+ * an >= bn
+ * 返回已蒙版化了多少个字节
+ */
+#define maskify(a, an, b, bn) ({ \
+    int i; \
+    for (i = 0; i < (an); i++) \
+        (a)[i] &= (b)[i % (bn)]; \
+    i; \
+})
+/*#define maskify(a, an, b, bn) ({ \
+    int i, j, k; \
+    for (i = 0; i < (an); i += (bn)) \
+        for (k = i, j = 0; j < (bn); j++, k++) \
+            (a)[k] &= (b)[j]; \
+    k; \
+})*/
 
 /*,
 tsu -c 'gcc -Wall -O3 /sdcard/Pictures/test.c -o /data/local/tmp/test/test'
@@ -180,7 +216,7 @@ int main (void) {
     Byte buf[BLOCKSIZE] = { 0 };
     Byte buf2[BLOCKSIZE] = { 0 };
     
-    char *btStr = "0000000F0000000000000000000000000000023000000000000000000000023FFFFFFFF00000000";
+    char *btStr = "0000000F0000000000000000000000000000023000000000000000000000023FFFFFFFF000000000";
     char *btStr2 = "a6  00  00  00  fb  53  90  0c  0c  a1  00  00  00  00  00  00  00  00  00  12  00  00  00  00  05  29  ??  e3";
     
     Byte mask[BLOCKSIZE];
@@ -199,13 +235,15 @@ int main (void) {
     Byte a[BLOCKSIZE];
     memset(a, 0xff, BLOCKSIZE);
     printf("before="); bytePrint(a, len, "");
-    printf("maskify=%d\n", maskify(a, mask, len));
+    printf("maskify=%d\n", maskify(a, len, mask + len/2, len/2));
     printf("after ="); bytePrint(a, len, "");
     
-    len2 = strToByte(buf2, -1, "3f", NULL, dlm);
-    printf("buf="); bytePrint(buf, len, "");
+    //memset(buf2, 0, sizeof(buf2));
+    len2 = strToByte(buf2, -1, "FF", NULL, dlm);
+    printf("\nbuf ="); bytePrint(buf, len, "");
     printf("buf2="); bytePrint(buf2, len2, "");
-    printf("%d\n", memmem(buf, len, buf2, len2));
+    printf("%d\n", memmem8b(buf, len, buf2, len2, mask, len));
+    //printf("%d\n", fastMemmem(buf, len, buf2, len2));
     
     /*char str[BLOCKSIZE] = { 0 };
     byteToStr(buf, len, str, sizeof(str), "--");

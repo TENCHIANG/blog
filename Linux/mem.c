@@ -138,9 +138,13 @@ typedef struct Res {
 
 #define printByte(b) printf("i4=%d u4=%u i8=%lld u8=%llu f4=%g f8=%g\n", (b).i4, (b).u4, (b).i8, (b).u8, (b).f4, (b).f8)
 
-#define printRes(p) do { \
-    printf("%#010x\n", (p)->addr); \
-    /*printByte((p)->val);*/ \
+#define printRes(p, v) do { \
+    if (v) { \
+        printf("%#010x ", (p)->addr); \
+        printByte((p)->val); \
+    } else { \
+        printf("%#010x\n", (p)->addr); \
+    } \
     /*printVal((p)->typ, (p)->val);*/ \
 } while(0)
 
@@ -149,9 +153,9 @@ typedef struct Res {
     printf("total %d\n", traverse(p, printMap(p))); \
 } while (0)
 
-#define showRes(h) ({ \
+#define showRes(h, v) ({ \
     typeof(h) p = (h); \
-    traverse(p, printRes(p)); \
+    traverse(p, printRes(p, (v))); \
 })
 
 /**
@@ -305,8 +309,6 @@ int shell (char *cmd, char *buf, int len) {
     if (!cmd || !buf || len < 0)
         error("cmd = %s buf = %s len = %d\n", cmd, buf, len);
 
-    //memset(buf, 0, len);
-    printf("shell %s\n", cmd);
     FILE *fp = popen(cmd, "r");
     if (!fgets(buf, len, fp)) return -1;
         //error("获取Shell命令 %s 结果失败\n", cmd);
@@ -365,15 +367,10 @@ int getPid (char *pkg) {
     
     char *save[3] = { 0 };
     int len = split(pkg, ".", save, sizeof(save));
-    for (int i = len - 1; i >= 0; i++) // 找最后一个
-        if (save[i]) {
-            pkg = save[i];
-            break;
-        }
-    //printf("pkg=%s\n", pkg);
+    if (len > 0) pkg = save[len - 1]; // 最后一个
     
-    struct dirent *p;
-    while ((p = readdir(dp)) != NULL) {
+    struct dirent *p = NULL;
+    while ((p = readdir(dp))) {
         if (!strcmp(p->d_name, ".") || !strcmp(p->d_name, ".."))
             continue;
         sprintf(buf, "/proc/%s/status", p->d_name);
@@ -388,7 +385,6 @@ int getPid (char *pkg) {
     closedir(dp);
     
     if (!pid) error("获取 %s PID失败\n", pkg);
-    //printf("pid=%d\n", pid);
     
     return pid;
 }
@@ -584,18 +580,43 @@ Res *memSearch (Map *map, int fd, Byte *bytes, int len, int n, int blkSize, Byte
     return resHead;
 }
 
-Res *memSeaByt (Map *map, int fd, Byte *bytes, int len, int n, int blkSize, Byte *mask) {
+/**
+ * 8字节数组比较(类似strstr memmem)
+ * 返回 t在s中的第一个下标(返回的还是1字节下标)
+ */
+int memmem8b (void *a, int sn, void *b, int tn, void *mask, int mn) {
+    unsigned long long *s = (unsigned long long *)a, *t = (unsigned long long *)b, *ma = (unsigned long long *)mask;
+    if (tn < 8) { // 对齐
+        ma[0] ^= 0xffffffffffffffff << 8 * tn;
+        tn = 8; // 除8时直接变1
+    }
+    sn /= 8; tn /= 8;
+    int i, j, k;
+    for (i = 0; i < sn; i++) {
+        for (j = i, k = 0; k < tn && (s[j] & ma[k % mn]) == (t[k] & ma[k % mn]); j++, k++)
+            continue;
+        //printf("ma[0]=[%016llx] i=%d j=%d k=%d s[j]=[%016llx] t[k]=[%016llx]\n", ma[0], i, j, k, s[j] & ma[j % mn], t[k] & ma[k % mn]);
+        if (k > 0 && k >= tn)
+            return i * 8;
+    }
+    return -1;
+}
+
+Res *memSeaByt (Map *map, int fd, Byte *bytes, int bytSize, int n, int blkSize, Byte *mask) {
     Byte blk[BLOCKSIZE]; // 直接申请块的最大容量
     Res *resHead = NULL, *resCur = NULL;
+    bytSize = bytSize < 8 ? 8 : bytSize; // 按8字节对齐
     for (Map *p = map; p && n; p = p->next) {
-        int lenPerBlk = p->size / len;
-        for (int i = 0; i < lenPerBlk && n; i++) {
-            Addr addr = p->start + i * len;
-            memRead(fd, blk, len, addr, 0);
-            if (!memcmp(blk, bytes, len)) {
+        int blkPerChunk = p->size / blkSize; // 每个内存段分多少个块
+        for (int i = 0; i < blkPerChunk && n; i++) {
+            Addr addr = p->start + i * blkSize;
+            memRead(fd, blk, blkSize, addr, 0); // 一次读一整块
+            int off = memmem8b(blk, blkSize, bytes, bytSize, mask, bytSize);
+            if (off > -1) {
+                addr += off;
                 Res *res = calloc(1, sizeof(Res));
                 res->addr = addr;
-                memcpy(&res->val, blk, sizeof(res->val));
+                memcpy(&res->val, blk + off, sizeof(res->val));
                 link(resHead, resCur, res);
                 if (n > -1) n--;
             }
@@ -743,6 +764,7 @@ int main (int argc, char **argv) {
     
     byPass();
 	int pid = getPid(pkg);
+    if (verbose) printf("pid=%d\n", pid);
     int fd = openMem(pid, mode);
     
     int start = clock();
@@ -766,10 +788,10 @@ int main (int argc, char **argv) {
             }
             
             Map *map = loadMaps(pid);
-            Res *res = memSearch(map, fd, bytes, btlen, n, blkSize, mask);
+            Res *res = memSeaByt(map, fd, bytes, btlen, n, blkSize, mask);
             
             int tot = 0;
-            tot = showRes(res);
+            tot = showRes(res, verbose);
             if (verbose) {
                 printf("tot=%d\n", tot);
                 printf("type=%d btlen=%d\n", typ, btlen);

@@ -76,7 +76,7 @@ echo $(test -e README.md) # 啥都没
 | 1                | 通用错误，任何错误都可能使用这个退出码              | let “var1 = 1/0″        | 如除零错误                                                   |
 | 2                | shell内建命令使用错误                               | empty_function() {}     | Seldom seen, usually defaults to exit code 1                 |
 | 126              | 命令调用不能执行                                    |                         | Permission problem or command is not an executable           |
-| 127              | “command not found”                                 | illegal_command         | Possible problem with `$PATH` or a typo                      |
+| 127              | 找不到命令 “command not found”                      | illegal_command         | Possible problem with `$PATH` or a typo                      |
 | 128              | exit参数错误，exit只能以整数作为参数                | exit 3.14159            | exit takes only integer args in the range 0 – 255 (see first footnote) |
 | 128+n            | 信号"n"的致命错误                                   | kill -9 $PPID of script | 如kill -9 脚本的PID，则返回137（128+9）                      |
 | 130              | 用Control-C来结束脚本，用Control-C是信号2的致命错误 |                         | Control-C is fatal error signal 2, (130 = 128 + 2, see above) |
@@ -720,13 +720,21 @@ ls
 * 压缩：`tar czf *.tgz *`
   * -c 创建
   * -z gzip格式 后缀为 tgz tar.gz
-  * -f 指定文件
+  * -j bz2
+  * -f 指定文件（'-' for stdin/out）
 * 查看：`tar tf *.tgz`
 * 解压：`tar xzf *.tgz`
   * -C 指定解压到目录，不然可能会覆盖
   * -O 解压到标准输出，便于解压即改名
 * 追加：`tar -rf *.tar *`（tar文件才能追加?）
 * 查看过程：-v
+* 查看内容：-t
+* 追加：-u
+
+```sh
+tar xzf - 1.txt | tar xz -O
+```
+
 * [linux下tar.gz、tar、bz2、zip等解压缩、压缩命令小结_LINUX_操作系统_脚本之家](https://www.jb51.net/LINUXjishu/43356.html)
 
 #### 各种压缩格式对比

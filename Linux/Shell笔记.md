@@ -733,6 +733,10 @@ ls
 
 ```sh
 tar xzf - 1.txt | tar xz -O
+
+       c -> create      z -> gz
+tar    x -> extract     j -> bz2    -f    file.tar   [files]
+       t -> list        J -> xz
 ```
 
 * [linux下tar.gz、tar、bz2、zip等解压缩、压缩命令小结_LINUX_操作系统_脚本之家](https://www.jb51.net/LINUXjishu/43356.html)
@@ -827,3 +831,60 @@ done
 ```
 
 * [shell获得子后台进程返回值的方法_奶牛_新浪博客](http://blog.sina.com.cn/s/blog_65a8ab5d0101fmnv.html)
+
+### xargs最佳实践
+
+xargs命令是可以补齐管道符`|`(标准输入)的, 因为不是所有命令都支持管道符如`echo`, xargs能接受标准输入(`Ctrl+D`结尾`EOF`) 并转换为后面命令支持的参数
+xargs默认是空白符号(` `、`\t`、`\n`)作为分隔, 并把获取到的所有参数都作用在后面的命令上, 下面演示的是`-n`参数, 一次最多只接受2个参数作用一次命令, 调用多次命令直到参数用完
+```sh
+$ echo {0..9}
+0 1 2 3 4 5 6 7 8 9
+
+$ echo {0..9} | xargs -n 3 echo
+0 1 2
+3 4 5
+6 7 8
+9
+```
+下面演示的是每次只用一行`-L 1`
+```sh
+$ echo 'a\nb\nc'
+a\nb\nc
+
+$ echo -e 'a\nb\nc' # -e表示使用转宜符 这里echo只运行了一次(\n也输出了)
+a
+b
+c
+
+$ echo -e 'a\nb\nc' | xargs -L 1 echo # 这里echo运行了3次(\n作为分隔符已经消失了)
+a
+b
+c
+```
+以上`-L`、`-n`都可以解决xargs所调用的命令接受不了太多参数会报错的问题(因为可以一个个参数来运行多次命令)
+
+黄金搭档`find`命令, xargs怎么处理文件名包含空格(分隔符)的情况呢?
+find默认每个找到的文件以`\n`分隔, 也就是一行一个, `-print0`表示find命令用`null`作为分隔符
+而xargs的`-0`刚好可以用null作为分隔符~
+```sh
+$ find /path -type f -print0 | xargs -0 rm # 表示删除/path及其子目录下的所有普通文件
+```
+高级玩法
+* `-I` 可以运行多个不同命令
+* `--max-procs` 表示并行运行多少个命令 默认为1, 如果命令要执行多次, 必须等上一次执行完，才能执行下一次
+
+```sh
+$ cat foo.txt
+one
+two
+three
+
+$ cat foo.txt | xargs -I file sh -c 'echo file; mkdir file' # file代表foo.txt里面的参数
+one 
+two
+three
+
+$ ls 
+one two three
+```
+参考: https://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html

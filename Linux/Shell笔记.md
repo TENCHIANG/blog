@@ -245,8 +245,10 @@ if [ -n "$BASH_ENV" ]; then . "$BASH_ENV"; fi
 test -e ~/.bash_profile
 ```
 
+* -e DF 文件或目录
 * -d DIR 存在目录
 * -f FILE 存在普通文件
+* -s FILE 是文件且非空
 * -z STR 空字符串
 * -n STR 非空字符串（一定要用**双引号包起来$**不然 null 也为真）
 * STR1 = STR2 等于（也可用于数值）
@@ -888,3 +890,18 @@ $ ls
 one two three
 ```
 参考: https://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html
+
+### 方括与函数的坑
+
+* 在方括号的函数必须加调用符（否则作为字符串恒为真） 
+* 如果要比较函数的返回码，**就不要把函数写在方括号里**
+* 尽量不要在方括号中调用函数，如果非要，要加**双引号**，把输出当作一个整体字符串
+
+```sh
+[ f ] # 恒为真 f当作字符串
+[ -n `f` ] # 运行函数 检查输出
+[ `f` ] # 未定义 不等于 [ -n `f` ]
+
+[ "$(md5 .keepRun | awk '{print $1}')" == "$(md5 .keepRun | awk '{print $1}')" ] # 比较两文件的md5值
+```
+

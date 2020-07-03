@@ -407,3 +407,9 @@ int split (char *str, char *delim, char **save, int n) {
 * [system调用总是返回-1_Flashing-C的博客-CSDN博客_system返回-1](https://blog.csdn.net/weixin_33398032/article/details/78983727)
 * [signal(SIGCLD,SIG_IGN)_少想多做-CSDN博客_sig_ign](https://blog.csdn.net/u012317833/article/details/39253793)
 
+### grep小技巧
+
+```sh
+grep -r "xx" # 在当前目录及其子目录下的文件里找 xx
+```
+

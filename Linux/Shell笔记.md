@@ -905,3 +905,34 @@ one two three
 [ "$(md5 .keepRun | awk '{print $1}')" == "$(md5 .keepRun | awk '{print $1}')" ] # 比较两文件的md5值
 ```
 
+### 进制转换 数字判断
+
+```sh
+# 一、16进制转换成10进制
+printf %d 0xF # 15
+# 或者
+echo $((16#F)) # 15
+
+# 二、10进制转换成16进制
+printf %x 15 # f
+# 或者
+echo "obase=16;15" | bc # F
+
+# 三、10进制转换成8进制
+printf %o 9 # 11
+
+# 四、8进制转换成10进制
+echo $((8#11)) 9
+
+# 五、同理二进制转换成10进制
+echo $((2#111)) # 7
+
+# 六、10进制转换成二进制
+echo "obase=2;15" | bc # 1111
+
+# 判断是否为数字
+isNumber () {
+    expr "$1" + 0 > /dev/null 2>&1
+}
+```
+

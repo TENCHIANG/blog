@@ -16,11 +16,13 @@ print(string.byte("")) --
 print(string.byte("\0")) -- 0
 ```
 
-### 可变长参数与 ipairs、pairs、select
+### 可变长参数与 ipairs、pairs、table.maxn、select
 
 * ipairs：碰到 nil 就终止
-* pairs：跳过 nil（key也跳过）
-* select：包括 nil
+* pairs：跳过 nil（也跳过v为nil的，所以这也是对象的极限了）
+* table.maxn：忽略最后一个nil（数组也会忽略最后一个nil）
+* select：包括所有 nil（数组的极限）
+* unpack: 展开数组，行为很**诡异**，第一个为nil一般全部不展开（所以不要指望通过unpack获取数组里所有的nil）
 
 ### 用Ldoc给Lua生成文档
 

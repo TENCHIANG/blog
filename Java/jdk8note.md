@@ -123,5 +123,84 @@ filename.Consolas_Bold_Italic=CONSOLAZ.TTF
   * [OpenJDK8编译后遇到字体绘制问题 - OSCHINA](https://www.oschina.net/question/3504093_2278507)
   * [修改NetBeans默认字体 - 念月思灵 - 博客园](https://www.cnblogs.com/xxpal/articles/1219354.html)
 
+### break continue
 
+* break 可跳过区块标签
+* continue 只能跳过循环标签
+
+```java
+back: {
+    for (int i = 0; i < 10; i++)
+        if (i == 9) {
+            System.out.println("break");
+            break back;
+        }
+}
+```
+
+### JDK8 的编码
+
+* Java源代码：Unicode 6.2.0
+* JVM虚拟机：UTF-16 Big Endian（**字符占 2 个字节**）
+
+### JDK7 之后的 switch
+
+*  整数、字符、字符串、Enum（以前只支持整数）
+
+### Autoboxing Unboxing
+
+* JDK5 开始支持自动拆箱装箱
+* 其实是一种语法糖，在编译器展开
+
+```java
+Integer i = 100;
+// 自动装箱
+Integer i = Integer.valueOf(100);
+
+int j = i;
+// 自动拆箱
+int j = i.intValue();
+
+// 如果传入 null 就会有问题
+Integer i = null;
+// 展开为
+Object localObject = null;
+int i = localObject.intValue(); // NullPionterException
+
+// 坑：两个打包器比较不会自动拆箱，而回直接比较实例地址值（缓存范围内一样）
+
+// -128 与 127 之间 返回缓存的 Integer 实例
+// low 和 hight 只能在启动 JVM 的时候修改
+// java -Djava.lang.Integer.IntegerCache.hight=300 className
+public static Integer java.lang.valueOf (int i) {
+    if (i >= IntegerCache.low && i <= IntegerCache.hight)
+        return IntegerCache.cache[i + (-IntegerCache.low)];
+    return new Integer(i);
+}
+```
+
+### Enhanced for Loop
+
+* 增强型 for 循环
+
+```java
+int[][] cords = { // 完整形式为 new int[] [] { ... }
+    { 1, 2, 3 },
+    { 4, 5, 6 }
+};
+for (int[] row : cords) { // cords.length == 2
+    for (int value : row)
+        System.out.printf("%2d", value);
+    System.out.printf("%n");
+}
+```
+
+### 操作数组对象
+
+* 有 new 就有对象，有对象初始值就为 0
+* `int[] arr = new int[10];` 相当于 `Arrays.fill(arr, 0);`
+* 二维数组是一种嵌套结构，而不是矩阵结构，每一行的长度可以不相等
+* 数组复制：
+  * System.arraycopy(form, fi, to, ti, n) （需要手动新建数组）
+  * Arrays.copyOf(from, n)（自动新建数组）
 

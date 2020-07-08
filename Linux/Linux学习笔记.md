@@ -413,3 +413,9 @@ int split (char *str, char *delim, char **save, int n) {
 grep -r "xx" # 在当前目录及其子目录下的文件里找 xx
 ```
 
+### VI小技巧
+
+```sh
+:%s/vivian/sky/g # 等同于 :g/vivian/s//sky/g 替换每一行中所有 vivian 为 sky
+```
+

@@ -5,19 +5,15 @@
 ```sh
 cat ~/.minttyrc
 FontHeight=16
-Language=@
+Language=zh_CN
 MiddleClickAction=extend
 RightClickAction=paste
 Locale=zh_CN
 Charset=UTF-8
-Transparency=high
+Transparency=off
 
 BoldAsFont=-1
-Language=zh_CN
 CursorBlinks=yes
-FontHeight=16
-MiddleClickAction=extend
-RightClickAction=paste
 BackspaceSendsBS=no
 ClicksTargetApp=no
 Font=Consolas
@@ -149,3 +145,8 @@ taskkill /f /im java.exe
 * 设置 - 结果 - 搜索关键词为空时不显示搜索结果
 * 设置 - NTFS - 前三个都勾上
 * 设置 - 排除列表 - 前三个都勾上
+
+### FATAL:INT18 boot failure
+
+* 虚拟机安装系统重启后报错
+* 原因：没有设置活动分区

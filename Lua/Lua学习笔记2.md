@@ -394,3 +394,14 @@ function f () end
 
 * 文件可以用冒号运算符，字符串可以用冒号运算符
 * 唯独表不行，因为空表被当作了空的对象
+
+### Lua逆向
+
+* luac从二进制字节码转为字节码列表（汇编码）
+
+```sh
+luac -p -l rx.lua > rx_de.lua
+luac -p -l -l rx.lua > rx_detail.lua
+```
+
+* 加两个 -l 更详细，加 -p 表示只解析不生成 luac.out 文件（二进制字节码）

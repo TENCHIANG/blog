@@ -140,6 +140,27 @@ taskkill /f /im java.exe
 
 ### Windows软硬链接
 
+```cmd
+@echo off
+
+:: /e 复制目录和子目录，包括空目录
+:: /h 也复制隐藏文件和系统文件
+:: /k 复制属性。一般的 xcopy 会重置只读属性
+:: /o 制文件所有权和 ACL 信息
+:: /x 复制文件审核设置(隐含 /o)
+:: /b 复制符号链接本身与链接目标
+xcopy c:\ProgramData d:\ProgramData\ /e /h /k /x /b
+if %errorlevel% EQU 0 rmdir /s /q c:\ProgramData
+: mklink [/d|/h|/j] to from
+if %errorlevel% EQU 0 mklink /j c:\ProgramData d:\ProgramData
+
+xcopy c:\Users d:\Users\ /e /h /k /x /b
+if %errorlevel% EQU 0 rmdir /s /q c:\Users
+if %errorlevel% EQU 0 mklink /j c:\Users d:\Users
+
+pause
+```
+
 ### Everything
 
 * 设置 - 结果 - 搜索关键词为空时不显示搜索结果

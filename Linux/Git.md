@@ -183,3 +183,89 @@ git log -p -2 # -p输出差异 -2只显示两个提交
 git log --stat # 显示简略信息
 ```
 
+### credential.helper
+
+* 访问私有仓库时，会提示输入密码，有几种方式避免
+
+* **store**
+
+  * `git config --global credential.helper store`
+  * 以**明文**形式存在 ~/.git-credentials（`https://user:pass@github.com`）
+  * 不加 --global 则存在项目目录下
+  * 全局设置在 ~/.gitconfig 下
+    * 输入 `git config --global -e` 直接编辑全局设置（不加 --global 则是编辑当前项目的配置）
+    * /etc/gitconfig 也是全局设置
+  * /etc/mingw64/libexec/git-core/git-credential-store
+
+* **wincred**
+
+  * Git Credential Manager for Windows（GCM）
+  * /etc/mingw64/libexec/git-core/git-credential-wincred
+  * 基于 Windows 本身的**密钥库**
+    * 已过时，更新的替代方式时 manager
+    * MacOS 上叫 **osxkeychain**
+
+* **manager**
+
+  * Git Credential Manager Core
+  * 需要 .NET4.0 相当于在网页上登录，可以记住账号密码，可以**跨平台**
+  * /etc/mingw64/libexec/git-core/git-credential-manager
+  * [microsoft/Git-Credential-Manager-Core: Secure, cross-platform Git credential storage with authentication to GitHub, Azure Repos, and other popular Git hosting services.](https://github.com/microsoft/git-credential-manager-core)
+
+* **cache**
+
+  * 保存到内存里（Git 1.7.9 开始）
+
+  * ```sh
+    git config --global credential.helper "cache --timeout=3600" # --timeout 单位秒（可省略）
+    ```
+
+* 配置文件里的格式
+
+```sh
+[credential "helperselector"]
+        selected = store
+```
+
+* 参考：[git - Is there a way to cache GitHub credentials for pushing commits? - Stack Overflow](https://stackoverflow.com/questions/5343068/is-there-a-way-to-cache-github-credentials-for-pushing-commits)
+
+### git-for-windows 乱码问题
+
+* 中文全部乱码
+
+  * 设置 mintty 为 UTF-8，参见 [mintty 最佳实践](/Windows/Windows小技巧.md#mintty-最佳实践)
+* git log 乱码（如 \344\270\212\347\）
+
+  * `git config --global core.quotepath false`
+* status 编码不显示八进制（反过来说就是允许显示中文了）
+* 还是乱码
+
+  * 建议安装 2.26.1，这是 2.27 之后的 BUG（经过反复测试，和系统无关）
+
+```sh
+$ git config --global core.quotepath false          # 显示 status 编码
+$ git config --global gui.encoding utf-8            # 图形界面编码
+$ git config --global i18n.commit.encoding utf-8    # 提交信息编码
+$ git config --global i18n.logoutputencoding utf-8  # 输出 log 编码
+$ export LESSCHARSET=utf-8 # /etc/profile
+# 最后一条命令是因为 git log 默认使用 less 分页，所以需要 bash 对 less 命令进行 utf-8 编码
+[core]
+    quotepath = false
+[gui]
+    encoding = utf-8
+[i18n]
+    commitencoding = utf-8
+    logoutputencoding = utf-8
+```
+
+* 参考：
+* [Git中文显示问题解决](https://xstarcd.github.io/wiki/shell/git_chinese.html)	
+* [解决git在Windows下的乱码问题--解决代码从git 拉下来之后中文乱码的问题 - Oscarfff的个人空间 - OSCHINA](https://my.oschina.net/u/2308739/blog/736179)
+* [Git中的文件状态和使用问题解决 - 快鸟 - 博客园](https://www.cnblogs.com/kevin-yuan/p/4678248.html)
+* [git status 显示中文和解决中文乱码_夏虫不可语冰-CSDN博客_git 中文乱码](https://blog.csdn.net/u012145252/article/details/81775362)
+
+### git-for-windows 不要使用便携版
+
+* 便携版针对安装在优盘，不支持软硬链接，所以解压后文件重复增大
+* [安装Git For Windows时尽量不要使用Portable版本（安装体积过大问题） - Leading - 博客园](https://www.cnblogs.com/leading/archive/2012/03/02/better-not-use-git-for-windows-portable.html)
+

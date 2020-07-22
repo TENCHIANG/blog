@@ -147,8 +147,10 @@ back: {
 
 *  整数、字符、字符串、Enum（以前只支持整数）
 
-### Autoboxing Unboxing
+### 自动拆箱装箱
 
+* Autoboxing Unboxing
+* 想让基本类型像对象一样操作
 * JDK5 开始支持自动拆箱装箱
 * 其实是一种语法糖，在编译器展开
 
@@ -197,10 +199,147 @@ for (int[] row : cords) { // cords.length == 2
 
 ### 操作数组对象
 
-* 有 new 就有对象，有对象初始值就为 0
+* 对象就是类的**实例**，有 new 就会**新建**对象，有对象就有**初始值**为 0（堆）
+* 数组一旦建立，长度就**固定**了
 * `int[] arr = new int[10];` 相当于 `Arrays.fill(arr, 0);`
 * 二维数组是一种嵌套结构，而不是矩阵结构，每一行的长度可以不相等
 * 数组复制：
-  * System.arraycopy(form, fi, to, ti, n) （需要手动新建数组）
-  * Arrays.copyOf(from, n)（自动新建数组）
+  * `System.arraycopy(form, fi, to, ti, n) `（需要手动新建数组）
+  * `Arrays.copyOf(from, n)`（自动新建数组）
 
+### 字符串对象
+
+* 字符串有常量池，相同的字符串常量用同一个引用
+* 只要有 `new` 关键字，那就是生成了新的对象
+* 对象内容的比较不要用 `==`（比较地址），而要用 `.equals()`
+* **字符串常规操作**
+  * `.length()` 字符串长度
+  * `.charAt(i)` 返回第 i + 1 个字符（字符串毕竟不是数组）
+  * `.toUpperCase()` 新建一个全大写的字符串
+* **不可变动（Immutable）字符串**
+  * 字符串对象都是不可变动的（**以新建对象来代替修改对象**）
+* 字符串连接符 `+`（加号）
+  * `"a" + "b"` 等价于` (new StringBuilder()).append("a").append("b").toString()`
+  * 也就是说，使用连接运算符会生成新的字符串实例（Immutable字符串）
+  * 如果要在循环或递归里不断用字符串连接，不如直接用 `StringBuilder`，更好优化
+* 编译器优化的坑
+
+```java
+String s1 = "a" + "b";
+String s2 = "ab";
+System.out.println(s1 == s2); // 看样子是false 其实会返回true
+
+// 反编译展开
+String s1 = "ab"; // 编译器优化!
+String s2 = "ab";
+System.out.println(s1 == s2);
+```
+
+### 对象封装
+
+* 封装的主要目的就是**隐藏**对象细节（黑匣子）
+* private 类私有
+* protected 包私有（可省）
+  * 不加修饰符的成员：public
+  * 成员只有 public（可省） 和 private
+  * 类只有 public 和 protected（可省）
+
+#### 构造函数
+
+* 修饰符为 public（可省，隐式 static），无返回值（也不用加 void）
+* 如果没有自行编写构造函数，编译器会自动加入默认构造函数（Default Constructor）
+* 默认构造函数，一是**无参数无内容**的函数，二是编译器**自动加**的（用户编写的一样的也不算）
+* 如果自行加了构造函数，编译器就**不会加**默认构造函数了
+
+#### 方法重载
+
+* Overload：参数类型和个数
+* 重载与自动拆箱装箱
+  * **先检查没装箱的**
+  * 再检查装箱的
+  * 不定长参数检查
+  * 找不到，报错
+* 台湾：因变量 大陆：形参
+* 台湾：自变量 大陆：实参
+
+```java
+// OverloadBoxing.java
+
+class Some {
+    void f (int i) {
+        System.out.println("int");
+    }
+    void f (Integer i) {
+        System.out.println("Integer");
+    }
+}
+
+public class OverloadBoxing {
+    public static void main (String[] args) {
+        (new Some()).f(1); // int
+    }
+}
+```
+
+### 重载重写与多态
+
+* 重载和重写都是多态的表现
+* 重载（Overload）可以理解成多态的具体表现形式（类中）
+  * 参数类型和个数可以不同
+* 重写（Override）是父类与子类之间多态性的一种表现（类与类）
+  * 参数类型个数返回值都相同，只有**内容不同**
+
+### this
+
+* 除了 static，this 可以在任何地方用
+* this 表示，这个对象的引用
+* this 的用处是为了区别同名变量
+* this 作为构造函数只能放在**构造函数的第一行**（构造函数的一部分）
+* **instance initialization**（实例初始化）：创建对象之后，构造函数之前，用 {}
+
+### final
+
+* 显示定义了：无法修改
+* 没有显示定义：构造函数一定要有对其的赋值，否则报错，后面也无法修改了（把初始化延迟到构造函数）
+* final 前面通常加上 static 也就是 static final，表示类的常量（而不是重复的对象）
+
+### static
+
+* 表示成员**属于类**（虽然对象也可以访问但不建议）
+* 相当于把类名当成**命名空间**
+* static 方法，只能使用 static 成员（**可以加 this 就不行**），或者作为参数穿过来的变量
+* **static block**（静态初始化）：在字节码（类）加载后执行
+
+### 对象的创建过程
+
+* 构造器是静态方法，当静态方法或静态域被**首次**访问时，Java 解释器必须**定位**到类文件
+* 载入类文件（创建一个 Class 对象），进行静态初始化操作（只在类文件**首次**加载时进行一次）
+  * 也包括 static block
+* 创建实例时，先在堆上申请空间（空间会被清0）
+* 字段定义处的初始化
+  * 也包括 instance initialization（花括号）
+* 执行构造器（如继承）
+
+```java
+public class StaticBlock {
+    static {
+        System.out.println("static{}");
+    }
+
+    {
+        System.out.println("{}");
+    }
+
+    StaticBlock () {
+        System.out.println("constructor");
+    }
+
+     public static void main (String[] args) {
+        new StaticBlock();
+        System.out.println("main");
+     }
+}
+```
+
+* static{} 只会在类加载时执行一次
+* {} 只有在新建对象的时候才会执行（比如调用 main 函数就不会执行）

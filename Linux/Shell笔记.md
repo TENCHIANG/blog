@@ -867,12 +867,14 @@ c
 
 黄金搭档`find`命令, xargs怎么处理文件名包含空格(分隔符)的情况呢?
 find默认每个找到的文件以`\n`分隔, 也就是一行一个, `-print0`表示find命令用`null`作为分隔符
-而xargs的`-0`刚好可以用null作为分隔符~
+而xargs的`-0`刚好可以用null作为分隔符~（**把参数作为一个整体**）
+
 ```sh
 $ find /path -type f -print0 | xargs -0 rm # 表示删除/path及其子目录下的所有普通文件
 ```
 高级玩法
 * `-I` 可以运行多个不同命令
+  * `-I {}`：花括号代表参数作为一个整体，**可指定参数在那个位置**（比 -0 更灵活）
 * `--max-procs` 表示并行运行多少个命令 默认为1, 如果命令要执行多次, 必须等上一次执行完，才能执行下一次
 
 ```sh
@@ -889,7 +891,10 @@ three
 $ ls 
 one two three
 ```
-参考: https://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html
+参考: 
+
+* https://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html
+* [xargs命令_Linux xargs 命令用法详解：给其他命令传递参数的一个过滤器](lnmp.ailinux.net/xargs)
 
 ### 方括与函数的坑
 
@@ -962,3 +967,28 @@ isNumber () {
     * 两个点（顺序省略）：`ls ex{1..3}.sh` 相当于 `ls ex1.sh ex2.sh ex3.sh`（等价于模式匹配的 `ls ex[1-3].sh`）
     * 花括号也可以嵌套
 
+### awk 打印出连续的列
+
+* `echo 1 2 3 | awk '{print $1 $2 $3}'` 输出 `123` （会忽略掉空格）
+* 想要加上空格用逗号分隔即可：`echo 1 2 3 | awk '{print $1,$2,$3}'`
+* awk 里面还可以用 for 循环
+  * 此时可以用 print（换行）printf（不换行），但还是不能用 echo
+
+```sh
+echo 1 2 3 | awk '{for(i=1;i<=3;i++){print $i}}'
+# 1
+# 2
+# 3
+```
+
+* [Linux使用awk命令在显示指定的多列时让其分隔开_追梦-CSDN博客_shell awk截取多列](https://blog.csdn.net/qq416647781/article/details/40582779?utm_source=blogxgwz7)
+* [awk命令_Linux awk 命令用法详解：文本和数据进行处理的编程语言](lnmp.ailinux.net/awk)
+* [linux awk命令（擅长输出列）_韩帅平的博客-CSDN博客_awk输出多列](https://blog.csdn.net/youmatterhsp/article/details/80208543)
+
+### 时间转为时间戳
+
+* `date -d "2020-04-13 14:46:28.698100700" +%s`
+  * -d 也支持时间戳 `date -d @1586760388`
+* 但是 adb shell 不支持 -d 参数或者 -d 支持的时间格式有限
+* [Linux date命令时间戳和时间之间的转换 - SolidMango - 博客园](https://www.cnblogs.com/pugang/p/11155712.html)
+* [Linux date获取时间戳 - 01234567 - 博客园](https://www.cnblogs.com/sharesdk/p/11290471.html)

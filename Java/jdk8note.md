@@ -197,6 +197,25 @@ for (int[] row : cords) { // cords.length == 2
 }
 ```
 
+### 类型转换 cast
+
+* narrowing conversion 窄化转换：范围缩小，必须显式类型转换（大桶的水倒到小桶里，可能会损失信息）
+* widening conversion 扩展转换：范围扩大，无需显式转换（小桶的水倒到大桶）
+* 除了类类型和布尔类型，类型之间都可以转换（类可以在同类之间类型转换）
+
+### 截断和舍入 Truncation and Rounding
+
+* 窄化转换时需要注意截断和舍入
+* 截断：浮点转整形时，小数部分会被直接抛弃
+* 舍入：浮点转整形时，用 `java.lang.Math.round()` 四舍五入
+
+### 提升 Promotion
+
+* 对基本类型进行算数运算或位运算时，只要比 int 小，就会先自动转为 int 型再进行运算（而不论里面是不是有 int 型）
+  * 所以 char byte short int 可以通称为整形，long 是长整型
+  * 提升的近义词是对齐
+* 通常表达式里类型最大的就是表达式结果的类型
+
 ### 操作数组对象
 
 * 对象就是类的**实例**，有 new 就会**新建**对象，有对象就有**初始值**为 0（堆）
@@ -244,27 +263,32 @@ System.out.println(s1 == s2);
   * 成员只有 public（可省） 和 private
   * 类只有 public 和 protected（可省）
 
-#### 构造函数
+### 构造函数 Constructor
 
-* 修饰符为 public（可省，隐式 static），无返回值（也不用加 void）
-* 如果没有自行编写构造函数，编译器会自动加入默认构造函数（Default Constructor）
-* 默认构造函数，一是**无参数无内容**的函数，二是编译器**自动加**的（用户编写的一样的也不算）
-* 如果自行加了构造函数，编译器就**不会加**默认构造函数了
+* Java 中，创建（new）和初始化（构造函数）捆绑在一起，不能分别操作
+* 如果没有自行编写构造函数，编译器会自动加入默认构造函数（Default Constructor 或 No-arg Constructors）
+  * 修饰符为 public static，没有返回值（非 void），返回新建对象引用的是 new
+  * 默认构造函数，一是**无参数无内容**的函数，二是编译器**自动加**的（用户编写的一样的也不算）
+* 如果手动加了构造函数，编译器就**不会加**默认构造函数了
 
-#### 方法重载
+### 重载重写与多态
 
-* Overload：参数类型和个数
-* 重载与自动拆箱装箱
-  * **先检查没装箱的**
-  * 再检查装箱的
-  * 不定长参数检查
-  * 找不到，报错
-* 台湾：因变量 大陆：形参
-* 台湾：自变量 大陆：实参
+* 重载和重写**都是多态**的表现
+* 重载（Overload）可以理解成多态的具体表现形式（类中）
+  * 参数**类型**和**个数**的不同（甚至**顺序**也可以但不建议）
+  * 基本类型的重载和表达式差不多（扩展无需显式转换窄化要）
+  * 为什么不以返回值区别重载：如果不适用方法的返回值又该调用哪个呢？
+* 重写（Override）是父类与子类之间多态性的一种表现（类与类）
+  * 参数类型个数返回值都相同，只有**方法体不同**
+
+### 重载与自动装箱
+
+* **先检查没装箱的**
+* 再检查装箱的
+* 不定长参数检查
+* 找不到，报错
 
 ```java
-// OverloadBoxing.java
-
 class Some {
     void f (int i) {
         System.out.println("int");
@@ -281,44 +305,63 @@ public class OverloadBoxing {
 }
 ```
 
-### 重载重写与多态
+* 台湾：因变量 大陆：形参
+* 台湾：自变量 大陆：实参
 
-* 重载和重写都是多态的表现
-* 重载（Overload）可以理解成多态的具体表现形式（类中）
-  * 参数**类型**和**个数**可以不同（甚至**顺序**也可以但不建议）
-* 重写（Override）是父类与子类之间多态性的一种表现（类与类）
-  * 参数类型个数返回值都相同，只有**方法体不同**
+### 终结函数：finalize()
 
-### this
+* 清理不是被 new 申请的空间（GC 只处理 new）
+* finalize() 在 GC 之前被调用（准备 GC 时）
+* finalize() 不是析构函数（destructor）
+  * Java 的对象不一定被 GC
+  * GC 不是 destruction
+  * GC 只与内存有关
+  * GC 是为了得到连续的空间（以便在堆新建对象时加速）
+* GC 和 finalize 都不一定会发生（GC 本身也有开销，不能完全代替析构函数）
+  * 所以应该避免使用终结函数
+  * 或者使用终结函数检查不恰当的清理（Termination Condition）
+
+### this：当前对象
 
 * 除了 static，this 可以在任何地方用
-* this 表示，这个对象的引用
-* this 的用处是为了区别同名变量
-* this 作为构造函数只能放在**构造函数的第一行**（构造函数的一部分）
-* **instance initialization**（实例初始化）：创建对象之后，构造函数之前，用 {}
+* this作为方法调用：**构造函数**
+  * 只能在构造函数里调用（作为构造函数的一部分）
+  * 只能在构造函数的**第一行**，且只能调用**一次**
+* **instance initialization 实例初始化**：创建对象之后，构造函数之前，用 {}（普通初始化的扩展）
 
 ### final
 
-* 显示定义了：无法修改
-* 没有显示定义：构造函数一定要有对其的赋值，否则报错，后面也无法修改了（把初始化延迟到构造函数）
-* final 前面通常加上 static 也就是 static final，表示类的常量（而不是重复的对象）
+* 如果指定初始化：后面则无法修改
+* 没有指定初始化：延迟到构造器里初始化，否则报错，后面也无法修改（默认初始化无意义）
+* final 前面通常加上 static 也就是 static final，表示类的常量（而不是重复的值）
 
 ### static
 
-* 表示成员**属于类**（虽然对象也可以访问但不建议）
-* 相当于把类名当成**命名空间**
-* static 方法，只能使用 static 成员（**可以加 this 就不行**），或者作为参数穿过来的变量
-* **static block**（静态初始化）：在字节码（类）加载后执行
+* 不能用在局部变量，只能用在类的字段（field），表示成员**属于类**（虽然对象也可以访问但不建议）
+* 静态数据只占一份内存，而不管创建了多少实例
+* 静态变量在默认初始化和指定初始化和普通成员变量没什么两样
+* 静态方法（类方法）
+  * 相当于把类名当成**命名空间**（全局方法）
+  * 静态方法不能调用 this（类成员，除非作为参数传进来）
+  * 类方法太多说明设计有问题（非面向对象）
+* **static block 静态块**：在类文件加载后执行**一次**（静态初始化的扩展）
+  * 静态块类似于只调用一次的静态方法
+  * 也叫**静态子句 static clause**
 
 ### 对象的创建过程
 
-* 构造器是静态方法，当静态方法或静态域被**首次**访问时，Java 解释器必须**定位**到类文件
-* 载入类文件（创建一个 Class 对象），进行静态初始化操作（只在类文件**首次**加载时进行一次）
-  * 也包括 static block
-* 创建实例时，先在堆上申请空间（空间会被清0）
-* 字段定义处的初始化
-  * 也包括 instance initialization（花括号）
-* 执行构造器（如继承）
+* 一、静态成员（方法或字段）被**首次**访问时，解释器定位类文件
+* 二、静态初始化，只在类文件**首次**加载时进行一次（创建一个 Class 对象）
+  * 静态默认初始化
+  * 静态指定初始化
+  * static{} 静态块
+* 三、非静态初始化（new 时）
+  * 成员会在方法调用之前按顺序初始化完成（包括构造方法）
+  * 默认初始化清零 or 指定初始化
+  * {} 实例初始化
+* 四、构造器（new 时）
+  * 构造器是静态方法
+* 初始化总结：**先静后动，静一次，new 多少动多少**
 
 ```java
 public class StaticBlock {
@@ -334,36 +377,73 @@ public class StaticBlock {
         System.out.println("constructor");
     }
 
-     public static void main (String[] args) {
-        new StaticBlock();
+     public static void main () {
         System.out.println("main");
      }
 }
+
+new StaticBlock();
+/*
+static{}
+{}
+constructor
+*/
+
+StaticBlock.main();
+/*
+main
+*/
 ```
 
-* static{} 只会在类加载时执行一次
-* {} 只有在新建对象的时候才会执行（比如调用 main 函数就不会执行）
+#### 成员初始化补充
 
-### 类型转换 cast
+* Java 保证初始化
+  * 类成员默认初始化为 0
+  * 局部变量无默认初始化（未初始化使用则报错）
+* 指定初始化：可以用成员 A 去初始化成员 B（前提是 A 起码得先定义，否则报错 Illegal forward reference）
+  * **初始化顺序**：就算成员在方法之间，在方法（包括构造器）调用之前按顺序初始化
+* 只有指定初始化才能**阻止**默认初始化的发生（构造器初始化不能）
 
-* narrowing conversion 窄化转换：范围缩小，必须显式类型转换（大桶的水倒到小桶里，可能会损失信息）
-* widening conversion 扩展转换：范围扩大，无需显式转换（小桶的水倒到大桶）
-* 除了类类型和布尔类型，类型之间都可以转换（类可以在同类之间类型转换）
+### 数组初始化 Array Initialization
 
-### 截断和舍入 Truncation and Rounding
+* 不允许直接指定数组的大小，要用初始化表达式指定
+* 数组的初始化表达式 initialization expression
+  * 用花括号抱起来的值序列
+  * 类似于 new，但是只能出现在定义的时候（new 可以在任何地方）
+* 数组也可以用 new 初始化
+  * 可以指定数组大小：`int[] a = new int[0];`
+  * 可以指定初始化：`int[] a = new int[] {};`
+  * 用 new 初始化数组时，指定大小和指定初始化**不能同时**存在
+* 所有数组都有一个只读成员 length（String 则是方法）
+  * 数组是特殊的对象（也是 Object 的子类，但其类型不可见），String 则是字符数组的封装
+  * 同时 Arrays 类的构造方法是 private 的（无法直接 `new Arrays()`）
 
-* 窄化转换时需要注意截断和舍入
-* 截断：浮点转整形时，小数部分会被直接抛弃
-* 舍入：浮点转整形时，用 `java.lang.Math.round()` 四舍五入
+```java
+int a[] = {};
+System.out.println(a.length); // 0
 
-### 提升 Promotion
+String s;
+s = new String(); // 空字符串
+System.out.println(s.length()); // 0
 
-* 对基本类型进行算数运算或位运算时，只要比 int 小，就会先自动转为 int 型再进行运算（而不论里面是不是有 int 型）
-  * 所以 char byte short int 可以通称为整形，long 是长整型
-  * 提升的近义词是对齐
-* 通常表达式里类型最大的就是表达式结果的类型
+System.out.println(s.getClass()); // class java.lang.String
+System.out.println(s.getClass().getName()); // java.lang.String
 
-### 构造函数 Constructor
+System.out.println(a.getClass()); // class [I 等价于 (new int[0]).getClass()
+System.out.println(a.getClass().getName()); // [I
 
-* Java 中，创建（new）和初始化（构造函数）捆绑在一起，不能分别操作
-* 构造函数没有返回值（区别于返回值为 void），new 返回新建对象的引用
+/*
+Array type             Corresponding class Name
+int[]					[I
+int[][]					[[I
+double[]				[D
+double[][]              [[D
+short[]                 [S
+byte[]                  [B
+boolean[]               [Z
+String[]				[Ljava.lang.String;
+*/
+```
+
+
+

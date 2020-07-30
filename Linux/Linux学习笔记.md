@@ -419,3 +419,119 @@ grep -r "xx" # 在当前目录及其子目录下的文件里找 xx
 :%s/vivian/sky/g # 等同于 :g/vivian/s//sky/g 替换每一行中所有 vivian 为 sky
 ```
 
+### 各种libc实现
+
+* 同一个平台下，不同的库编译的二进制文件也有区别
+* 为什么有这么多库实现：为了体积和侧重点等
+* glibc 最全的，缺点是太大（大部分 Linux）
+* bionic 安卓上的实现（很多POSIX特性不支持）
+* Newlib （Cygwin）
+* BSD libc（大部分Unix）
+* uClibc（适合嵌入式，不支持很多特性）
+* musl 支持挺多的（如 alpine）
+* dietlibc（应该是最精简的）
+* msvcrt 微软的实现
+* [uclibc,eglibc,glibc,Musl-libc之间的区别和联系](http://www.kumouse.com/?p=1051)
+* 直观的图表对比：[Comparison of C/POSIX standard library implementations for Linux](https://www.etalabs.net/compare_libcs.html)
+* [Cygwin系列（一）：Cygwin是什么 - 知乎](https://zhuanlan.zhihu.com/p/56692626)
+
+### dropbear：更轻量的 ssh 实现
+
+* openssh 会开启两个 sshd 进程服务，而 dropbear 只开启一个进程
+* dropbear 只支持 ssh v2 协议（牺牲兼容性减少体积和避免 v1 漏洞）
+* dropbear 主要有以下程序
+  * 服务程序：dropbear（类似于 openssh 的 sshd）
+  * 客户程序：dbclinet（类似于 openssh 的 ssh）
+  * 密钥生成程序：dropbearkey
+* 生成 key 文件
+
+```sh
+mkdir /etc/dropbear/
+dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key
+# -t TYPE: 秘钥配置文件的类型，一般有rsa,dss,ecdsa等
+# -f dropbear_TYPE_host_key: 指定该TYPE加密类型的配置文件的存放路劲
+# key 文件默认存放路径为 /etc/dropbear/dropbear_$type_host_key
+# -s SIZE：指定加密的位数，默认情况下rsa为1024，最多4096 只要是8的倍数即可，ecdsa默认为256，长度限制为112-571
+```
+
+* 启动 dropbear，默认后台运行
+
+```sh
+dropbear -E -p 2222
+# -E Log to stderr rather than syslog
+# -p 指定端口
+# -F 指定前台运行
+```
+
+* 可以执行使用 dbclinet 连接其它 ssh 服务器 `dbclient USERNAME@HOST`
+
+* [Dropbear 安装配置与启动ssh服务详解 - 简书](https://www.jianshu.com/p/dc1759a55cbd)
+* [小型ssh工具dropbear 安装配置及使用详解_qq_41714057的博客-CSDN博客_dropbear](https://blog.csdn.net/qq_41714057/article/details/82079165)
+
+### 虚拟机安装 Alpine Linux
+
+* 下载 extended 镜像（其它镜像在 Virtualbox 上打不开） 
+* 设置**端口转发**（网络 - 高级）只要设置端口就行：主机端口填 22（随便填不占用即可），子系统端口选 22（启动 ssh 服务端时的端口）
+  * 这里设置端口转发就可以不设置为桥接网络了
+* 进入 ISO 的系统后，输入 root 无密码登录进去，`setip-alpine` 安装 apline
+* 键盘布局：us
+* 主机名：localhost
+* 网卡名：eth0
+* ip地址：dhcp
+* 设置代理：none
+* 时区：Asia/Shanghai
+* image 模式选择（仓库源）：1 先选择第一个
+  * r 随机
+  * f 一个个测试最快的
+  * e 手动编辑
+
+* ssh 服务器：dropbear（会自动生成 key 并启动服务）
+* ntp 时钟同步：chronyd
+* 选择磁盘格式化：sda
+* 选择磁盘模式：sys
+  * sys：直接将 alpine 安装到硬盘，与安装其他 linux 类似
+  * data：仅使用硬盘作为数据存储，操作系统运行在内存中，硬盘无法单独启动
+  * lvm：采用 lvm 管理磁盘,会再次询问 sys/data 模式
+  * lvmsys：lvm + sys
+  * lvmdata：lvm + data
+* 覆盖磁盘选择：y
+* 安装完毕后，弹出 ISO，关闭虚拟机
+
+```sh
+# 如果安装的是 openssh 还要做这一步操作
+echo "PermitRootLogin  yes" >> /etc/ssh/sshd_config
+service sshd restart
+```
+
+* 以无界面模式启动，然后用 `ssh root@127.0.0.1` 连接之
+
+* 安装 docker 和 docker-compose
+
+```sh
+# 修改源
+vi /etc/apk/repositories
+# http://mirrors.aliyun.com/alpine/edge/main
+# http://mirrors.aliyun.com/alpine/edge/community
+apk update # 更新源
+
+apk add docker-compose # 安装 docker-compose
+
+apk add docker # 安装 docker
+rc-update add docker boot # 设置开机启动
+service docker start # 启动docker服务
+
+# 测试
+docker version
+docker run hello-world
+```
+
+* [【Alpine Linux】用Vmware安装Alpine Linux - 简书](https://www.jianshu.com/p/476fb856d10c)
+* [Windows10 virtualbox安装alpine+docker_weixin_43749777的博客-CSDN博客_virtualbox alpine](https://blog.csdn.net/weixin_43749777/article/details/95890812)
+* [虚拟机安装alpine+docker环境_张林强的专栏-CSDN博客_alpine下配置docker环境](https://blog.csdn.net/u011411069/article/details/78546790)
+* 官方最新文档：
+  * 安装 alpine：[Installation - Alpine Linux](https://wiki.alpinelinux.org/wiki/Installation)
+  * 安装 docker：[Docker - Alpine Linux](https://wiki.alpinelinux.org/wiki/Docker)
+  * alpine 使用大全：[Tutorials and Howtos - Alpine Linux](https://wiki.alpinelinux.org/wiki/Tutorials_and_Howtos)
+  * [Install Alpine on VirtualBox - Alpine Linux](https://wiki.alpinelinux.org/wiki/Install_Alpine_on_VirtualBox)
+  * [VirtualBox shared folders - Alpine Linux](https://wiki.alpinelinux.org/wiki/VirtualBox_shared_folders)
+

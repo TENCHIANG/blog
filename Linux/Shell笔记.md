@@ -989,6 +989,77 @@ echo 1 2 3 | awk '{for(i=1;i<=3;i++){print $i}}'
 
 * `date -d "2020-04-13 14:46:28.698100700" +%s`
   * -d 也支持时间戳 `date -d @1586760388`
-* 但是 adb shell 不支持 -d 参数或者 -d 支持的时间格式有限
+* 有的 adb shell 是 busybox 版本的 date，要用 -D 而不是 -d
+* 有的 adb shell 是  toolbox，功能太简陋（必须得用 busybox 扩展之）
+
+```sh
+date df "" # 故意输错以显示提示信息 因为这个版本date甚至不支持-h
+# date [-s 20070325.123456] [-u] [date]
+```
+
 * [Linux date命令时间戳和时间之间的转换 - SolidMango - 博客园](https://www.cnblogs.com/pugang/p/11155712.html)
 * [Linux date获取时间戳 - 01234567 - 博客园](https://www.cnblogs.com/sharesdk/p/11290471.html)
+* [toolbox/date.c - platform/system/core - Git at Google](https://android.googlesource.com/platform/system/core/+/9846497f7926fc3240c2893d89e60880c22d1fd6/toolbox/date.c)
+
+### 在安卓上安装 busybox
+
+* 先看一下 busybox 是否已安装
+  * 如果已经安装了 busybox 但有的命令还是 toolbox 的（如 date）
+  * 可能 busybox 是装到 /system/xbin 而不是 /system/bin（优先）
+  * 解决方法：删掉或替换 /system/bin 残缺的命令，或者使用时加 busybox 前缀（如 `busybox date`）
+
+```sh
+# 此时是Windows 为了方便使用shell格式
+chcp 65001 # 切换变编码为UTF-8
+adb kill-server # 先杀服务释放端口
+adb shell
+
+# 验证有没有安装busybox
+ls -la /system/xbin | grep busybox # 只有一个busybox文件其它都是链接
+busybox
+
+# 验证是不是toolbox
+toolbox
+ls -la /system/bin | grep toolbox # 只有一个toolbox文件其它都是链接
+```
+
+* 下载 busybox
+  * 打开网址 https://www.busybox.net/downloads/binaries/
+  * 进入最新版本下的 defconfig-multiarch-musl 目录
+  * 选择 musl + armv7l 的下载（兼容性好）
+  * 如 busybox-armv7l，改名为 busybox
+* 上传 busybox 到手机或模拟器（需 root）
+
+```sh
+adb push C:\Users\Administrator\Downloads\busybox /data/local/tmp # /sdcard/上不能执行二进制文件
+adb shell # 进入sh
+
+cd /data/local/tmp
+chmod 755 busybox # 添加运行权限（不支持 +x 参数）
+ls -la # 查看是否有运行权限
+./busybox # 测试运行
+```
+
+* 把 busybox 安装到 /system/bin（不用加 busybox 前缀了，且 bin 比 xbin 优先）
+
+```sh
+mount -o remount,rw -t yaffs2 /dev/block/mtdblock3 /system # /system分区可写
+mkdir -p /system/bin # 保证目录的存在
+busybox --install /system/bin
+```
+
+* busybox 安装的原理（toolbox同理）
+  * busybox 的安装是基于硬链接（所以要保留 busybox 文件，-s 则为 符号链接）
+  * 如果 busybox 文件名不为里面的任何命令，则必须把命令作为参数使用（如 ./busybox ls -l）
+  * 如果 busybox 文件名为里面的命令，则直接运行该命令即可（如 ./ls -l），当然命令作为参数也支持（如 ./ls ls -l）
+
+```sh
+mv busybox ls # 或者cp或者生成链接也行
+./ls -l
+./ls ls -l
+```
+
+* [[Android] 为Android安装BusyBox —— 完整的bash shell - 木乃猫 - 博客园](https://www.cnblogs.com/xiaowenji/archive/2011/03/12/1982309.html)
+* [Android自带的toolbox分析及扩展_农场老马的专栏-CSDN博客_system/core/toolbox](https://blog.csdn.net/a345017062/article/details/6250619)
+* busybox文档：[BusyBox - The Swiss Army Knife of Embedded Linux](https://busybox.net/downloads/BusyBox.html)
+* [The Different between android folders(bin, xbin, sbin) - Stack Overflow](https://stackoverflow.com/questions/26801895/the-different-between-android-foldersbin-xbin-sbin)

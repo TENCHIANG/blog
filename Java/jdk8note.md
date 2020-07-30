@@ -403,17 +403,18 @@ main
 * 指定初始化：可以用成员 A 去初始化成员 B（前提是 A 起码得先定义，否则报错 Illegal forward reference）
   * **初始化顺序**：就算成员在方法之间，在方法（包括构造器）调用之前按顺序初始化
 * 只有指定初始化才能**阻止**默认初始化的发生（构造器初始化不能）
+* 大量的程序错误来源于不正确的**初始化**和不恰当的**清理**
 
 ### 数组初始化 Array Initialization
 
-* 不允许直接指定数组的大小，要用初始化表达式指定
-* 数组的初始化表达式 initialization expression
-  * 用花括号抱起来的值序列
-  * 类似于 new，但是只能出现在定义的时候（new 可以在任何地方）
-* 数组也可以用 new 初始化
+* 数组的初始化表达式 initialization expression（静态）
+  * 用花括号抱起来的值序列：`int[] a = {};`
+  * 不允许直接指定数组的大小，只能在定义时使用
+* 数组也可以用 new 初始化（动态）
   * 可以指定数组大小：`int[] a = new int[0];`
   * 可以指定初始化：`int[] a = new int[] {};`
-  * 用 new 初始化数组时，指定大小和指定初始化**不能同时**存在
+  * 用 new 初始化数组时，指定大小和指定初始化**不能同时**存在（有默认初始化为0）
+  * 这种方式也是**可变参数**的基础
 * 所有数组都有一个只读成员 length（String 则是方法）
   * 数组是特殊的对象（也是 Object 的子类，但其类型不可见），String 则是字符数组的封装
   * 同时 Arrays 类的构造方法是 private 的（无法直接 `new Arrays()`）
@@ -443,6 +444,115 @@ byte[]                  [B
 boolean[]               [Z
 String[]				[Ljava.lang.String;
 */
+
+s.getClass().getClass(); // class java.lang.Class 类的类是Class包括它自己
+// 也是特殊的类 构造器为 private 无法直接实例化
+
+// getClass() 返回的是类的实例（和类本身有区别）涉及到泛型
+// getName() 是返回类实例的名称（类名）
+```
+
+### 可变参数列表 Variable Argument Lists
+
+* 数组是对象，所有对象都继承于 Object 类，所以通过 **Object 数组**可以实现可变参数
+  * 可变参数支持自动装箱
+  * 直接打印对象相当于调用其成员方法 toString 
+    * 能用字符串表示的则用字符串表示，不能的则打印 类名@16进制地址
+  * 把可变参数当作一个**数组**就完事了，Object... 类型的可变参数可以传不同类型的参数
+
+```java
+class A {}
+
+// JDK5之前的代码
+void f (Object[] args) { 
+    for (Object o : args)
+        System.out.println(o.toString() + " " + o.getClass().getName() + " ");
+}
+f(new Object[]{1, 2, 3, 'a', "ab", new Integer(0), new Date(), new A(), new int[0] });
+
+// JDK5开始直接支持可变参数（就是把数组的痕迹尽量去掉）
+void f (Object... args) { 
+    for (Object o : args)
+        System.out.println(o.toString() + " " + o.getClass().getName() + " ");
+}
+f(1, 2, 3, 'a', "ab", new Integer(0), new Date(), new A(), new int[0]);
+f(new Object[]{1, 2, 3, 'a', "ab", new Integer(0), new Date(), new A(), new int[0] }); // 也可以用数组形式传参数
+
+/*
+1 java.lang.Integer
+2 java.lang.Integer
+3 java.lang.Integer
+a java.lang.Character
+ab java.lang.String
+0 java.lang.Integer
+Fri Jul 31 00:23:45 CST 2020 java.util.Date
+A@b25e5ff2 A
+[I@f040fe19 [I
+*/
+
+f(); // ok 空数组
+f((Object[])new Integer[]{1,2,3}); // ok
+f((Object[])new int[]{1,2,3}); // 不兼容的类型: int[]无法转换为java.lang.Object[] 基本类型数组只会当成一个普通数组，不会自动装箱以至于展开（当成一个参数而不是多个）
+```
+
+#### 可变参数的问题
+
+* 可变参数碰到自动拆箱和重载时，会让情况变得复杂
+* 解决方法：不要在重载的时候使用可变参数，或者不要用可变参数
+
+```java
+public class A {
+    static void f (Integer... args) {
+        System.out.println("f1");
+    }
+    static void f (int... args) {
+        System.out.println("f2");
+    }
+}
+
+// f1 or f2? 都匹配
+A.f(1);
+A.f();
+```
+
+### 枚举类型
+
+* 类似于数组，是特殊的类（无法实例化枚举类型，无法直接实例化Arrays）
+
+```java
+public enum Color { RED, GREEN, BLUE }
+Color color = Color.RED;
+System.out.println(color); // RED toString()
+System.out.println(color.getClass()); // class Color
+color.ordinal(); // 0 也是从0开始的
+Color.values(); // Color[3] { RED, GREEN, BLUE } 返回全部成员数组（每个元素都是枚举类型）
+
+for (Color c : Color.values())
+    System.out.println(c.ordinal() + " " + c + " " + c.getClass().getName());
+/*
+0 RED Color
+1 GREEN Color
+2 BLUE Color
+*/
+```
+
+* **enum配合switch**
+  * 无法直接使用枚举类型里面的元素，但是 siwtch-case 可以
+
+```java
+switch (color) {
+    case RED:
+        System.out.println("red");
+        break;
+    case GREEN:
+        System.out.println("green");
+        break;
+    case BLUE:
+        System.out.println("blue");
+        break;
+    default:
+        System.out.println("default");
+}
 ```
 
 

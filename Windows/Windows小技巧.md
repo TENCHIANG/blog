@@ -183,5 +183,16 @@ powercfg -a :: 查看休眠是否已开启
 powercfg -h on
 ```
 
+### foobar最佳实践
+
+* 文件 - 显示 - 默认用户界面
+  * 主题管理 - 快速设置 - 播放列表布局 - Separate Album & Artist Columns
+  * 后台与通知 - 最小化及关闭
+* 文件 - 参数选项
+  * DSD wasapi 推送（或者没有DSD也行）
+    * 缓冲长度 2000
+    * 输出格式 24-位
+* 播放 - 光标跟随播放
+
 
 

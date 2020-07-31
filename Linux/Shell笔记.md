@@ -836,8 +836,11 @@ done
 
 ### xargs最佳实践
 
-xargs命令是可以补齐管道符`|`(标准输入)的, 因为不是所有命令都支持管道符如`echo`, xargs能接受标准输入(`Ctrl+D`结尾`EOF`) 并转换为后面命令支持的参数
-xargs默认是空白符号(` `、`\t`、`\n`)作为分隔, 并把获取到的所有参数都作用在后面的命令上, 下面演示的是`-n`参数, 一次最多只接受2个参数作用一次命令, 调用多次命令直到参数用完
+* xargs命令是可以补齐管道符`|`(标准输入)的, 因为不是所有命令都支持管道符如`echo`
+* xargs能接受标准输入(`Ctrl+D`结尾`EOF`) 并转换为后面命令支持的参数
+* xargs默认是空白符号(、`\t`、`\n`)作为分隔, 并把获取到的**所有参数**都作用在后面的命令上
+* 下面演示的是`-n`参数, 一次最多只接受2个参数作用一次命令, 调用多次命令直到参数用完
+
 ```sh
 $ echo {0..9}
 0 1 2 3 4 5 6 7 8 9
@@ -876,6 +879,7 @@ $ find /path -type f -print0 | xargs -0 rm # 表示删除/path及其子目录下
 * `-I` 可以运行多个不同命令
   * `-I {}`：花括号代表参数作为一个整体，**可指定参数在那个位置**（比 -0 更灵活）
 * `--max-procs` 表示并行运行多少个命令 默认为1, 如果命令要执行多次, 必须等上一次执行完，才能执行下一次
+* -r：参数为空后面就不执行
 
 ```sh
 $ cat foo.txt
@@ -891,10 +895,50 @@ three
 $ ls 
 one two three
 ```
+**xargs不支持内建函数**（注意单引号的应用）
+
+* xargs直接调用函数报错返回123（没有该函数）
+* 所以xargs不是不支持而是父shell的函数（包括变量）没有继承到子shell（除非已export）
+* 解决：调用子shell把函数传进去
+  * 直接导出函数export -f不支持只能导出变量
+  * declare不支持只能用typeset -f把函数转为字符串再导出 f和$f不冲突
+  * 在子shell中用eval导入函数注意一定要加双引号不然报错
+  * 调用子shell时，要用单引号（避免在父Shell就把变量展开了）
+
+```sh
+function printArg { echo "$1"; } # 函数的另一种定义
+export printArg=`typeset -f printArg` # 导出函数
+echo 1 2 3 | xargs -n1 sh -c 'eval "$printArg"; printArg "$1"' _
+# 1
+# 2
+# 3
+```
+
 参考: 
 
 * https://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html
 * [xargs命令_Linux xargs 命令用法详解：给其他命令传递参数的一个过滤器](lnmp.ailinux.net/xargs)
+* [关于shell变量的继承总结 - 狂奔__蜗牛 - 博客园](https://www.cnblogs.com/guojintao/p/9565282.html)
+* [Linux命令（6/28）——declare/typeset命令 - konglingbin - 博客园](https://www.cnblogs.com/klb561/p/9236468.html)
+* [Exporting a function in shell - Stack Overflow](https://stackoverflow.com/questions/1885871/exporting-a-function-in-shell)
+* [bash - Calling shell functions with xargs - Stack Overflow](https://stackoverflow.com/questions/11003418/calling-shell-functions-with-xargs)
+
+### 双引号的大坑
+
+* 单引号才是单纯的字符串，双引号会自动把变量扩展（目标是在子Shell展开结果在父Shell就展开了）
+* 用引号的时候想清楚是不是单纯的字符串还是要展开
+* 这个问题是 xargs 无法调用函数（只支持二进制） --> busybox xargs 又不支持 -I{} 替换参数 --> 只能通过再调用 sh 把参数传进去 -> 怎么把父Shell传给子Shell
+
+```sh
+# Usage: sh [-/+OPTIONS] [-/+o OPT]... [-c 'SCRIPT' [ARG0 [ARGS]] / FILE [ARGS]]
+# sh -c 'SCRIPT' [ARG0 [ARGS] 的意思是要给命令传参必须要指定$0然后再指定其它参数
+sh -c "echo $0 $1" _ 1 # /system/bin/sh
+# $0被展开为当前的$0而不是_
+# $1被展开为当前的$1为空而不是1
+# 所以正确的做法是用单引号
+sh -c 'echo $0 $1' _ 1 # _ 1
+# 有没有awk内味了 而且Usage也说是单引号了
+```
 
 ### 方括与函数的坑
 
@@ -989,8 +1033,8 @@ echo 1 2 3 | awk '{for(i=1;i<=3;i++){print $i}}'
 
 * `date -d "2020-04-13 14:46:28.698100700" +%s`
   * -d 也支持时间戳 `date -d @1586760388`
-* 有的 adb shell 是 busybox 版本的 date，要用 -D 而不是 -d
-* 有的 adb shell 是  toolbox，功能太简陋（必须得用 busybox 扩展之）
+* 有的 adb shell 是 busybox 版本的 date，时间支持不多，`2020-04-13 14:46:28`
+* 有的 adb shell 是  toolbox 功能太简陋，不支持 -d（必须得用 busybox 扩展之）
 
 ```sh
 date df "" # 故意输错以显示提示信息 因为这个版本date甚至不支持-h
@@ -1006,7 +1050,7 @@ date df "" # 故意输错以显示提示信息 因为这个版本date甚至不�
 * 先看一下 busybox 是否已安装
   * 如果已经安装了 busybox 但有的命令还是 toolbox 的（如 date）
   * 可能 busybox 是装到 /system/xbin 而不是 /system/bin（优先）
-  * 解决方法：删掉或替换 /system/bin 残缺的命令，或者使用时加 busybox 前缀（如 `busybox date`）
+  * 解决方法：删掉或替换 /system/bin 残缺的命令 `ln -sf`，或者使用时加 busybox 前缀（如 `busybox date`）
 
 ```sh
 # 此时是Windows 为了方便使用shell格式
@@ -1015,12 +1059,17 @@ adb kill-server # 先杀服务释放端口
 adb shell
 
 # 验证有没有安装busybox
-ls -la /system/xbin | grep busybox # 只有一个busybox文件其它都是链接
 busybox
+ls -la /system/xbin | grep busybox # 只有一个busybox文件其它都是链接
 
 # 验证是不是toolbox
 toolbox
 ls -la /system/bin | grep toolbox # 只有一个toolbox文件其它都是链接
+
+# 如果是toolbox 解决方法
+mount -o remount,rw -t yaffs2 /dev/block/mtdblock3 /system # 可读
+ln -sf /system/xbin/busybox /system/bin/date # 对于软链接
+ln -f /system/xbin/busybox /system/bin/date # 对于硬链接
 ```
 
 * 下载 busybox
@@ -1049,9 +1098,10 @@ busybox --install /system/bin
 ```
 
 * busybox 安装的原理（toolbox同理）
-  * busybox 的安装是基于硬链接（所以要保留 busybox 文件，-s 则为 符号链接）
-  * 如果 busybox 文件名不为里面的任何命令，则必须把命令作为参数使用（如 ./busybox ls -l）
-  * 如果 busybox 文件名为里面的命令，则直接运行该命令即可（如 ./ls -l），当然命令作为参数也支持（如 ./ls ls -l）
+  * busybox 是一个单体程序，安装也不是解压啥的
+  * 如果 argv[0]（文件名）不为命令，则必须把命令作为参数调用（如 ./busybox ls -l）
+  * 如果 argv[0] 为里面的命令，则直接运行该命令即可（如 ./ls -l），当然命令作为参数也支持（如 ./ls ls -l）
+  * argv[0] 的妙用配合软硬链接（--install 默认硬链接 --install -s 为符号链接），因为是链接所以要保留 busybox 原文件
 
 ```sh
 mv busybox ls # 或者cp或者生成链接也行
@@ -1063,3 +1113,54 @@ mv busybox ls # 或者cp或者生成链接也行
 * [Android自带的toolbox分析及扩展_农场老马的专栏-CSDN博客_system/core/toolbox](https://blog.csdn.net/a345017062/article/details/6250619)
 * busybox文档：[BusyBox - The Swiss Army Knife of Embedded Linux](https://busybox.net/downloads/BusyBox.html)
 * [The Different between android folders(bin, xbin, sbin) - Stack Overflow](https://stackoverflow.com/questions/26801895/the-different-between-android-foldersbin-xbin-sbin)
+* [嵌入式Linux中BusyBox的使用_binchel的专栏-CSDN博客_linux busybox使用](https://blog.csdn.net/binchel/article/details/20209809)
+
+### 硬链接与符号链接
+
+* 硬链接：hardlink
+  * 文件名只和目录有关，文件内容和 inode 有关，多个文件名可以指向同一个 inode
+    * 文件相当于一个对象（inode），硬链接和源文件都是文件名都只是对文件的引用（硬链接和源文件其实就是同一个文件）
+    * 所以硬链不受源文件移动和删除的影响（inode引用计数为0时则文件删除）
+  * 所以硬链接**不创建新文件**， 只是在某目录下新增一个文件名指向某 inode 而已
+    * 所以创建硬链接 inode 不会变，block 一般也不会变
+  * 硬链接的限制
+    * 不能跨文件系统
+    * 不能链接目录（目录下的所有东西都要被链接）
+    * root 才能创建
+    * 硬链接容易让人误会（如果不懂 inode 的话）
+  * 创建目录时会发生什么
+    * 创建一个新目录，目录下会再创建两个文件 . （当前目录）和 ..（上层目录）
+    * 也就是说上层目录的引用数 +1，新目录的引用数 +1 为 2
+    * 而且因为是点文件自带隐藏功能
+* 符号链接：symlink
+  * 类似于 Windows 的快捷方式，**创建新文件**，相当于目标文件的指针
+    * 所以符号链接受源文件的移动和删除的影响
+* 查看链接 ls -i
+
+```sh
+ln busybox ls
+ln busybox data
+ln -s busybox xz
+ln -s busybox yes
+# -l 列表
+# -h 美化文件大小
+# -i 查看 inode 编号
+# -a 查看所有文件
+busybox ls -lhia # 表示busybox版本的ls
+# 第1列 inode
+# 第3列 inode引用计数 大于1则说明是硬链接
+# 第6列 文件大小 符号丽链接大小固定为7字节
+# 第11列 箭头表示是符号链接
+ 196610 drwxrwx--x    2 shell    shell       4.0K Jul 31 10:43 .
+ 196609 drwxr-x--x    3 root     root        4.0K Dec 30  2019 ..
+ 196613 -rwxr-xr-x    3 root     root        1.1M Jul 30 11:45 busybox
+ 196613 -rwxr-xr-x    3 root     root        1.1M Jul 30 11:45 data
+ 196613 -rwxr-xr-x    3 root     root        1.1M Jul 30 11:45 ls
+ 196614 lrwxrwxrwx    1 root     root           7 Jul 31 10:43 xz -> busybox
+ 196615 lrwxrwxrwx    1 root     root           7 Jul 31 10:42 yes -> busybox
+```
+
+* 用 ln 命令创建链接
+  * ln options from to
+  * -s 创建符号链接（默认创建硬链接）
+  * -f 强制覆盖

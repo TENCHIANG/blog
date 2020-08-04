@@ -159,3 +159,36 @@ PubkeyAuthentication yes # ssh协议2的纯 rsa认证
 
 * [tmux 终端复用神器 - Creaink - Build something for life](https://creaink.github.io/post/Devtools/Tools/tmux.html)
 * [Tmux 使用教程 - 阮一峰的网络日志](https://www.ruanyifeng.com/blog/2019/10/tmux.html)
+
+### dropbear：更轻量的 ssh 实现
+
+* openssh 会开启两个 sshd 进程服务，而 dropbear 只开启一个进程
+* dropbear 只支持 ssh v2 协议（牺牲兼容性减少体积和避免 v1 漏洞）
+* dropbear 主要有以下程序
+  * 服务程序：dropbear（类似于 openssh 的 sshd）
+  * 客户程序：dbclinet（类似于 openssh 的 ssh）
+  * 密钥生成程序：dropbearkey
+* 生成 key 文件
+
+```sh
+mkdir /etc/dropbear/
+dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key
+# -t TYPE: 秘钥配置文件的类型，一般有rsa,dss,ecdsa等
+# -f dropbear_TYPE_host_key: 指定该TYPE加密类型的配置文件的存放路劲
+# key 文件默认存放路径为 /etc/dropbear/dropbear_$type_host_key
+# -s SIZE：指定加密的位数，默认情况下rsa为1024，最多4096 只要是8的倍数即可，ecdsa默认为256，长度限制为112-571
+```
+
+* 启动 dropbear，默认后台运行
+
+```sh
+dropbear -E -p 2222
+# -E Log to stderr rather than syslog
+# -p 指定端口
+# -F 指定前台运行
+```
+
+* 可以执行使用 dbclinet 连接其它 ssh 服务器 `dbclient USERNAME@HOST`
+
+* [Dropbear 安装配置与启动ssh服务详解 - 简书](https://www.jianshu.com/p/dc1759a55cbd)
+* [小型ssh工具dropbear 安装配置及使用详解_qq_41714057的博客-CSDN博客_dropbear](https://blog.csdn.net/qq_41714057/article/details/82079165)

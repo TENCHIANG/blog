@@ -405,3 +405,12 @@ luac -p -l -l rx.lua > rx_detail.lua
 ```
 
 * 加两个 -l 更详细，加 -p 表示只解析不生成 luac.out 文件（二进制字节码）
+
+### table.foreach、table.foreachi
+
+```lua
+table.foreach(t, print) -- 相当于 pairs
+table.foreachi(t, print) -- 相当于 ipairs
+```
+
+* 注意函数里的 return 相当于 break

@@ -434,3 +434,178 @@ grep -r "xx" # 在当前目录及其子目录下的文件里找 xx
 * [uclibc,eglibc,glibc,Musl-libc之间的区别和联系](http://www.kumouse.com/?p=1051)
 * 直观的图表对比：[Comparison of C/POSIX standard library implementations for Linux](https://www.etalabs.net/compare_libcs.html)
 * [Cygwin系列（一）：Cygwin是什么 - 知乎](https://zhuanlan.zhihu.com/p/56692626)
+
+### Linux挂载
+
+```sh
+mount -l # 查看挂载情况
+df -h # 显示目前在Linux系统上的文件系统的磁盘使用情况统计
+lsblk # 列出块设备信息（df -h不能看到的卷）
+
+# 挂载光盘 卸载光盘
+mkdir -p /mnt/cdrom
+mount -t is09660 /dev/cdrom /mnt/cdrom
+umount /mnt/cdrom
+
+# 挂载ISO文件
+mount -o loop /tmp/linux.iso  /mnt/linux
+mount -o loop,ischarset=gb2312 /tmp/linux.iso /mnt/linux
+
+# 挂载软盘
+mount /dev/fd0 /mnt/floppy
+
+# 挂载U盘
+fdisk -l # 查看外挂闪存的设备号 一般为/dev/sda1
+mkdir -p /mnt/usb
+mount -t msdos /dev/sda1 /mnt/usb # 挂载FAT格式U盘
+mount -t vfat /dev/sda1 /mnt/usb # 挂载FAT32格式U盘
+```
+
+* [linux挂载光盘 - gd_无痕 - 博客园](https://www.cnblogs.com/gd-luojialin/p/9216059.html)
+* [Linux的硬盘使用情况、挂载、SSD挂载（查看df -h不能看到的卷） - 低调人生 - 博客园](https://www.cnblogs.com/lemon-flm/p/7597403.html)
+
+### Linux改密码
+
+* passwd 用户名
+
+```sh
+passwd root # 改root密码
+```
+
+* Linux 系统密码破解
+  * 在grub选项菜单按e进入编辑模式
+  * 编辑kernel那行 /init 1 (或/single)，按b重启
+  * 进入后执行下列命令
+
+```sh
+passwd root
+init 6
+```
+
+* Debian 系统密码破解
+  * 在grub选项菜单’Debian GNU/Linux,…(recovery mode)’,按e进入编辑模式
+  * 编辑kernel那行面的 ro single 改成 rw single init=/bin/bash，按b重启
+  * 进入后执行下列命令
+
+```sh
+mount -a
+passwd root
+reboot
+```
+
+* [Linux下如何修改root密码以及找回root密码 - dy9776 - 博客园](https://www.cnblogs.com/nucdy/p/5642309.html)
+* [Linux下用于查看系统当前登录用户信息的4种方法_newdriver2783的专栏-CSDN博客_linux中显示当前登录用户详细信息的是](https://blog.csdn.net/newdriver2783/article/details/8059368)
+
+### Debian换源
+
+```sh
+cp /etc/apt/sources.list /etc/apt/sources.list.bak
+sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+
+vi /etc/apt/sources.list
+deb http://mirrors.ustc.edu.cn/debian stable main contrib non-free
+# deb-src http://mirrors.ustc.edu.cn/debian stable main contrib non-free
+deb http://mirrors.ustc.edu.cn/debian stable-updates main contrib non-free
+# deb-src http://mirrors.ustc.edu.cn/debian stable-updates main contrib non-free
+# deb http://mirrors.ustc.edu.cn/debian stable-proposed-updates main contrib non-free
+# deb-src http://mirrors.ustc.edu.cn/debian stable-proposed-updates main contrib non-free
+
+apt-get update
+```
+
+* 更多镜像
+  * 中科大：http://mirrors.ustc.edu.cn/
+  * 阿里云：http://mirrors.aliyun.com/
+  * 搜狐：http://mirrors.sohu.com/
+  * 网易：http://mirrors.163.com/
+  * 原版：http://deb.debian.org
+
+```sh
+# wheezy Debian7
+deb http://deb.debian.org/debian wheezy main
+deb-src http://deb.debian.org/debian wheezy main
+
+deb http://deb.debian.org/debian-security/ wheezy/updates main
+deb-src http://deb.debian.org/debian-security/ wheezy/updates main
+
+deb http://deb.debian.org/debian wheezy-updates main
+deb-src http://deb.debian.org/debian wheezy-updates main
+```
+
+#### source.list详解
+
+* source.list格式
+
+```sh
+deb http://site.example.com/debian distribution component1 component2 component3
+deb-src http://site.example.com/debian distribution component1 component2 component3
+```
+
+* 档案类型 Archive type
+  * deb 预编译包
+  * deb-src 源码包
+* 仓库地址 Repository URL
+* 发行版 Distribution
+  * 发行版有两种分类方法，一类是发行版的具体代号，如 xenial,trusty, precise 等
+  * 还有一类则是发行版的发行类型，如 oldstable, stable, testing 和 unstable
+  * 另外，在发行版后还可能有进一步的指定，如 xenial-updates, trusty-security, stable-backports 等
+
+| **Version** | **Code name**                                      | **Release date**                                             | **End of life date**                                         | **EOL [LTS](https://wiki.debian.org/LTS)**              | **EOL [ELTS](https://wiki.debian.org/LTS/Extended)** |
+| ----------- | -------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------- | ---------------------------------------------------- |
+| 12          | [Bookworm](https://wiki.debian.org/DebianBookworm) |                                                              |                                                              |                                                         |                                                      |
+| 11          | [Bullseye](https://wiki.debian.org/DebianBullseye) |                                                              |                                                              |                                                         |                                                      |
+| 10          | [Buster](https://wiki.debian.org/DebianBuster)     | [2019-07-06](https://www.debian.org/News/2019/20190706)      | ~2022                                                        |                                                         |                                                      |
+| 9           | [Stretch](https://wiki.debian.org/DebianStretch)   | [2017-06-17](https://www.debian.org/News/2017/20170617)      | 2020-07-06                                                   | ~2022                                                   |                                                      |
+| 8           | [Jessie](https://wiki.debian.org/DebianJessie)     | [2015-04-25](https://www.debian.org/News/2015/20150426)      | [2018-06-17](https://www.debian.org/News/2018/20180601)      | ~2020-06-30                                             | ~2022-06-30                                          |
+| 7           | [Wheezy](https://wiki.debian.org/DebianWheezy)     | [2013-05-04](https://www.debian.org/News/2013/20130504)      | [2016-04-25](https://www.debian.org/News/2016/20160425)      | [2018-05-31](https://www.debian.org/News/2018/20180601) | ~2019-12-31                                          |
+| 6.0         | [Squeeze](https://wiki.debian.org/DebianSqueeze)   | [2011-02-06](https://www.debian.org/News/2011/20110205a)     | [2014-05-31](https://www.debian.org/security/2014/dsa-2907)  | [2016-02-29](https://www.debian.org/News/2016/20160212) |                                                      |
+| 5.0         | [Lenny](https://wiki.debian.org/DebianLenny)       | [2009-02-14](https://www.debian.org/News/2009/20090214)      | [2012-02-06](https://lists.debian.org/debian-security-announce/2011/msg00238.html) |                                                         |                                                      |
+| 4.0         | [Etch](https://wiki.debian.org/DebianEtch)         | [2007-04-08](https://www.debian.org/News/2007/20070408)      | [2010-02-15](https://www.debian.org/News/2010/20100121)      |                                                         |                                                      |
+| 3.1         | [Sarge](https://wiki.debian.org/DebianSarge)       | [2005-06-06](https://www.debian.org/News/2005/20050606)      | [2008-03-31](https://www.debian.org/News/2008/20080229)      |                                                         |                                                      |
+| 3.0         | [Woody](https://wiki.debian.org/DebianWoody)       | [2002-07-19](https://www.debian.org/News/2002/20020719)      | [2006-06-30](https://www.debian.org/News/2006/20060601)      |                                                         |                                                      |
+| 2.2         | [Potato](https://wiki.debian.org/DebianPotato)     | [2000-08-15](https://www.debian.org/News/2000/20000815)      | 2003-06-30                                                   |                                                         |                                                      |
+| 2.1         | [Slink](https://wiki.debian.org/DebianSlink)       | [1999-03-09](https://www.debian.org/News/1999/19990309)      | [2000-09-30](https://lists.debian.org/debian-security-announce/2000/msg00043.html) | 2000-10-30                                              |                                                      |
+| 2.0         | [Hamm](https://wiki.debian.org/DebianHamm)         | [1998-07-24](https://www.debian.org/News/1998/19980724)      | -                                                            |                                                         |                                                      |
+| 1.3         | [Bo](https://wiki.debian.org/DebianBo)             | [1997-07-02](https://www.debian.org/News/1997/19970602)      | -                                                            |                                                         |                                                      |
+| 1.2         | [Rex](https://wiki.debian.org/DebianRex)           | [1996-12-12](https://lists.debian.org/debian-announce/1996/msg00026.html) | -                                                            |                                                         |                                                      |
+| 1.1         | [Buzz](https://wiki.debian.org/DebianBuzz)         | [1996-06-17](https://lists.debian.org/debian-announce/1996/msg00021.html) | -                                                            |                                                         |                                                      |
+| 0.93R6      |                                                    | [1995-10-26](https://lists.debian.org/debian-announce/1995/msg00007.html) | -                                                            |                                                         |                                                      |
+| 0.93R5      |                                                    | [~1995-03-01](https://lists.debian.org/debian-announce/1995/msg00004.html) | -                                                            |                                                         |                                                      |
+| 0.91        |                                                    | ~1994-01-01                                                  | -                                                            |                                                         |                                                      |
+
+* 软件包分类 Component
+  * 软件包的具体分类，可以有一个或多个
+  * Debian
+    * mian：包含符合 DFSG 指导原则的自由软件包，而且这些软件包不依赖不符合该指导原则的软件包。这些软件包被视为 Debian 发型版的一部分
+    * contrib：包含符合 DFSG 指导原则的自由软件包，不过这些软件包依赖不在 main 分类中的软件包
+    * non-free：包含不符合 DFSG 指导原则的非自由软件包
+  * Ubuntu
+    * main：官方支持的自由软件
+    * restricted：官方支持的非完全自由的软件
+    * universe：社区维护的自由软件
+    * multiverse：非自由软件
+
+* [Debian更换软件源_Jomesm的博客-CSDN博客_debian换源](https://blog.csdn.net/jomesm/article/details/88374156)
+* [SourcesList - Debian Wiki](https://wiki.debian.org/SourcesList)
+* [/etc/apt/sources.list 详解_gong_xucheng的专栏-CSDN博客_/etc/apt/sources.list.d/](https://blog.csdn.net/gong_xucheng/article/details/53886271)
+* [DebianReleases - Debian Wiki](https://wiki.debian.org/DebianReleases)
+
+### vi方向键乱码退格键用不了
+
+* Debian、Ubuntu下使用vi编辑模式，方向键乱码，甚至退格键都用不了
+* 原因：vim 预装的是 tiny 版本，默认开启了兼容模式
+
+```sh
+vi /etc/vim/vimrc.tiny
+set uncompatible # 改为不兼容模式
+set backspace=2 # 解决退格键用不了
+```
+
+* 或者安装完整版vim
+
+```sh
+apt-get remove vim-common
+apt-get install vim
+```
+
+* [ubuntu 下使用vi时方向键乱码，退格键不能使用 - 一个运维的日常 - 博客园](https://www.cnblogs.com/yunweis/p/7727024.html)

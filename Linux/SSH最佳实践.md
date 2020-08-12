@@ -172,6 +172,7 @@ PubkeyAuthentication yes # ssh协议2的纯 rsa认证
 
 ```sh
 mkdir /etc/dropbear/
+dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key
 dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key
 # -t TYPE: 秘钥配置文件的类型，一般有rsa,dss,ecdsa等
 # -f dropbear_TYPE_host_key: 指定该TYPE加密类型的配置文件的存放路劲
@@ -179,16 +180,116 @@ dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key
 # -s SIZE：指定加密的位数，默认情况下rsa为1024，最多4096 只要是8的倍数即可，ecdsa默认为256，长度限制为112-571
 ```
 
-* 启动 dropbear，默认后台运行
+* 启动 dropbear
 
 ```sh
 dropbear -E -p 2222
-# -E Log to stderr rather than syslog
-# -p 指定端口
+# -E 后台运行 Log to stderr rather than syslog
+# -p 指定端口 默认22
 # -F 指定前台运行
+```
+
+* 开机运行 dropbear 替换默认 ssh
+
+```sh
+chmod +x /etc/rc.local
+
+# 开机关闭默认ssh服务 或者直接卸载默认ssh服务
+echo "service sshd stop" >>/etc/rc.local
+apt autoremove openssh-server -y
+
+echo "dropbear -E -p 2222" >> /etc/rc.local
 ```
 
 * 可以执行使用 dbclinet 连接其它 ssh 服务器 `dbclient USERNAME@HOST`
 
 * [Dropbear 安装配置与启动ssh服务详解 - 简书](https://www.jianshu.com/p/dc1759a55cbd)
 * [小型ssh工具dropbear 安装配置及使用详解_qq_41714057的博客-CSDN博客_dropbear](https://blog.csdn.net/qq_41714057/article/details/82079165)
+* [Debian&Ubuntu下安装快捷ssh工具dropbear | 刺客博客](https://cikeblog.com/debianubuntu-install-dropbear.html)
+
+#### CentOS安装dropbear
+
+```sh
+yum install wget gcc gcc-c++ zlib* bzip2 -y # 安装依赖
+
+# 下载dropbear
+wget https://matt.ucc.asn.au/dropbear/releases/dropbear-2020.80.tar.bz2
+tar -jxvf https://matt.ucc.asn.au/dropbear/releases/dropbear-2020.80.tar.bz2
+cd dropbear-2020.80
+
+# 编译安装dropbear
+./configure
+make 
+make scp && make install
+mkdir -p /etc/dropbear
+cd .. && rm -rf dropbear-2019.78
+
+# 生成证书
+dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key
+dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key
+
+# 用别人的脚本开机自启
+echo 'port=222' > /etc/sysconfig/dropbear   # 修改dropbear默认端口为222（脚本用配置文件）
+wget https://cikeblog.com/e/dropbear && mv -f dropbear /etc/rc.d/init.d/dropbear # 下载配置文件并移动到相应目录
+chmod +x /etc/rc.d/init.d/dropbear  # 为service文件赋予可执行权限
+chkconfig --add dropbear  # 添加开机自启，如果不需要可以删除
+service dropbear start # 开启dropbear
+
+# 卸载dropbear 先删文件再杀进程
+rm -rf /etc/dropbear/ /usr/local/sbin/dropbear /usr/local/bin/dropbear* 
+ps -ef | grep dropbear | grep -v grep | awk '{print $2}' | xargs kill -9
+```
+
+* [Centos下安装SSH工具dropbear并配置开机自启 | 刺客博客](https://cikeblog.com/install-dropbear-under-centos-and-configure-boot-self-start.html)
+* [在Linux上，如何安装和配置Dropbear - Ubuntu问答](https://ubuntuqa.com/article/8623.html)
+
+### 公钥登录dropbear服务器
+
+* 公钥登录流程
+  * 客户端生成RSA公钥和私钥
+  * 客户端将自己的公钥存放到服务器
+  * 客户端请求连接服务器，服务器将一个随机字符串发送给客户端
+  * 客户端根据自己的私钥加密这个随机字符串之后再发送给服务器
+  * 服务器接受到加密后的字符串之后用公钥解密，如果正确就让客户端登录，否则拒绝。这样就不用使用密码了
+* 分为两种情况：
+  * 1.ssh登录
+    * ssh 和 dbclient 在一般情况下一样但在公钥登陆下不同
+    * openssh和dropbear使用相同的公钥不同的私钥
+    * 所以在这种情况要用 dropbearconvert 把 openssh 格式的私钥转为 dropbear 格式的私钥，然后再生成公钥
+    * 注意：
+      * dropbearconvert input_type output_type input_file output_file
+      * dropbearconvert 不支持加密的 openssh 密钥，要先用 ssh-keygen 解密
+      * 要先用 whereis 命令看一下  dropbearconvert 在哪里
+      * CentOS /usr/local/bin/dropbearconvert
+      * Ubuntu /usr/lib/dropbear/dropbearconvert
+  * 2.dbclinet（客户端创建dropbear公私钥）
+  * 注意：使用公钥登录dropbear服务器时客户端要**指定自己的私钥**
+
+```sh
+# openssh私钥转为dropbear私钥
+whereis dropbearconvert
+/usr/local/bin/dropbearconvert openssh dropbear id_rsa id_rsa.dropbear
+
+# dbclinet登录：客户端创建
+dropbearkey -t rsa -f ~/.ssh/id_rsa.dropbear # 创建私钥
+
+# 根据私钥创建公钥（只取有效部分）
+dropbearkey -y -f ~/.ssh/id_rsa.dropbear | grep "^ssh-rsa" > id_rsa.pub.dropbear
+
+# 拷贝id_rsa.pub.dropbear的内容到服务器目录~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+
+# dropbear服务器必须显示指定私钥文件
+ssh user@ip -i ~/.ssh/id_rsa.dropbear
+dbclient user@ip -i mylogin_key.dropbear
+
+rsync -avz -e “ssh -i /root/.ssh/id_rsa.dropbear” user@webhost:some-file-there.txt some-file-here.txt
+```
+
+* [使用SSH KEY访问dropbear服务 | UTXZ](https://utxz.com/2018/01/19/dropbear_public_key_authentication/)
+
+* [Using Public Keys With Dropbear SSH Client | yorkspace.com](https://yorkspace.wordpress.com/2009/04/08/using-public-keys-with-dropbear-ssh-client/)
+
+* [Ubuntu Manpage: dropbearconvert - convert between Dropbear and OpenSSH private key formats](https://manpages.ubuntu.com/manpages/bionic/man1/dropbearconvert.1.html)
+
+  

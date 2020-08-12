@@ -70,4 +70,5 @@ docker run hello-world
   * alpine 使用大全：[Tutorials and Howtos - Alpine Linux](https://wiki.alpinelinux.org/wiki/Tutorials_and_Howtos)
   * [Install Alpine on VirtualBox - Alpine Linux](https://wiki.alpinelinux.org/wiki/Install_Alpine_on_VirtualBox)
   * [VirtualBox shared folders - Alpine Linux](https://wiki.alpinelinux.org/wiki/VirtualBox_shared_folders)
+* [alpine使用的避坑指南 - sunsky303 - 博客园](https://www.cnblogs.com/sunsky303/p/11548343.html)
 

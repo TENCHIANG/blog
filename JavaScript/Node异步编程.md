@@ -183,7 +183,7 @@ fs.readFile(template_path, "utf8", (err, template) => emitter.emit("done", "temp
 db.query(sql, (err, data) => emitter.emit("done", "data", data))
 l10n.get((err, resources) => emitter.emit("done", "resources", resources))
 
-// 方案三、利用EventProxy.all
+// 方案三、利用EventProxy
 const proxy = new EventProxy()
 proxy.all("templete", "data", "resources", (err, templete) => {})
 fs.readFile(template_path, "utf8", (err, template) => proxy.emit("template", template))

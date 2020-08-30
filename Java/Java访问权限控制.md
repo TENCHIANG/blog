@@ -49,7 +49,7 @@ public class Vector {
   * 继承的类可以访问 public 和 protected 的成员（同一包内才能访问不加访问修饰符的成员）
   * 对某成员提供 get / set 方法（accessor 和 mutator）
 * 在同一目录下两个默认包的类，可以互相访问各自未经修饰的成员
-* 构造方法无修饰符默认为 public
+* **默认构造方法**为 public，手写构造方法有修饰符就有，没有就是包访问权限
 * 无修饰符的类和强制 public 修饰的构造方法，编译没问题，运行报错
 
 #### private

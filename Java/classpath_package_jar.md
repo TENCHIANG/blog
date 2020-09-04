@@ -85,6 +85,7 @@ public class Main { // src/Main.java
   * 先找同包下的类
   * 再找 import 过的包下的类
 * **静态导入 import static**（导入类的静态成员）
+* import 同名冲突的优先级：局部 > 成员 > 重载 > 报错
 
 ### jar 命令和 manifest.mf 编写
 

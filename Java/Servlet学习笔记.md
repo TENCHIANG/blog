@@ -4,17 +4,19 @@ JSP本质上也是Servlet，因为最终会编译成Servlet
 
 ### Apache Tomcat Versions
 
-| Tomcat | Servlet | JSP  | EL   | WebSocket | JASIC |
-| ------ | ------- | ---- | ---- | --------- | ----- |
-| 10     | 5.0     | 3.0  | 4.0  | 2.0       | 2.0   |
-| 9      | 4.0     | 2.3  | 3.0  | 1.1       | 1.1   |
+| Tomcat | Servlet | JSP  | EL   | WebSocket | JASIC | Java  |
+| ------ | ------- | ---- | ---- | --------- | ----- | ----- |
+| 10     | 5.0     | 3.0  | 4.0  | 2.0       | 2.0   | \>= 8 |
+| 9      | 4.0     | 2.3  | 3.0  | 1.1       | 1.1   | \>= 8 |
+| 8.5    | 3.1     | 2.3  | 3.0  | 1.1       | 1.1   | \>= 7 |
 
-
+* [Apache Tomcat® - Which Version Do I Want?](https://tomcat.apache.org/whichversion.html)
 
 ### 手动编译Servlet
+
 ```sh
 javac \
--classpath tomcat/lib/servlet-api.jar \
+-cp tomcat/lib/servlet-api.jar \
 -d ./classes/src/org/example/Hello.java
 ```
 

@@ -116,7 +116,7 @@ jar ucf classes.jar xxx # 添加文件xxx
 # 以下是清单文件的内容
 # Manifest-Version: 1.0
 # Created-By: 1.8.0_241 (Oracle Corporation)
-# Main-Class: Main
+# Main-Class: Main # 好像只需要这一行跟下一行即可
 # 这是回车（必须包括）
 
 # 索引文件示例
@@ -131,6 +131,7 @@ jar ucf classes.jar xxx # 添加文件xxx
 * jar 命令太类似 tar 命令了
 * jar 补充：[jar 和 Java 模块]()
 * [jar命令的用法详解 - 在路上------ - 博客园](https://www.cnblogs.com/liyanbin/p/6088458.html)
+* [製作 Executable JAR](https://openhome.cc/Gossip/JavaGossip-V2/ExecutableJAR.htm)
 
 ### 使用哪个 jre
 
@@ -221,3 +222,20 @@ jar ucf classes.jar xxx # 添加文件xxx
   * TCK：Technology Compatibility Kit（技术兼容测试工具箱）
     * 只有通过 TCK 才能使用 Java 这个商标（Open JDK、IBM JDK）
 * JSR 须通过 JCP Executive Committee（执行委员会）投票成为标准
+
+### 反编译
+
+* 利用反编译可以了解 Java 的原理
+* JAD：[JAD Java Decompiler Download Mirror](https://varaneckas.com/jad/)
+  * 反编译代码有更多的细节
+  * 把字节码拖到该 exe 上即可
+* JD：[Java Decompiler](https://java-decompiler.github.io)
+  * 有 jar 的 GUI 版（可以直接在里面预览）
+  * 也有 eclipse 的插件版，在 eclipse 上直接双击字节码即可
+    * Download JD-Eclipse ZIP file,
+    * Launch Eclipse,
+    * Click on *"Help > Install New Software..."*,
+    * Drag and drop ZIP file on dialog windows,
+    * Check *"Java Decompiler Eclipse Plug-in"*,
+    * Click on *"Next"* and *"Finish"* buttons,
+    * A warning dialog windows appear because *"org.jd.ide.eclipse.plugin_x.y.z.jar"* is not signed. Click on *"Install anyway"* button.

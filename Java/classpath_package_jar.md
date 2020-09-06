@@ -134,6 +134,33 @@ jar ucf classes.jar xxx # 添加文件xxx
 * [jar命令的用法详解 - 在路上------ - 博客园](https://www.cnblogs.com/liyanbin/p/6088458.html)
 * [製作 Executable JAR](https://openhome.cc/Gossip/JavaGossip-V2/ExecutableJAR.htm)
 
+ #### 快捷打开 jar 包
+
+* 一、新建个 java.exe 的快捷方式，右键快捷方式属性
+  * 目标：加上 -jar
+  * 运行方式：最小化
+  * 对 javaw.exe 操作可以不留 CMD 黑窗口
+* 用法：把 jar 包拖到该快捷方式即可运行
+* 二、批处理文件 startJar.bat（比快捷方式多了个打开方式）
+  * 把 jar 包拖到该快捷方式即可运行
+  * 右键 jar 包，打开方式选择该快捷方式，再双击运行
+
+```cmd
+@echo off
+java -jar %1
+```
+
+* 三、注册表 startjar.reg
+  * 可能还得配合右键打开方式，选择 OpenJDK Platform binary 那个就是注册表里的
+
+```reg
+Windows Registry Editor Version 5.00
+[HKEY_CLASSES_ROOT\Applications\javaw.exe\shell\open\command]
+@="\"D:\\jdk11\\bin\\javaw.exe\" -jar \"%1\" %*"
+```
+
+* [双击jar包运行_weixin_43328357的博客-CSDN博客](https://blog.csdn.net/weixin_43328357/article/details/90038733)
+
 ### 使用哪个 jre
 
 * jre：Java Runtime Environment（Java 运行环境）
@@ -228,9 +255,10 @@ jar ucf classes.jar xxx # 添加文件xxx
 
 * 利用反编译可以了解 Java 的原理
 * JAD：[JAD Java Decompiler Download Mirror](https://varaneckas.com/jad/)
-  * 反编译代码有更多的细节
+  * 特色：更贴近编译器展开的细节
   * 把字节码拖到该 exe 上即可
 * JD：[Java Decompiler](https://java-decompiler.github.io)
+  * 特色：更贴近原来的源代码
   * 有 jar 的 GUI 版（可以直接在里面预览）
   * 也有 eclipse 的插件版，在 eclipse 上直接双击字节码即可
     * Download JD-Eclipse ZIP file,

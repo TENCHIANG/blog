@@ -54,12 +54,14 @@ public class Main { // src/Main.java
   * JDK8 **字符类型**似采用 Unicode 6.2.0（UTF-8）
     * 源代码可多种编码，但是转为字节码的时候，会以 UTF 8 编码的转译形式
   * **字节码**恒为 UTF-16 Big Endian（每字符等长 2 字节）
+* -g:none 表示不包含代码行数等调试信息（字节码尺寸缩小）
 
 #### java 虚拟机的执行顺序
 
 * -verbose[:class|:gc|:jni] 默认是 class
 * **类是最后一个参数**，否则在类后面使用 java 命令的参数会无效
 * 如果要执行有 package 关键字的字节码，则要使用**全限定名**
+* -ea 开启断言
 
 ### 用 package 管理类
 
@@ -202,19 +204,19 @@ Windows Registry Editor Version 5.00
 
 ### Java 版本
 
-| Product Version   | Developer Version | Code Name       | 发布日期   | 重大更新      |
-| ----------------- | ----------------- | --------------- | ---------- | ------------- |
-| J2SE 1.4.0        | JDK 1.4.0         | Merlin（梅林）  | 2002.2.13  |               |
-| J2SE 5.0          | JDK 1.5.0         | Tiger（老虎）   | 2004.9.29  |               |
-| Java SE 6         | JDK 1.6.0         | Mustang（野马） | 2006.12.11 |               |
-| Java SE 7         | JDK 1.7.0         | Dolphin（海豚） | 2011.7.28  |               |
-| Java SE 8（LTS）  | JDK 1.8.0         | 无              | 2014.3.18  | Lambda        |
-| Java SE 9         | JDK 9.0.0         | 无              | 2017.9     | Module        |
-| Java SE 10        | JDK 10.0.0        | 无              | 2018.3     | var           |
-| Java SE 11（LTS） | JDK 11.0.0        | 无              | 2018.9     | 执行源代码    |
-| Java SE 12        | JDK 12.0.0        | 无              | 2019.3     |               |
-| Java SE 13        | JDK 13.0.0        | 无              | 2019.9     |               |
-| Java SE 14        | JDK 14.0.0        | 无              | 2020.3     | switch 表达式 |
+| Product Version   | Developer Version | Code Name       | 发布日期   | 重大更新         |
+| ----------------- | ----------------- | --------------- | ---------- | ---------------- |
+| J2SE 1.4.0        | JDK 1.4.0         | Merlin（梅林）  | 2002.2.13  |                  |
+| J2SE 5.0          | JDK 1.5.0         | Tiger（老虎）   | 2004.9.29  |                  |
+| Java SE 6         | JDK 1.6.0         | Mustang（野马） | 2006.12.11 |                  |
+| Java SE 7         | JDK 1.7.0         | Dolphin（海豚） | 2011.7.28  |                  |
+| Java SE 8（LTS）  | JDK 1.8.0         | 无              | 2014.3.18  | Lambda           |
+| Java SE 9         | JDK 9.0.0         | 无              | 2017.9     | Module 模块系统  |
+| Java SE 10        | JDK 10.0.0        | 无              | 2018.3     | var 局部类型推断 |
+| Java SE 11（LTS） | JDK 11.0.0        | 无              | 2018.9     | 直接执行源代码   |
+| Java SE 12        | JDK 12.0.0        | 无              | 2019.3     |                  |
+| Java SE 13        | JDK 13.0.0        | 无              | 2019.9     |                  |
+| Java SE 14        | JDK 14.0.0        | 无              | 2020.3     | switch 表达式    |
 
 * 从 Java SE 9 开始，JDK 半年为周期持续发布新版本（常态更新）
 * 版本号构成：feature.interim.update.patch

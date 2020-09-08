@@ -62,6 +62,8 @@ public class Main { // src/Main.java
 * **类是最后一个参数**，否则在类后面使用 java 命令的参数会无效
 * 如果要执行有 package 关键字的字节码，则要使用**全限定名**
 * -ea 开启断言
+* 可以直接执行 java 源代码（JDK11）
+  * 如果类搜索路径有字节码反而报错
 
 ### 用 package 管理类
 

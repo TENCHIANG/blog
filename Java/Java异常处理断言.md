@@ -363,6 +363,7 @@ public class FileUtil {
 ```
 
 * JDK9 开始，资源变量不一定要写在 try 括号里面了，等效 final 即可（初始化后不变）
+* try-with-resources 资源必须是变量声明，或者是等下 final 的表达式
 
 ```java
 public static String readFile(Scanner s) throws FileNotFoundException {

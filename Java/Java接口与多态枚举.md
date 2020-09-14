@@ -207,6 +207,9 @@ public final class Action extends Enum {
 * 格式为：**new 父类() | 接口() {};**
 * 如果接口只有一个抽象方法，可直接使用 Lambda 表达式（匿名函数）
   * 超过一个就报错：不是函数接口
+  * 注意：如果接口方法没有参数 void，实现的 Lambda 应该
+    * 用花括号包起来 `() -> {}` 
+    * 或者调用返回值为 void 的函数 `() -> voidReturnFunc()`（如 println）
 
 ```java
 // 类的实例

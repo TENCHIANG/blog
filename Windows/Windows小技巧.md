@@ -176,11 +176,15 @@ pause
 
 * 睡眠：数据还在内存，低功耗运行
 * 休眠：内存数据保存到硬盘，开机后再加载恢复
-* **开启休眠**
+* powercfg -h 表示休眠相关
+  * -size 指定休眠文件 **C:\hiberfil.sys** 的百分比（默认 100）
+  * -a 查看休眠是否已开启
+  * on 开启休眠，会自动创建休眠文件
+  * off 关闭休眠，会自动删除休眠文件
 
 ```cmd
-powercfg -a :: 查看休眠是否已开启
-powercfg -h on
+powercfg -h -size 100 on
+powercfg -h off
 ```
 
 ### foobar最佳实践
@@ -217,3 +221,7 @@ powercfg -h on
   * 参数：cu（UTF-8）
 * [7zip如何设置极限压缩的参数？ - 知乎](https://www.zhihu.com/question/24517051)
 
+### IDM 最佳实践
+
+* 选项 - 常规 - 自定义浏览器中的 IDM 下载浮动条 - 对于网页播放器 - 不要从在线播放器中自动捕获并下载文件
+* 选项 - 保存至 - 临时文件夹

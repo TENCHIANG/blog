@@ -1,3 +1,8 @@
+### 命令行工具
+
+* javac 源代码编译工具
+* java 字节码解释程序（JVM）
+
 ### classpath 的特点
 
 * classpath 没设置默认从**默认 jar 和当前目录**开始找

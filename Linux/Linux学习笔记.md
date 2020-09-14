@@ -609,3 +609,8 @@ apt-get install vim
 ```
 
 * [ubuntu 下使用vi时方向键乱码，退格键不能使用 - 一个运维的日常 - 博客园](https://www.cnblogs.com/yunweis/p/7727024.html)
+
+### U 盘安装 Ubuntu 提示 Not a COM32R image
+
+* 按 tab 键，会显示可用的命令，输入 live 进入体验界面
+* [如何在Ubuntu系统中重新安装不同版本的Ubuntu！（……Not a COM32R image ……“错误的解决办法！_刀刀的专栏-CSDN博客](https://blog.csdn.net/zyz511919766/article/details/7553221)

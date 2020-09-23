@@ -269,3 +269,32 @@ $ export LESSCHARSET=utf-8 # /etc/profile
 * 便携版针对安装在优盘，不支持软硬链接，所以解压后文件重复增大
 * [安装Git For Windows时尽量不要使用Portable版本（安装体积过大问题） - Leading - 博客园](https://www.cnblogs.com/leading/archive/2012/03/02/better-not-use-git-for-windows-portable.html)
 
+### 提交 pull request
+
+* 速成提交一个 pr
+* 先 fork 别人的项目
+* 然后把 fork 后的 git clone 下来
+* 自己改吧改吧，然后 commit 和 git push -f origin master
+* 然后在自己 fork 的项目页面点击 Pull request
+  * 旁边的 Compare 可以查看 pr 记录
+  * 原项目的 Pull requests（/pulls）可以查看未并入的所有 pr
+* 如果提交的 pr 未通过要再修改怎么办：直接修改再 commit、push 即可
+* 和原项目同步（确保上次 pr 已被 merge，这次重新 pr）
+  * git remote add update url
+  * git remote -v
+  * 先删除上次 pr 的 commit
+    * git rebase -i id（此 id 是你 pr 前的 id，就是原仓库最新的 id）
+    * 然后把你上一次 pr 的 commit 从 pick 改为 drop，wq 保存即可
+  * git fetch update 更新 update/master（非 origin/master）
+  * git rebase update/master（同步原仓库最新 merge 的 pr 代码）
+    * 或者此时加个 -i 顺便就把删除上次 pr 的 commit 一起做了？
+    * rebase 前要先 fetch 吗？
+  * git stash：Stash the changes in a dirty working directory away
+* 注意：如果有多个分支，也要注意多个分支
+  * 查看所有分支 git branch -a
+  * 切换分支 git checkout xxx
+  * 新建分支 git checkout -b yyy
+* [GitHub 的 Pull Request 是指什么意思？ - 知乎](https://www.zhihu.com/question/21682976/answer/79489643)
+* [Github上fork项目后与原项目保持同步 - relucent - 博客园](https://www.cnblogs.com/relucent/p/6479213.html)
+* [git删除指定commit - 奔跑的小龙码 - 博客园](https://www.cnblogs.com/lwcode6/p/11809973.html)
+* [提交第二个PR(零基础参与开源软件项目开发系列_02) - 知乎](https://zhuanlan.zhihu.com/p/113007672)

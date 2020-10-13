@@ -119,6 +119,14 @@ taskkill /f /im java.exe
 
 * 导出PDF：文件 - 导出 - PDF
 * 方便的管理文件：打开侧边栏 - 打开文件TAB - 右键选择文档树 - 再右上角打开文件夹
+* 文件 - 偏好设置 - Markdown - Markdown 扩展语法
+  * \$内联公式$（LaTeX 内联公式最有用，可完美代替下标上标）
+  * \~下标~
+  * \^上标^
+  * \==高亮==
+  * 图表（默认已选）
+* 文件 - 偏好设置 - Markdown - 代码块
+  * 显示行号
 
 ### Notepad++最佳实践
 
@@ -303,6 +311,8 @@ powercfg -h off
 * 左对齐：\begin{array}{l} ... \end{array}（只是公式按左对齐，整体还在中间）
   * c 中 l 左 r 右
 * 等号对齐：&=（用对齐包起来）
+* 上画线：\overline（一般用作括号功能的扩线）
+* 下画线：\underline
 * [markdown中公式编辑教程 - 简书](https://www.jianshu.com/p/25f0139637b7)
 * [Markdown数学符号&公式_诗蕊的专栏-CSDN博客](https://blog.csdn.net/katherine_hsr/article/details/79179622/)
 * [有道云笔记中，在Markdown下写公式时，如何让几行公式左对齐，而不是默认的居中对齐？ - 知乎](https://www.zhihu.com/question/60028634)

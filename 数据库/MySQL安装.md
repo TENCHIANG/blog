@@ -69,15 +69,6 @@
   * Standard Character Set 标准字符集，默认为 Latin1，英语和西欧语支持比较好（先选这个）
   * Best Support For Multilingualism，多语言支持最好的字符集，也就是 utf8
   * Manual Selected Default Character Set/Collation，手工选择字符集
-    * 其实 5.5.3 之后就增加了 utf8mb4（emoji），但是这里（5.5.62）不知为啥只有 utf8
-    * utf8 三字节，只支持 Unicode 中的基本多文种平面（BMP）
-    * utf8mb4 四字节，支持 emoji、不常用的汉字（如果是 utf8 存 emoji 就会报错）
-    * **utf8 是阉割版 UTF-8，utf8mb4 才是完整版**
-    * 最初的 UTF-8 使用 1 ~ 6 个字节，最大编码 31 位的字符
-    * 最新的 UTF-8 只使用 1 ~ 4 个字节，最大编码 21 位的字符，正好能表示所有的 17个 Unicode 平面
-    * CHAR 为了向后兼容用的是 utf8，应该总是用 VARCHAR
-    * select version() 查看版本
-    * [mysql中utf8和utf8mb4区别 - 彼扬 - 博客园](https://www.cnblogs.com/beyang/p/7580814.html)
 * Windows 选项设置
   * Install as Windows Service（勾选）
     * Service Name（**服务名默认为 MySQL**）
@@ -131,6 +122,24 @@ innodb_thread_concurrency=18
 * 配置文件目录一般是 /etc
 * 一般用 MySQL 自带的 cnf 拷贝为 my.cnf，然后稍作改动即可
 
+### MySQL 字符集问题
+
+* 其实 5.5.3 之后就增加了 utf8mb4（emoji），但是这里（5.5.62）不知为啥只有 utf8
+* utf8 三字节，只支持 Unicode 中的基本多文种平面（BMP）
+* utf8mb4 四字节，支持 emoji、不常用的汉字（如果是 utf8 存 emoji 就会报错）
+* **utf8 是阉割版 UTF-8，utf8mb4 才是完整版**
+* 最初的 UTF-8 使用 1 ~ 6 个字节，最大编码 31 位的字符
+* 最新的 UTF-8 只使用 1 ~ 4 个字节，最大编码 21 位的字符，正好能表示所有的 17个 Unicode 平面
+* CHAR 为了向后兼容用的是 utf8，应该总是用 VARCHAR
+* select version() 查看版本
+* [mysql中utf8和utf8mb4区别 - 彼扬 - 博客园](https://www.cnblogs.com/beyang/p/7580814.html)
+
+```mysql
+SELECT * FROM information_schema.character_sets WHERE character_set_name LIKE "utf8%"\G # 检查是否支持 utf8mb4 编码
+SHOW CREATE DATABASE test\G # 查看数据库的编码
+ALTER DATABASE test CHARACTER SET utf8mb4\G # 设置数据库的编码
+```
+
 ### MySQL 服务的开启和关闭
 
 * 只有开启了服务，才能够连接并访问
@@ -172,83 +181,14 @@ service mysql status
 
 ### MySQL的登录和退出
 
+* -h 指定主机地址
+* -u 指定数据库用户名
+* -p 指定明文密码，默认手动输入密码，无 -p 则表示无密码
+  * 指定密码无需加空格，否则会手动输入密码，而指定的密码被当做要 use 数据库
+  * 若无则报错 ERROR 1049 (42000): Unknown database '指定的密码'，并退出
+* -P 指定端口，默认 3306 端口
+* exit 或 quit 都可以退出，\h 帮助，\c 清屏
+
 ```cmd
-mysql -uroot -proot :: 直接输入密码
-mysql -u roo -p :: 加密输入密码
-exit
-quit
+mysql -hlocalhost -uroot # 等价于只输入mysql
 ```
-
-### MySQL目录结构
-
-* my.ini 配置文件
-* data/数据库/表
-  * 数据库是文件夹
-  * 表是文件
-
-### SQL（Structured Query Language）
-
-* 结构化查询语言（可以操纵所有的关系型数据库）
-* 每种数据库基于SQL都会有一定的修改（方言）
-* SQL语句单行多行都行，以分号结尾
-* MySQL的SQL不区分大小写（关键字建议大写）
-* 单行注释：`--` （必须加空格）或 `#`
-* 多行注释：`/**/`
-
-### SQL分为四类
-
-* DDL（Data Definition Language）
-  * 操作数据库和表
-  * create、drop、alter
-* DML（Data Manipulation Language）
-  * insert、delete、update
-* DQL（Data Query Language）
-  * select、where
-* DCL（Data Control Language）
-  * 访问权限、安全级别
-  * grant、revoke
-
-### MySQL的utf8不是真正的UTF-8
-
-* utf8：3字节，不支持部分汉字、emoji表情（存储的话会报错）
-* utf8mb4：4字节，完整版的UTF-8（`select version();`mysql5.5.3之后）
-* `select * from information_schema.character_sets where character_set_name like 'utf8%';`
-* `alter database 数据库名 character set utf8mb4;`
-
-### DDL：操作数据库、表
-
-#### 操作数据库：CRUD
-
-* Create 创建
-  * `create database if not exists db character set utf8mb4;` 不报错
-* Retrieve 查询
-  * `show databases;`
-    * information_schema（视图，没有实际文件夹）
-    * mysql
-    * performace_schema
-    * test
-  * `show create database test;` 查看某个数据库的创建语句（**字符集**）
-    * `CREATE DATABASE `test` /*!40100 DEFAULT CHARACTER SET utf8 */`
-* Update 修改
-  * `alter database 数据库名 character set 字符集名;`
-* Delete 删除
-  * `drop database if exists 数据库名;`
-* 使用数据库
-  * `select database();` 查看当前使用的数据库（默认为NULL）
-  * `use 数据库名;`
-
-#### 操作表：CRUD
-
-* create
-```sql
-create table 表名 (
-	列名1 数据类型1,
-	列名2 数据类型2,
-    ...
-	列名n 数据类型n # 注意最后一行没有逗号
-);
-```
-* retrieve
-  * `show tables;` 查看当前数据库的所有表
-* update
-* delete

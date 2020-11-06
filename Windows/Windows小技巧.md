@@ -123,7 +123,7 @@ taskkill /f /im java.exe
   * \$内联公式$（LaTeX 内联公式最有用，可完美代替下标上标）
   * \~下标~
   * \^上标^
-  * \==高亮==
+  * \==黄色高亮==
   * 图表（默认已选）
 * 文件 - 偏好设置 - Markdown - 代码块
   * 显示行号
@@ -271,6 +271,9 @@ powercfg -h off
       * 按住 Ctrl 键，用鼠标选择要翻译的文字，即可弹出翻译
       * 或者先选择文字，鼠标不要松开，再按住 Ctrl 后松开鼠标
       * 按住 Ctrl 键，双击要翻译的单词
+  * 仅当按下 Ctrl 键时启用鼠标模式：不勾选
+  * 点击通知区域图标时切换鼠标模式：勾选
+    * 右下角开启鼠标模式，鼠标选择文字直接翻译，不用时再点击右下角图标关闭即可
 * 选项 - 更新：关闭自动更新
 * 主界面
   * 拼写检查、即时翻译、回译模式（不一定）
@@ -313,6 +316,30 @@ powercfg -h off
 * 等号对齐：&=（用对齐包起来）
 * 上画线：\overline（一般用作括号功能的扩线）
 * 下画线：\underline
+* 不等于：\\neq
 * [markdown中公式编辑教程 - 简书](https://www.jianshu.com/p/25f0139637b7)
 * [Markdown数学符号&公式_诗蕊的专栏-CSDN博客](https://blog.csdn.net/katherine_hsr/article/details/79179622/)
 * [有道云笔记中，在Markdown下写公式时，如何让几行公式左对齐，而不是默认的居中对齐？ - 知乎](https://www.zhihu.com/question/60028634)
+
+### 快捷打开蓝牙服务
+
+* 只要连接过蓝牙设备，但是打开蓝牙设备的服务很繁琐，其本质只是一条命令
+
+```cmd
+"D:\Program Files (x86)\Intel\Bluetooth\btmsrvview.exe" fc:58:fa:5e:08:a4
+```
+
+### netstat 查看端口占用
+
+```cmd
+netstat -ao # 查看服务状态
+# -a 显示所有连接和侦听端口
+# -b 显示程序名
+# -o 显示PID
+# -n 数字形式显示地址和端口号
+# netstat 命令在 Windows 很慢 耐心等待
+tasklist | findstr PID # 根据 PID 查看程序名
+
+netstat -ano | findstr 5554
+```
+

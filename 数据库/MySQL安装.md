@@ -11,11 +11,24 @@
 #### MySQL版本的新特性
 
 * 4.1 子查询、UTF-8
-* 5.0 视图、过程、出发前、INFORMATION_SCHEMA 数据库
-* 5.1 表分区
-* 5.5 开始 InnoDB 为默认引擎
+* 5.0 2005视图、存储过程、触发器、INFORMATION_SCHEMA 数据库
+* 5.1 2008 Event scheduler、Partitioning、Pluggable storage engine API 、Row-based replication、
+* 5.5 默认 InnoDB
+* 5.6 优化 InnoDB
 * 5.7 支持 JSON
 * 6.0 FALCON 存储引擎
+
+| 版本 | 年份 | 简介                                                         |
+| ---- | ---- | ------------------------------------------------------------ |
+| 4.1  | 2004 | R-trees and B-trees, subqueries, prepared statements         |
+| 5.0  | 2005 | cursors, stored procedures, triggers, views, XA transactions、INFORATION_SCHEMA |
+| 5.1  | 2008 | event scheduler, partitioning, plugin API, row-based replication, server log tables |
+| 5.5  | 2010 | 默认 InnoDB、utf16、utf32、utf8mb4、半同步复制、performancn_shema |
+| 5.6  | 2013 | InnoDB 优化、TIMESTAMP 存储毫秒、延时复制                    |
+| 5.7  | 2015 | JSON                                                         |
+| 8.0  | 2018 | NoSQL Document Store, JSON Extended syntax, JSON table       |
+* [MySQL - Wikipedia](https://en.wikipedia.org/wiki/MySQL)
+* [MySQL 4.1/5.0/5.1/5.5/5.6/5.7各版本的主要区别_chajinglong的专栏-CSDN博客](https://blog.csdn.net/chajinglong/article/details/52939350)
 
 ### MySQL的下载与安装
 
@@ -192,3 +205,6 @@ service mysql status
 ```cmd
 mysql -hlocalhost -uroot # 等价于只输入mysql
 ```
+
+* 登录后会显示一些信息
+  * Your MySQL connection id is 30 表示服务器目前的连接次数

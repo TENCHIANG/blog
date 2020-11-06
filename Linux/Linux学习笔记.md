@@ -604,6 +604,7 @@ set backspace=2 # 解决退格键用不了
 * 或者安装完整版vim
 
 ```sh
+dpkg -l | grep vim # 查看所有已安装的vim相关包
 apt-get remove vim-common
 apt-get install vim
 ```
@@ -614,3 +615,16 @@ apt-get install vim
 
 * 按 tab 键，会显示可用的命令，输入 live 进入体验界面
 * [如何在Ubuntu系统中重新安装不同版本的Ubuntu！（……Not a COM32R image ……“错误的解决办法！_刀刀的专栏-CSDN博客](https://blog.csdn.net/zyz511919766/article/details/7553221)
+
+### 修改 PATH
+
+* 修改 ~/.bashrc，参考 [Shell的各个启动脚本](Shell笔记.md#Shell的各个启动脚本)
+
+```sh
+export PATH=\
+$GOPATH/bin:\ # go env
+$PATH
+```
+
+* [Linux PATH 作用以及查看和修改方法_haozhepeng的专栏-CSDN博客](https://blog.csdn.net/haozhepeng/article/details/100584451)
+

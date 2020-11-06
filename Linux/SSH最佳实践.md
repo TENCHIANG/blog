@@ -18,10 +18,12 @@ SSH经常会碰到一个问题，有段时间没有操作，会自动断开或�
 相同点：都是发送心跳包的
 不同点：TCPKeepAlive是服务端客户端都可以设置的
 最大的不同点：TCPKeepAlive可能也会被防火墙拦住，意思是光TCPKeepAlive可能还是会掉线
+
 > **TCPKeepAlive** operates on the TCP layer. It sends an empty TCP ACK packet. Firewalls can be configured to ignore these packets, so if you go through a firewall that drops idle connections, these may not keep the connection alive.
 > **ServerAliveInterval** operates on the ssh layer. It will actually send data through ssh, so the TCP packet has encrypted data in and a firewall can't tell if its a keepalive, or a legitimate packet, so these work better.
 
 `man sshd_config`里面有句话
+
 > The default is yes (to send TCP keepalive messages), and the server will notice if the network goes down or the client host crashes. **This avoids infinitely hanging sessions.**
 
 也就是说，TCPKeepAlive的目的不是为了保持连接，而是为了清除`ghost-user`，反而更容易断线
@@ -52,7 +54,7 @@ Host myhost
     HostName xx.xx.xx.xx
     User root
     Port xxxx
-    ServerAliveInterval 60 # 每30s向服务端发送心跳包
+    ServerAliveInterval 30 # 每30s向服务端发送心跳包
     ServerAliveCountMax 5 # 默认为3
 
 ssh myhost

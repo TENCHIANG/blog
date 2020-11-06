@@ -2,22 +2,34 @@
 
 * 结构化查询语言 Structured Query Language，可以操纵所有的关系型数据库
 * 每种数据库基于SQL都会有一定的修改（方言）
+* SQL 不区分大小写
 
 #### SQL 分为四类
 
-* DDL Data Definition Language 数据定义语言
-  * 操作数据库对象（数据库和表）：create、drop、alter
-  * 数据的组织形式为 schema
-* DML Data Manipulation Language 数据操作语言
-  * 表操作：insert、delete、update
-* DQL Data Query Language 数据查询语言
-  * select、where
-* DCL Data Control Language 数据控制语言
-  * 访问权限、安全级别：grant、revoke
+* 所有 DDL、DML（除了 SELECT）执行成功显示 Query OK
+  * DROP 成功显示 0 rows affected
+
+##### DDL Data Definition Language 数据定义语言
+
+* **DDL 操作数据库对象（DBA）**：CREATE、ALTER、DROP
+* 数据库对象：tables、views、clusters、sequences（序列）、 indexes、synonyms（同义词）
+* 数据的组织形式为 schema
+
+##### DML Data Manipulation Language 数据操作语言
+
+* **DML 操作表内数据**：INSERT、UPDATE、DELETE
+
+##### DQL Data Query Language 数据查询语言
+
+* SELECT、WHERE
+
+##### DCL Data Control Language 数据控制语言
+
+* 访问权限、安全级别：GRANT、REVOKE
 
 ### SQL 常用操作
 
-* SQL 最佳实践：关键字最好大写，语句结尾最好用 \G，字符串用双引号，反标号括起数据库和表名
+* SQL 最佳实践：关键字最好大写，语句结尾最好用 \G，字符串用双引号，反标号括起数据库和表名，用完全限定名（不用 USE 偷懒）
 
 ```mysql
 SELECT VERSION()\G # 查看 mysql 版本
@@ -42,9 +54,14 @@ CREATE TABLE IF NOT EXISTS `company`.`customers` ( # 创建表
     `country` varchar(20) # 最后一个不加逗号 否则语法错误
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4\G
 
-SHOW TABLES FROM `company`\G # 查看所有表
+SELECT table_name
+FROM information_schema.tables 
+WHERE table_schema = 'company'\G  # 查看mysql的所有表
+SHOW TABLES FROM `company`\G # 查看company的所有表
+
 SHOW CREATE TABLE `company`.`customers`\G # 查看表结构（创建时的语句）
 DESC `company`.`customers`\G # 查看表结构（以查询结果的形式）
+SHOW `company`.`customers`\G # 等价于 DESC、DESCRIBE
 
 CREATE TABLE `company`.`new_customers` LIKE `company`.`customers`\G # 克隆表结构
 DROP TABLE `company`.`new_customers`\G # 删除表
@@ -71,13 +88,19 @@ DELETE FROM `company`.`customers` WHERE id=1 AND first_name="D"\G # 删除符合
 SELECT * FROM `company`.`customers`\G # 查看表的所有字段
 ```
 
-#### 特殊的 USE 语句
+####  MySQL 命令
 
-* 不结尾或分号结尾提示 Database changed
-* \g 结尾会提示 Query OK, 0 rows affected (0.00 sec)
-* 也可以用反标号括起来，情况与上述相同，独 \G 不同：
-  * 不括起来，转义为 g 添加到原来数据库名字的后面
-  * 括起来，则报语法错误 ERROR 1064 (42000): You have an error in your SQL syntax
+* use（\u）Use another database
+  * 不结尾或分号结尾提示 Database changed
+  * \g 结尾会提示 Query OK, 0 rows affected (0.00 sec)
+  * 也可以用反标号括起来，情况与上述相同，独 \G 不同：
+    * 不括起来，转义为 g 添加到原来数据库名字的后面
+    * 括起来，则报语法错误 ERROR 1064 (42000): You have an error in your SQL syntax
+* USE 其实属于 MySQL 命令，必须是第一行、以分号结尾
+  * help（\h）或 ?（\?） 显示所有的 MySQL 命令
+  * clear（\c）清屏
+  * exit（\e）或 quit（\q）退出 MySQL monitor
+  * source（\\.） 运行指定 sql 文件
 
 ### SQL 的各种符号
 
@@ -103,11 +126,64 @@ SELECT * FROM `information_schema`.`character_sets`\G
 * 单行注释：`#` 和 `--` （右边必须加空格）
 * 多行注释：`/**/`
 
-### 创建表
+## Data Definition Language
+
+### CREATE DATABASE 创建数据库
+
+* 需要有创建数据库的权限
+* CREATE SCHEMA 等价于 CREATE DATABASE
+* IF NOT EXISTS 同名则忽略而非报错
+* CHARACTER SET 指定字符集
+* COLLATE 指定字符序（校对规则）
+* MySQL 中的数据库是文件夹，而表则是其中的文件
+  * Windows 在 ProgramData 文件夹下
+    * 所以创建系统同名数据库会以用户创建的为准
+    * 原来的数据库会被隐藏
+  * 因此 CREATE DATABASE 只会创建一个文件夹和 db.opt 文件
+  * db.opt 文件表示该数据库的字符集和字符序（更改也在此体现）
+  * 所以手动创建文件夹也会在 SHOW DATABASES 中体现
+    * 如果手动改了 USE 中的文件夹名 SELECT DATABASE() 会为 NULL
+  * [mysql关于db.opt文件的总结_cjh81378066的博客-CSDN博客](https://blog.csdn.net/cjh81378066/article/details/100509498)
+
+```sql
+CREATE DATABASE|SCHEMA [IF NOT EXISTS] db_name
+	[create_option] ...
+create_option =
+	[DEFAULT]
+	CHARACTER SET [=] charset_name |
+	COLLATE [=] collation_name
+charset_name = SHOW CHARACTER SET;
+collation_name = SHOW COLLATION;
+-- db.opt默认内容
+default-character-set=latin1
+default-collation=latin1_swedish_ci
+```
+
+#### CHARACTER SET & COLLACTION 字符集和字符序
+
+* 字符集是一套字符和编码的集合
+* 字符序也叫校对规则（或校对集），是用于字符集的排序
+  * _ci（case insensitive）大小写不敏感（默认）
+  * _cs（case sensitive）大小写敏感
+  * _bin（binary）用编码值进行比较（大小写敏感）
+* 因为 MySQL 默认字符序是 _ci，所以排序是大小写不敏感的
+* [charset & collation_耘田-CSDN博客](https://blog.csdn.net/fgszdgbzdb/article/details/77051324)
+
+#### 修改数据库名
+
+* 直接修改文件夹名：mv old_name new_name
+* InnoDB 没有直接修改数据库名的命令
+
+```sql
+CREATE DATABASE newdb;
+RENAME TABLE old_db.tb1 TO new_db.tb1; -- 只能一张张表赋值
+```
+
+### CREATE TABLE 创建表
 
 * 分为定义字段（括号内）和定义整个表（括号外，有等号）
 * 定义字段
-  * IF NOT EXISTS 有相同的名字只警告，不继续创建（否则报错）
+  * IF NOT EXISTS 有相同的名字避免报错
     * Query OK, 0 rows affected, 1 warning (0.00 sec)
   * PRIMARY KEY 每行由非空的 UNIQUE 列唯一标识，是为主键
   * AUTO_INCREMENT 自增，一般自增列作为这一行的主键
@@ -122,41 +198,112 @@ SELECT * FROM `information_schema`.`character_sets`\G
   * ENGINE=InnoDB、MyISAM、FEDERATED、BLACKHOLE、CSV、MEMORY
   * AUTO_INCREMENT=1 自定义自增步长，默认就是 1
   * DEFAULT CHARSET=utf8mb4
-
-#### 操作数据库 CRUD
-
-* Create 创建
-  * `create database if not exists db character set utf8mb4;` 不报错
-* Retrieve 查询
-  * `show databases;`
-    * information_schema（视图，没有实际文件夹）
-    * mysql
-    * performace_schema
-    * test
-  * `show create database test;` 查看某个数据库的创建语句（**字符集**）
-    * `CREATE DATABASE `test` /*!40100 DEFAULT CHARACTER SET utf8 */`
-* Update 修改
-  * `alter database 数据库名 character set 字符集名;`
-* Delete 删除
-  * `drop database if exists 数据库名;`
-* 使用数据库
-  * `select database();` 查看当前使用的数据库（默认为NULL）
-  * `use 数据库名;`
-
-#### 操作表：CRUD
-
-* create
+* 创建表默认行为
+  * 存储引擎默认为 InnoDB
+  * 如果表已存在（重名），则报错
+  * 如果没有默认数据库就创建表，则报错
+  * 如果指定了不存在的数据库创建表，则报错
+  * MySQL 本身不限制表的数量，但是存储引擎会，InnoDB 最多 40 亿张表（unsigned int）
 
 ```sql
-create table 表名 (
-	列名1 数据类型1,
-	列名2 数据类型2,
-    ...
-	列名n 数据类型n # 注意最后一行没有逗号
+CREATE TABLE 表名 (
+    列名1 数据类型 约束条件,
+    列名2 数据类型 约束条件,
+    ...,
+    表约束1, 表约束2, ...
 );
+
+CREATE [GLOBAL|LOCAL TEMPORARY] TABLE table_name
+	table_element_list | OF user-defined_type
+		[UNDER supertable_name]
+		[table_element_list]
+	[ON COMMIT PRESERVE|DELETE ROWS]
+	
+table_element_list = left_paren table_element, ... right_paren
+table_element = column_definition | table_constraint_definition | LIKE table_name | self-referencing_column_specification | column_options
+
+self-referencing_column_specification = REF IS self-referencing_column_name reference_generation
+reference_generation = SYSTEM GENERATED | USER GENERATED | DERIVED
+
+column_options = column_name WITH OPTIONS 
+[scope_clause] [default_clause] [column_constraint_definition...] [collate_clause]
 ```
 
-* retrieve
-  * `show tables;` 查看当前数据库的所有表
-* update
-* delete
+### ALTER TABLE 修改表
+
+* ALTER TABLE table_name MODIFY [COLUMN] col_name col_def [FIRST | AFTER col_name]
+
+```sql
+ALTER TABLE table_name MODIFY name varchar(20);
+```
+
+### DISTINCT 去重
+
+* 如果指定了多个列则是综合了所有列之后的去重
+
+```sql
+SELECT DISTINCT vend_id FROM products;
+```
+
+### LIMIT 限制行数
+
+* Limit n, m 表示从第 n + 1 行开始的 m 行（n 从 0 开始，默认为 0）
+  * 取 m 行只能尽量满足，后面行不够就没办法了
+  * 等价于 LIMIT m OFFSET n
+
+```sql
+SELECT vend_id FROM products LIMIT 3, 4; -- 第4行开始取4行
+SELECT vend_id FROM products LIMIT 4 OFFSET 3; -- 取4行偏移3行开始
+```
+
+### ORDER BY 排序
+
+* SELECT 的结果没有特定的顺序，所以 ORDER BY 子句可取一列或多列排序
+* 对多列进行排序，是先以第一个指定的列排序，再以后面指定列排序
+* 默认升序（ASC），DESC 为降序（每个列需分别指定）
+* 字典序：大小写相等（a 权重等于 A）
+* ORDER BY 和 LIMIT 的组合，可以取最大或最小值
+
+```sql
+SELECT prod_id, prod_price, prod_name
+FROM products
+ORDER BY prod_price DESC, prod_name; -- 价格降序，再对产品名升序
+
+SELECT prod_id, prod_price, prod_name
+FROM products
+ORDER BY prod_price DESC
+LIMIT 1; -- 取最贵的
+```
+
+#### clause 子句
+
+* 子句由一个关键字和数组组成（一列或多列数据），如 FROM 子句
+
+### WHERE 过滤数据
+
+* WHERE 也相当于指定检索条件，在 FROM 子句后给出
+* 在 Server 层的过滤数据有助于提高性能
+
+```sql
+SELECT prod_name
+FROM products
+WHERE prod_price = 2.50; -- 指定价格取产品名
+```
+
+#### WHERE 子句判断条件
+
+* =、<>、!=、<、<=、>、>=、BETWEEN（闭区间）、IS NULL（空值检查）
+* 指定范围区间：BETWEEN n AND m
+  * 为闭区间 [n, m]
+* WHERE 判断字符串时也**不区分大小写**
+* NULL 与 0、空字符串、空格、**不匹配**不同
+
+```sql
+SELECT cust_id
+FROM customers
+WHERE cust_email IS NULL; -- 取出邮箱为空的用户ID
+```
+
+#### SELECT 及其子句的顺序
+
+* SELECT - FROM - WHERE - ORDER BY - LIMIT

@@ -628,3 +628,12 @@ $PATH
 
 * [Linux PATH 作用以及查看和修改方法_haozhepeng的专栏-CSDN博客](https://blog.csdn.net/haozhepeng/article/details/100584451)
 
+### 安装 VirtualBox 增强插件
+
+```sh
+sudo apt-get install gcc make perl
+sudo sh ./VBoxLinuxAdditions.run
+reboot
+```
+
+* [如何安装VirtualBox增强功能插件(linux)?超详细-百度经验](https://jingyan.baidu.com/article/fdbd42770ccc83f99f3f4804.html)

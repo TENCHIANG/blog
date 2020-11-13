@@ -70,3 +70,19 @@ cat /proc/cpuinfo
 * [ARM 处理器：RISC与CISC 是什么？ - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1432825)
 * [Debian -- 移植](https://www.debian.org/ports/#portlist-released)
 * [ARM体系的EL演化史 - 知乎](https://zhuanlan.zhihu.com/p/21258997?refer=c_33701669)
+
+### CPU：Chip、Core 和 Processor 的关系
+
+* Chip（芯片）物理的 CPU
+* Core（核心）物理的核心
+* Processor（处理器）逻辑的 CPU（逻辑核心）
+* 通常说的 CPU 其实是一个芯片的封装，通常说的几核 CPU 的那几个核才是严格意义上的 CPU（中央处理器, Central Processing Unit），超线程技术就是把一个物理核心当成两倍的逻辑核心（线程切换成本降低的技术）
+
+```sh
+cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l # chip
+cat /proc/cpuinfo| grep "cpu cores"| uniq # core
+cat /proc/cpuinfo| grep "processor"| wc -l # processor
+cat /proc/cpuinfo
+```
+
+* [CPU：chip、core 和 processor 的关系_张同光 (Tongguang Zhang)：Hello everyone !-CSDN博客](https://blog.csdn.net/ztguang/article/details/83089905)

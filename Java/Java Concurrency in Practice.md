@@ -69,5 +69,32 @@ public class UnsafeSequence { // 多线程可能会返回相同值
 * 对象的状态可能还包括其它相关对象的字段
 * 对象状态包含影响该对象外部行为的所有数据
 
-### 2.1
+### 线程的三种方式
 
+1. 实现 Runnable.start
+2. 继承 Thread.run
+3. Lambda（类似 1）
+
+* 运行线程 Thread.start
+
+```java
+// for (int i = 0; i < 10; i++) System.out.println(i);
+
+public class Hare implements Runnable { public void run() {} }
+new Thread(new Hare()).start(); // 1-1
+
+new Thread(){ public void run() {} }.start(); // 1-2
+
+public class Hare extends Thread { public void run() {} }
+new Hare().start(); // 2
+
+new Thread(() -> {}).start(); // 3
+```
+
+* 并发把程序划分成多个单独运行的任务，每个任务通过执行线程驱动，执行线程简称线程
+* 一个线程是操作系统进程中的单个顺序控制流，进程可以有多个并发执行的任务
+* 在编程时，每个任务好像有一个单独的处理器
+* 操作系统分配处理器的时间给每个线程
+* Java 并发的核心机制是 Thread 类（最初）
+* 后来又出现了 Executor 类，用来管理线程
+* 后来出现了更好的机制：并行 Stream 和 CompletableFuture 类

@@ -21,6 +21,7 @@ VBoxManage modifyvm "myandrovm_vbox86" --natpf1 "ssh,tcp,,22,,8022" # 主机访�
   * f 一个个测试最快的
   * e 手动编辑
 * ssh 服务器：dropbear（会自动生成 key 并启动服务）
+  * 注意不带 dropbear-scp，之后要 apk add 安装
 * ntp 时钟同步：chronyd
 * 选择磁盘格式化：sda
 * 选择磁盘模式：sys
@@ -71,4 +72,35 @@ docker run hello-world
   * [Install Alpine on VirtualBox - Alpine Linux](https://wiki.alpinelinux.org/wiki/Install_Alpine_on_VirtualBox)
   * [VirtualBox shared folders - Alpine Linux](https://wiki.alpinelinux.org/wiki/VirtualBox_shared_folders)
 * [alpine使用的避坑指南 - sunsky303 - 博客园](https://www.cnblogs.com/sunsky303/p/11548343.html)
+* [Alpine newbie developer: full stack web - Alpine Linux](https://wiki.alpinelinux.org/wiki/Alpine_newbie_developer:_full_stack_web)
+
+### 安装 JDK
+
+* 下载 [Linux x64 Compressed Archive](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)（tar.gz）
+* 通过 scp 传到虚拟机
+* 再到虚拟机上解压以及设置环境变量
+
+```sh
+apk add dropbear-scp # 虚拟机安装dropbear版的scp
+scp /d/Users/Administrator/Downloads/Programs/jdk-8u271-linux-x64.tar.gz root@127.0.0.1:/root # PC -> VM
+tar xzf jdk-8u271-linux-x64.tar.gz
+vi /etc/profile
+export JAVA_HOME=/root/jdk1.8.0_271
+export PATH=$PATH:$JAVA_HOME\bin
+./etc/profile
+java -version
+javac -version
+```
+
+* [Installing Oracle Java - Alpine Linux](https://wiki.alpinelinux.org/wiki/Installing_Oracle_Java)
+
+### cpu负载高简单排查思路
+
+> 首先通过uptime查看系统负载，然后使用mpstat结合pidstat来初步判断到底是cpu计算量大还是进程争抢过大或者是io过多，接着使用vmstat分析切换次数，以及切换类型，来进一步判断到底是io过多导致问题还是进程争抢激烈导致问题。
+
+* [cpu负载高简单排查思路](https://www.cnblogs.com/xiaobao2/p/11502558.html)
+
+* [使用alpine制作最小化的JDK基础镜像](https://www.cnblogs.com/xiaobao2/p/11468778.html)
+
+* [办公环境下k8s网络互通方案](https://www.cnblogs.com/xiaobao2/p/11461345.html)
 

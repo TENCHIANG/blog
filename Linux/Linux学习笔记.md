@@ -630,10 +630,41 @@ $PATH
 
 ### 安装 VirtualBox 增强插件
 
+* 
+
 ```sh
-sudo apt-get install gcc make perl
+sudo mkdir -p /mnt/cdrom
+sudo mount -t iso9660 /dev/cdrom /mnt/cdrom/
+cd /mnt/cdrom
+sudo apt install gcc make perl # 可选
 sudo sh ./VBoxLinuxAdditions.run
+sudo umount -l /dev/cdrom
 reboot
 ```
 
 * [如何安装VirtualBox增强功能插件(linux)?超详细-百度经验](https://jingyan.baidu.com/article/fdbd42770ccc83f99f3f4804.html)
+
+### mount umount 挂载光驱
+
+* -t 指定文件系统类型，通常无需指定
+  * DOS fat16文件系统：msdos 
+  * Windows 9x fat32文件系统：vfat 
+  * Windows NT ntfs文件系统：ntfs 
+  * Mount Windows文件网络共享：smbfs 
+  * UNIX(LINUX) 文件网络共享：nfs 
+* -o 挂载选项
+  * loop：用来把一个文件当成硬盘分区挂接上系统 
+  * ro：采用只读方式挂接设备 
+  * rw：采用读写方式挂接设备 
+  * iocharset：指定访问文件系统所用字符集 
+* 制作 iso 文件
+
+```sh
+cp /dev/cdrom /root/mydisk.iso
+dd if=/dev/cdrom of=/root/mydisk.iso
+mkisofs -r -J -V mydisk -o /root/mydisk.iso /root/mydir # mydisk为光盘卷标
+```
+
+* [linux mount (挂载命令)、umount （卸载命令）详解_sweetfather的博客-CSDN博客](https://blog.csdn.net/sweetfather/article/details/79988995)
+* [Linux挂载光盘（使用mount命令）](c.biancheng.net/view/3327.html)
+

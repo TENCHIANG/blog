@@ -25,7 +25,7 @@
 | 5.1  | 2008 | event scheduler, partitioning, plugin API, row-based replication, server log tables |
 | 5.5  | 2010 | 默认 InnoDB、utf16、utf32、utf8mb4、半同步复制、performancn_shema |
 | 5.6  | 2013 | InnoDB 优化、TIMESTAMP 存储毫秒、延时复制                    |
-| 5.7  | 2015 | JSON                                                         |
+| 5.7  | 2015 | JSON、多线程并行复制、多源赋值、引入 sys 系统库、MGR、密码安全性提高 |
 | 8.0  | 2018 | NoSQL Document Store, JSON Extended syntax, JSON table       |
 * [MySQL - Wikipedia](https://en.wikipedia.org/wiki/MySQL)
 * [MySQL 4.1/5.0/5.1/5.5/5.6/5.7各版本的主要区别_chajinglong的专栏-CSDN博客](https://blog.csdn.net/chajinglong/article/details/52939350)
@@ -208,3 +208,9 @@ mysql -hlocalhost -uroot # 等价于只输入mysql
 
 * 登录后会显示一些信息
   * Your MySQL connection id is 30 表示服务器目前的连接次数
+
+### 启动服务报 1067
+
+* data 文件夹被删除了，查看 my.ini 的 datadir 字段
+* 还是改成安装目录下的 data 目录比较稳，注意目录分隔符是**斜杠**而不是反斜杠
+* [window 安装Mysql 5.6 发生系统错误 1067 - 未来-- - 博客园](https://www.cnblogs.com/wei-lai/p/5114093.html)

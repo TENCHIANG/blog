@@ -3,27 +3,26 @@
 * 结构化查询语言 Structured Query Language，可以操纵所有的关系型数据库
 * 每种数据库基于SQL都会有一定的修改（方言）
 * SQL 不区分大小写
+* 所有 DDL、DML（除了 SELECT）成功显示 Query OK，理解为**执行成功**
+  * DROP 成功显示 0 rows affected
 
 #### SQL 分为四类
 
-* 所有 DDL、DML（除了 SELECT）执行成功显示 Query OK
-  * DROP 成功显示 0 rows affected
+##### DDL，数据定义语言，Data Definition Language
 
-##### DDL Data Definition Language 数据定义语言
-
-* **DDL 操作数据库对象（DBA）**：CREATE、ALTER、DROP
+* 操作**数据库对象**（DBA）：CREATE、ALTER、DROP
 * 数据库对象：tables、views、clusters、sequences（序列）、 indexes、synonyms（同义词）
 * 数据的组织形式为 schema
 
-##### DML Data Manipulation Language 数据操作语言
+##### DML，数据操作语言，Data Manipulation Language
 
-* **DML 操作表内数据**：INSERT、UPDATE、DELETE
+* 操作**表内数据**：INSERT、UPDATE、DELETE
 
-##### DQL Data Query Language 数据查询语言
+##### DQL，数据查询语言，Data Query Language
 
 * SELECT、WHERE
 
-##### DCL Data Control Language 数据控制语言
+##### DCL，数据控制语言，Data Control Language
 
 * 访问权限、安全级别：GRANT、REVOKE
 

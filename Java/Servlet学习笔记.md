@@ -1,6 +1,160 @@
-## Servlet学习笔记
+## Web 应用程序基础
 
-JSP本质上也是Servlet，因为最终会编译成Servlet
+### Uniform Resource Locator
+
+* URL（统一资源定位符）最早出现，目的是以文字的方式来说明互联网上的资源如何取得
+* RFC1738 格式：\<scheme>:\<scheme-specific-part> 分为协议和协议特定部分
+  * 协议（何种方式取得资源）
+    * FTP：File Transfer Protocol 文件传输协议
+    * HTTP：Hypertext Transfer Protocol 超文本传输协议
+    * Mailto：电子邮件
+    * File：特定主机文件
+  * 协议特定部分：//\<username>:\<password>@\<host>:\<port>/\<path>
+
+### Uniform Resource Name
+
+* URN（统一资源名）代表某个资源唯一的名词
+* RFC2141 格式：urn:\<NID>:\<NSS>
+* 如国际标准书号（International Standard Book Number，ISBN）就可以用 URN 表示
+  * urn:isbn:978-7-302-50118-3
+
+### Uniform Resource Identifier
+
+* URI（统一资源标识符）统一 URL 和 URN
+* RFC3986 格式：\<scheme>:\<hier-part>\[?\<query>]\[#\<fragement>]
+  * query 是问号打头的，fragment 是井号打头的
+  * hierarchical part（分级的部分）：//\<authority>\<path>
+  * authority：\<user information>@\<host>:\<port>
+    * user information：\<username>:\<password>
+  * path 也分很多种：
+    * path-abempty 以 / 开头的路径或空路径
+    * path-absolute 以 / 开头但不能以 // 开头
+    * path-noscheme 以非 : 号开头的路径
+    * path-rootless 在 noscheme 基础上，允许 : 号开头
+    * path-empty 空路径
+* [今天，彻底弄懂什么是URI_AdolphKevin的博客-CSDN博客_uri是什么](https://blog.csdn.net/AdolphKevin/article/details/100088586)
+
+### URL 编码
+
+* URL URN URI 都是 ASCII 码，如果超出了，则需要编码
+
+* URL 编码也叫 URI 编码、百分比编码，RFC1738 规定
+
+* > 只有字母和数字[0-9a-zA-Z]、一些特殊符号"$-_.+!*'(),"[不包括双引号]、以及某些保留字，才可以不经过编码直接用于URL
+
+* 致命的是，RFC1738 没有规定具体的编码方法，导致了 URL 编码的混乱
+
+1. 地址栏路径的编码是 UTF-8 编码，编码为 %hh 的形式（两个 16 进制**一字节**为一组 % 号打头）
+
+2. 地址栏查询字串的编码是系统默认的编码
+
+   * IE6：汉字编码是 GB2321，直接编码（看起来是乱码）
+   * Firefox：汉字编码 GB2312，编码为 %ff 的形式
+
+3. GET POST 发出的 URL，由网页本身的编码决定
+
+   * <meta http-equiv="Content-Type" content="text/html;charset=xxxx">
+
+4. Ajax 的查询字串，IE 总是采用系统默认编码 %hh，Firefox 总是采用 UTF-8 编码 %hh
+
+* URI 和 HTTP 保留字的不同
+
+   * URI 空格：%20
+   * HTTP 空格：+（java.net.URLEncoder.encode）
+
+#### 统一 URL 编码
+
+* escape()  编码为 %uffff，解码是 unescape()
+  * js 函数的输入输出都是 Unicode 编码
+  * escape 不对 + 号编码，但服务器会处理成空格
+* encodeURI 对整个 URL 编码，不会对 ` ~ ! @ # $ & * ( ) = : / , ; ? + '` 进行编码
+* encodeURIComponent 对 URL 的部分编码（参数也是 URL），对特殊符号也编码
+
+* [关于URL编码 - 阮一峰的网络日志](www.ruanyifeng.com/blog/2010/02/url_encoding.html)
+* [【基础进阶】URL详解与URL编码 - ChokCoco - 博客园](https://www.cnblogs.com/coco1s/p/5038412.html)
+* [字符编码笔记：ASCII，Unicode 和 UTF-8 - 阮一峰的网络日志](www.ruanyifeng.com/blog/2007/10/ascii_unicode_and_utf-8.html)
+
+### scheme 和 schema 的区别
+
+* 两个词现在已经几乎没有区别了
+* 如果一定要区分的话，scheme 比 schema 更具体一些
+* scheme 指的是一套方案，而 schema 则是概要（而且这个词和图表很有关系）
+* [schema 与scheme的区别&联系？_百度知道](https://zhidao.baidu.com/question/131192166.html)
+
+### HTTP 协议
+
+* 超文本传输协议（Hyper Text Transfer Protocol，HTTP）的两个重要特性
+  * 基于请求（Request）和响应（Response）的模型（没有请求就不会有相应）
+  * 无状态（Stateless）的协议
+    * REST（Representational State Transfer）是无状态的
+    * 符合 REST 架构的系统成为 RESTful
+  * 所以才需要从 MVC（Model-View-Controller Pattern）转为 Model 2
+  * 所以才需要会话管理（Session management）
+* HTTP 是万维网协会（World Wide Web Consortium，W3C）和因特网工作小组（Internet Engineering Task Force，IETF）的合作结果，发布了一些列 RFC（Request For Comments）
+* RFC1945 定义了 HTTP1.0
+* HTTP1.1（RFC2616） 支持 Pipelining，对服务器发出多次请求，服务器按顺序来响应
+* HTTP2.0（RFC7540） 支持 Server Push，运行服务器收到请求后，主动推送必要的资源到浏览器，不用浏览器发出请求
+  * HTTP/2 脱胎于谷歌的 SPDY 协议
+  * HTTP/2 不强制基于 TLS，叫做 H2C（HTTP/2 Cleartext）
+  * HTTP/2 基于二进制帧，不同于 HTTP/1 文本格式的报文
+* HTML5 支持 Server Sent Event，在请求后，服务端的响应一直保持下载状态，客户端知道有哪些数据
+* HTTP 是应用层协议，是标准的 B/S 模型，通常基于 TCP，也可基于 TLS SSL 协议上（HTTPS）
+
+#### GET 还是 POST
+
+* 敏感信息，如密码等，适合 POST
+* GET 更适合书签
+* GET 更适合缓存，当然指定 Cache-Control、Expires 头可用 POST 缓存
+* GET HEAD PUT DELETE 是等幂（Idempotent）的，单次和多次的效果一样（最多怎么怎么样）
+  * OPTIONS TRACE 本身不应该有副作用，所以也等幂
+  * GET HEAD 语义在于**取得**，而不是去修改什么
+* POST 的副作用在于非等幂，单次和多次不一样（起码怎么怎么样，如新建了多个）
+  * POST：URI 不代表资源（附加的实体），资源在请求体
+  * PUT：URI 代表资源，服务器不存在则新建，存在则更新（确保存在最新）
+* 尊重 HTTP 动词的语义，就是语义化编程
+
+### MVC Model 2
+
+* Servlet 夹杂 HTML 和 JSP 加载 Java 代码都不好
+* 所以把程序根据职责划分为了 MVC（Model-View-Controller）
+  * 模型（数据）：模型通知视图数据已更改要改变视图
+  * 视图 （面向用户）：用户通过视图通知控制器执行操作
+  * 控制器（业务逻辑）：控制器更新模型的状态（更改数据）
+* 然而因为 HTTP 的特性，没有请求就不会有响应，Web 应用不适合 MVC，优化为 Model 2
+  * 控制器：取得并验证请求，转发到模型
+  * 模型：接受控制器的调用，处理业务逻辑、数据存取（模型对象也可以分几类）
+  * 视图：接受控制器的调用，从模型取出结果，根据页面逻辑呈现所需画面
+
+### Web 安全
+
+* [OWASP Top Ten Web Application Security Risks | OWASP](https://owasp.org/www-project-top-ten/)
+  * 三年更新一次，上次更新 2017 年
+  * 注入：未经验证的输入
+  * XSS：未经过滤的输出
+* [CWE - Common Weakness Enumeration](cwe.mitre.org) 通用软件的弱点
+* [CVE - Common Vulnerabilities and Exposures (CVE)](cve.mitre.org) 特定软甲漏洞
+
+### Java EE 简介
+
+* JCP（组织） -> JSR（标准） -> RI（实现）
+* JSR 366 -> Java EE 8
+* JSR 369 -> Servlet 4.9
+* JSR 245 -> JSP 2.3
+* JSR 341 -> Expression Language 3.0
+* JSR 52 -> JSTL 1.2
+* https://jcp.org/en/jsr/detail?id=
+
+## Servlet 学习笔记
+
+* JSP、各种 Spring 框架，本质上都是 Servlet
+  * Servlet ->  HTTPServlet <- HttpJspBase <- JSP
+  * JSP 只能用于 GET POST HEAD 动词
+* Web 容器是（Container）是运行 Servlet JSP 的 HTTP 服务器，也是用 Java 编写的
+* 收到 HTTP 请求 -> HTTP 服务器 -> Web 容器处理 -> HTTP 服务器 -> 发送 HTTP 响应
+  * 把请求解析为各种对象：HttpServletRequest、HttpServletResponse、HttpSession
+  * 根据 URI 调用 Servlet 处理请求（程序员编写部分）
+  * Servlet 根据请求对象 HttpServletRequest 决定如何处理，通过 HttpServletResponse 创建响应
+* Web 容器为每个请求分配一个线程，可能会使用同一个 Servlet 处理多个请求（多线程共享一个对象）
 
 ### Apache Tomcat Versions
 
@@ -12,7 +166,7 @@ JSP本质上也是Servlet，因为最终会编译成Servlet
 
 * [Apache Tomcat® - Which Version Do I Want?](https://tomcat.apache.org/whichversion.html)
 
-### 手动编译Servlet
+### 手动编译 Servlet
 
 ```sh
 javac \

@@ -668,7 +668,7 @@ public class Box { // 线程安全的 存对象
 ## 线程等待集
 
 * 同步只解决了多线程竞争，是不够的的，还需要多线程直接的协调（或互相通信）
-* 每个对象，除了相关的监视器，还有**等待集**（线程集），对象最初创建时，等待集为空
+* 每个对象，除了相关的监视器，还有**等待集**（Wait Set），对象最初创建时，等待集为空
 * 等待集的操作：wait notify notifyAll（都是**原子**的，native 的，都应该在**同步**代码中使用）
 
 ```java
@@ -693,18 +693,18 @@ public synchronized String getTask() {
   * 该线程调用 interrupt 方法
   * 线程中断而等待结束，会抛出 InterruptedException
   * 也可能会**伪唤醒**（spurious wakeup），所以 wait 一定要放在测试条件的**循环**里
-* 在等待过程中，释放当前对象锁，wait 返回时又重新获得锁，以便让线程继续
-* wait()、wait(long millisecs)、wait(long millisecs, int nanosecs)
-* wait() 等价于 wait(0)、wait(0, 0)，等待不会超时
+* wait 会让线程**释放**锁，进入等待集，从 RUNNABLE 进入 WAITING 或 TIMED_WAITING 状态
+  * wait()、wait(long millisecs)、wait(long millisecs, int nanosecs)
+  * wait() 等价于 wait(0)、wait(0, 0)，等待不会超时
   * 第一个参数为毫秒，第二个为纳秒，取值范围为 0 ~ 99w
 * 注意：sleep 和 yield 是不会释放锁的，所以可在非同步方法里用
 
 ### Object.notify() Object.notifyAll()
 
-* 会释放对应的锁，让 wait 重新获取锁以继续执行
-* notify 只会唤醒一个线程（无法选择哪个），notifyAll 会唤醒所有等待的线程
-* 多个线程可能等同一个对象，而条件或各不相同，所以应该使用 notifyAll
-* 如果通知时没有要等待的线程，就会忽略
+* 等待中的线程会被通知、等待超时、中断，从等待进入可运行状态，等着被调度，进而竞争锁，再从 wait 方法之后运行
+* notify 会**随机**唤醒一个线程，notifyAll 会唤醒所有等待中的线程
+  * 多个线程可能等同一个对象，而条件或各不相同，所以应该使用 notifyAll
+  * 如果通知时没有要等待的线程，就会忽略
 
 ```java
 import java.util.Queue;
@@ -741,6 +741,64 @@ public class WaitNotifyTest {
         Thread.sleep(1000);
         t.interrupt(); // 不再等待break进程
         t.join();
+    }
+}
+```
+
+* 等待 - 通知特别适合生产 - 消费模式
+
+```java
+public class ProducerConsumer {
+    static class Producer implements Runnable {
+        private Clerk clerk;
+        public Producer(Clerk clerk) { this.clerk = clerk; }
+        public void run() {
+            System.out.println("生产者开始生产...");
+            for (int p = 1; p <= 10; p++)
+                try {
+                    clerk.setProduct(p);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+        }
+    }
+    static class Consumer implements Runnable {
+        private Clerk clerk;
+        public Consumer(Clerk clerk) {
+            this.clerk = clerk;
+        }
+        public void run() {
+            System.out.println("消费者开始消费...");
+            for (int i = 1; i <= 10; i++)
+                try {
+                    clerk.getProduct();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+        }
+    }
+    static class Clerk {
+        private int product = -1; // 只有一个产品，-1表示没有产品
+        public synchronized void setProduct(int product) throws InterruptedException { // 一次只能生产一个
+            while (this.product != -1) wait(); // 还有产品则一直等待其消费
+            this.product = product;
+            System.out.println("生产者生产 --> " + product);
+            notify(); // 通知消费者又有产品了
+        }
+        public synchronized int getProduct() throws InterruptedException { // 一次只能消费一个
+            while (this.product == -1) wait(); // 没有产品则一直等待其生产
+            int p = product;
+            System.out.println("消费者消费 <-- " + product);
+            product = -1;
+            notify(); // 通知生产者没有产品了
+            return p;
+        }
+    }
+    public static void main(String[] args) {
+        Clerk clerk = new Clerk();
+        new Thread(new Producer(clerk)).start();
+        new Thread(new Consumer(clerk)).start();
     }
 }
 ```
@@ -868,42 +926,82 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
 * 简化多线程编写
 * JDK >= 1.5
 * 位于 java.util.concurrent 包
+* [并发包.mm](并发包.mm)
 
 ### ReentrantLock
 
 * ReentrantLock 是一种 Lock，可代替 synchronized
-* 可重入，一个线程可多次获取同一个锁
-* lock 方法在 try 外，因为可能会失败
-* tryLock 方法，获取锁并指定超时
-* unlock 方法在 finally 里
+* lock 方法在 try 外，因为可能会失败，只有获取锁了，才会执行后面的代码
+  * 可重入，一个线程可多次获取同一个锁
+* unlock 方法在 finally 里，防止线程抛出异常无法解锁
 
 ```java
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.*;
 class Counter {
     final Lock lock = new ReentrantLock();
     public void inc() {
-        lock.lock();
+        lock.lock(); // 锁定
         try {
             n = n + 1;
         } finally {
-            lock.unlock();
+            lock.unlock(); // 解锁
         }
+    }
+}
+```
+
+* tryLock 方法，取得锁返回 true，无法取得锁返回 false 但**不会阻塞**
+  * tryLock 可指定超时
+* isHeldByCurrentThread，该锁被当前线程持有，则可解锁（用作 unlock 的条件）
+  * **死锁**是因为锁的交叉获取，本质上还是资源的交叉使用
+  * 把交叉获取的锁，当做一个整体，共同获取，如果无法共同获取，就都释放即可
+  * 当做整体，相当于强制指定了一个获取锁的顺序
+
+```java
+import java.util.concurrent.locks.*;
+public class DeadLockOver {
+    private ReentrantLock lock = new ReentrantLock();
+    private String name;
+    public DeadLockOver(String name) { this.name = name; }
+    private boolean lockMeAnd(DeadLockOver res) {
+        return lock.tryLock() && res.lock.tryLock();
+    }
+    private void unlocMeAnd(DeadLockOver res) {
+        if (lock.isHeldByCurrentThread()) lock.unlock();
+        if (res.lock.isHeldByCurrentThread()) res.lock.unlock();
+    }
+    void cooperate(DeadLockOver res) {
+        while (true)
+            try {
+                if (lockMeAnd(res)) {
+                    System.out.printf("%s -> %s%n", name, res.name);
+                    break;
+                }
+            } finally {
+                unlocMeAnd(res);
+            }
+    }
+    public static void main(String[] args) {
+        DeadLockOver res1 = new DeadLockOver("1");
+        DeadLockOver res2 = new DeadLockOver("2");
+        new Thread(() -> {
+            for (int i = 0; i < 10; i++) res1.cooperate(res2);
+        }).start();
+        new Thread(() -> {
+            for (int i = 0; i < 10; i++) res2.cooperate(res1);
+        }).start();
     }
 }
 ```
 
 ### ReadWriteLock
 
-* 读写锁：允许多个线程同时读（提高性能），只允许一个线程写，其它线程必须等待
+* 读写锁：允许多个线程同时读（提高性能，其它线程无法写），或者只允许一个线程写（其它线程无法读和写）
   * 在写代码里，使用写锁进行锁定和解锁
   * 在读代码里，使用读锁
-* 适用于，大量线程读取，少量线程修改（读多写少）
 
 ```java
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.*;
 public class ReadWriteLockTest {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock rLock = lock.readLock();

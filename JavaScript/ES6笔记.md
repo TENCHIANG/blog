@@ -1167,10 +1167,171 @@ console.log(`[${person.name}]`); // [YY]
 
 * [解构余集打散.mm](解构余集打散.mm)
 
-### 对象协议
+### 对象协议 Object Protocol
 
 * [对象协议.mm](对象协议.mm)
 
-### 符号
+## 符号 Symbol
+
+* 符号是**基本类型**，可用符号表示一个**独一无二**的值
+* 可以对符号指定说明，但不是一一对应的，指定同样的说明返回不同的符号（说明默认为 undefined）
+* Symbol() 根据说明返回不同的符号，符号是分散管理的
+* symbol.description 根据符号返回说明，负责所有符号（ES10）
+
+```js
+var s1 = Symbol("s");
+var s2 = Symbol("s");
+s1 !== s2;
+s1.description === s2.description;
+Symbol() !== Symbol();
+```
 
 * [Symbol.mm](Symbol.mm)
+
+### 统一管理的符号
+
+* Symbol.for() 根据说明返回相同的符号，有则返回无则创建，符号是统一管理的（说明默认为 undefined）
+* Symbol.keyFor() 根据符号返回说明，只负责统一管理的符号
+* 统一管理的符号和分散管理的符号**互不干扰**
+* 统一管理的符号可以理解为，说明和符号**一一对应**
+
+```js
+var s1 = Symbol("s");
+var s2 = Symbol.for("s");
+s1 !== s2;
+Symbol.for() === Symbol.for();
+Symbol.keyFor(s1); // undefined
+Symbol.keyFor(s2); // 's'
+```
+
+### 内置标准符号
+
+* 内置符号是直接挂载到 Symbol 上的，不是通过 Symbol.for 统一管理
+* 内置符号的说明也是 Symbol.xxx
+* 在使用 Symbol.for 建立自定义协议前，先看看有没有相似的标准符号
+
+```js
+Symbol.iterator !== Symbol.for("Symbol.iterator");
+Symbol.iterator.description; // 'Symbol.iterator'
+```
+
+* JavaScript 没有规范 equals 方法比较对象的想等性，只能自定义，因为标准 API 本身的都不一致
+
+### Symbol.iterator
+
+* **可迭代对象**：实现了 Symbol.iterator 方法，使之返回迭代器的对象
+  * 可使用 for-of 迭代
+  * 可用 `...` 运算符**打散**
+    * 在方阔号里：初始化数组
+    * 在括号里：参数
+  * 也可用作解构赋值
+* 迭代器：是拥有了 next 方法的对象（大多数內建迭代器同理）
+* 数组是迭代器对象，但不是迭代器
+
+```js
+var arr = [1, 2, 3];
+Symbol.iterator in arr; // true
+arr.hasOwnProperty(Symbol.iterator); // false
+"next" in arr; // false
+
+var iter = arr[Symbol.iterator]; // 数组的迭代器
+typeof iter; // 'function'
+iter.name; // 'values'
+iter.toString(); // 'function values() { [native code] }'
+```
+
+* 自定义迭代器
+
+```js
+function range(start, end) {
+    let i = start;
+    return {
+        [Symbol.iterator]() { return this; },
+        next() {
+            return i <= end ? 
+                {value: i++, done: false} :
+            	{value: undefined, done: true};
+        }
+    };
+}
+for (let n of range(1, 3)) console.log(n); // 1 2 3
+[...range(1, 3)]; // [1, 2, 3]
+```
+
+#### 生成器和迭代器
+
+* 生成器是实现了  throw 和 return 方法的迭代器
+* reutrn 方法是为了**停止迭代**，指定 value 字段强行迭代完成
+* for-of 中 break 会调用 return() 方法，参数 value 为空
+
+```js
+function range(start, end) {
+    let i = start;
+    return {
+        [Symbol.iterator]() { return this; },
+        next() {
+            return i <= end ? 
+                {value: i++, done: false} :
+            	{value: undefined, done: true};
+        },
+        return(value) {
+            console.log(value);
+            i = end + 1; // 迭代结束的条件
+            return {value, done: true};
+        }
+    };
+}
+var r = range(1, 3);
+for (let n of r) {
+    console.log(n); // 1
+    break;
+}
+console.log(r.next()); // { value: undefined, done: true }
+```
+
+* 类数组对象，使用生成器无需使用闭包即可生成可迭代对象，可用 for-of 迭代、解构赋值、打散
+
+```js
+var arrayLike = {
+    "0": 1,
+    "1": 2,
+    "2": 3,
+    length: 3,
+    *[Symbol.iterator]() {
+    	for (let i = 0; i < this.length; i++)
+            yield this[i];
+	}
+};
+for (let n of arrayLike) console.log(n); // 1 2 3
+var [a, b, c] = arrayLike;
+console.log(a, b, c); // 1 2 3
+[...arrayLike]; // 1 2 3
+
+var iter = arrayLike[Symbol.iterator];
+iter.name; // '[Symbol.iterator]'
+```
+
+### Symbol.toPrimitive
+
+* 运算过程若须从对象上取得基本类型，可用 valueOf 方法
+* ES6 用 Symbol.toPrimitive 符号代替，**优先**于 valueOf
+* 可以使用 `.`、`in` 运算符检测对象的符号属性名，**但 `for-in`、`Object.keys` 不行**
+
+```js
+var o = {
+    valueOf() { return 1; },
+    [Symbol.toPrimitive]() { return 2; }
+};
++o; // 2
+for (let k in o) console.log(k); // valueOf
+```
+
+* 符号因为可以当做属性，所以也可以用 getter、setter
+
+```js
+var o = {
+    get [Symbol.for('x')]() { return 10; }
+};
+o[Symbol.for('x')]; // 10
+```
+

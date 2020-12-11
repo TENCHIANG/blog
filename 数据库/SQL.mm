@@ -1,159 +1,194 @@
-<map version="freeplane 1.3.0" project="17617EEA269D9ZZUBXFIALHC9ZUBECQ7WKLY" project_last_home="file:/C:/Users/Administrator/Docear/projects/SQL">
-<!--To view this file, download Docear - The Academic Literature Suite from http://www.docear.org -->
-<node TEXT="SQL" FOLDED="false" ID="4n2uptjb7ct3q68q5kb1omdlej" CREATED="1606640116529" MODIFIED="1606641046808"><hook NAME="MapStyle">
-
+<map version="1.0.1">
+<!-- To view this file, download free mind mapping software FreeMind from http://freemind.sourceforge.net -->
+<node CREATED="1606640116529" ID="4n2uptjb7ct3q68q5kb1omdlej" MODIFIED="1606641046808" TEXT="SQL">
+<hook NAME="MapStyle">
+<properties FIT_TO_VIEWPORT="false" SHOW_ICON_FOR_ATTRIBUTES="true" SHOW_NOTE_ICONS="true"/>
 <map_styles>
-<stylenode LOCALIZED_TEXT="styles.root_node">
-<stylenode LOCALIZED_TEXT="styles.predefined" POSITION="right">
+<stylenode LOCALIZED_TEXT="styles.root_node" STYLE="oval" UNIFORM_SHAPE="true" VGAP_QUANTITY="24.0 pt">
+<font/>
+<stylenode LOCALIZED_TEXT="styles.predefined" POSITION="right" STYLE="bubble">
 <stylenode LOCALIZED_TEXT="default"/>
 <stylenode LOCALIZED_TEXT="defaultstyle.details"/>
+<stylenode LOCALIZED_TEXT="defaultstyle.attributes"/>
 <stylenode LOCALIZED_TEXT="defaultstyle.note"/>
 <stylenode LOCALIZED_TEXT="defaultstyle.floating">
-<edge STYLE="hide_edge"/>
-<cloud COLOR="#f0f0f0" SHAPE="ROUND_RECT"/>
+<cloud/>
 </stylenode>
-<stylenode LOCALIZED_TEXT="default" MAX_WIDTH="600" COLOR="#000000" STYLE="as_parent">
-<font NAME="SansSerif" SIZE="10" BOLD="false" ITALIC="false"/>
-</stylenode>
+<stylenode COLOR="#000000" LOCALIZED_TEXT="default" MAX_WIDTH="600.0 px" STYLE="as_parent"/>
 <stylenode LOCALIZED_TEXT="defaultstyle.details"/>
 <stylenode LOCALIZED_TEXT="defaultstyle.note"/>
 <stylenode LOCALIZED_TEXT="defaultstyle.floating">
-<edge STYLE="hide_edge"/>
-<cloud COLOR="#f0f0f0" SHAPE="ROUND_RECT"/>
+<cloud/>
 </stylenode>
 </stylenode>
-<stylenode LOCALIZED_TEXT="styles.user-defined" POSITION="right">
-<stylenode LOCALIZED_TEXT="styles.topic" COLOR="#18898b" STYLE="fork">
-<font NAME="Liberation Sans" SIZE="10" BOLD="true"/>
+<stylenode LOCALIZED_TEXT="styles.user-defined" POSITION="right" STYLE="bubble">
+<stylenode COLOR="#18898b" LOCALIZED_TEXT="styles.topic" STYLE="fork"/>
+<stylenode COLOR="#cc3300" LOCALIZED_TEXT="styles.subtopic" STYLE="fork"/>
+<stylenode COLOR="#669900" LOCALIZED_TEXT="styles.subsubtopic"/>
+<stylenode LOCALIZED_TEXT="styles.important"/>
 </stylenode>
-<stylenode LOCALIZED_TEXT="styles.subtopic" COLOR="#cc3300" STYLE="fork">
-<font NAME="Liberation Sans" SIZE="10" BOLD="true"/>
-</stylenode>
-<stylenode LOCALIZED_TEXT="styles.subsubtopic" COLOR="#669900">
-<font NAME="Liberation Sans" SIZE="10" BOLD="true"/>
-</stylenode>
-<stylenode LOCALIZED_TEXT="styles.important">
-<icon BUILTIN="yes"/>
-</stylenode>
-</stylenode>
-<stylenode LOCALIZED_TEXT="styles.AutomaticLayout" POSITION="right">
-<stylenode LOCALIZED_TEXT="AutomaticLayout.level.root" COLOR="#000000">
-<font SIZE="18"/>
-</stylenode>
-<stylenode LOCALIZED_TEXT="AutomaticLayout.level,1" COLOR="#0033ff">
-<font SIZE="16"/>
-</stylenode>
-<stylenode LOCALIZED_TEXT="AutomaticLayout.level,2" COLOR="#00b439">
-<font SIZE="14"/>
-</stylenode>
-<stylenode LOCALIZED_TEXT="AutomaticLayout.level,3" COLOR="#990000">
-<font SIZE="12"/>
-</stylenode>
-<stylenode LOCALIZED_TEXT="AutomaticLayout.level,4" COLOR="#111111">
-<font SIZE="10"/>
-</stylenode>
+<stylenode LOCALIZED_TEXT="styles.AutomaticLayout" POSITION="right" STYLE="bubble">
+<stylenode COLOR="#000000" LOCALIZED_TEXT="AutomaticLayout.level.root"/>
+<stylenode COLOR="#0033ff" LOCALIZED_TEXT="AutomaticLayout.level,1"/>
+<stylenode COLOR="#00b439" LOCALIZED_TEXT="AutomaticLayout.level,2"/>
+<stylenode COLOR="#990000" LOCALIZED_TEXT="AutomaticLayout.level,3"/>
+<stylenode COLOR="#111111" LOCALIZED_TEXT="AutomaticLayout.level,4"/>
 </stylenode>
 </stylenode>
 </map_styles>
 </hook>
-<node TEXT="Data Definition Language" POSITION="right" ID="46vsg4kolhocuja856uoihdqmq" CREATED="1606640116529" MODIFIED="1606640116529">
-<node TEXT="&#x64cd;&#x4f5c;&#x6570;&#x636e;&#x5e93;&#x5bf9;&#x8c61;&#xff1a;&#x6570;&#x636e;&#x6bb5;&#x3001;&#x6570;&#x636e;&#x5e93;&#x3001;&#x7d22;&#x5f15;&#x3001;&#x8868;&#x3001;&#x5217;" ID="4kb07t8cpl8nqtpa4c690dbvel" CREATED="1606640116529" MODIFIED="1606640116529"/>
-<node TEXT="&#x521b;&#x5efa;&#x6570;&#x636e;&#x5e93;" ID="460podmkps1und2vrmnmv2pqmp" CREATED="1606640116529" MODIFIED="1606640116529">
-<node TEXT="CREATE DATABASE dbname" ID="7vm1201dp8v8be9c44e92bndm2" CREATED="1606640116529" MODIFIED="1606640116529"/>
+<node CREATED="1606640116529" ID="46vsg4kolhocuja856uoihdqmq" MODIFIED="1606721467501" POSITION="right" TEXT="Data Definition Language">
+<node CREATED="1606640116529" ID="4kb07t8cpl8nqtpa4c690dbvel" MODIFIED="1606640116529" TEXT="&#x64cd;&#x4f5c;&#x6570;&#x636e;&#x5e93;&#x5bf9;&#x8c61;&#xff1a;&#x6570;&#x636e;&#x6bb5;&#x3001;&#x6570;&#x636e;&#x5e93;&#x3001;&#x7d22;&#x5f15;&#x3001;&#x8868;&#x3001;&#x5217;">
+<node CREATED="1606724039387" ID="ID_54299673" MODIFIED="1606724058274" TEXT="&#x4e00;&#x884c;&#x8bb0;&#x5f55;"/>
+<node CREATED="1606724058750" ID="ID_1928427101" MODIFIED="1606724063684" TEXT="&#x4e00;&#x5217;&#x5b57;&#x6bb5;"/>
+<node CREATED="1606724078169" ID="ID_1080256676" MODIFIED="1606724090336" TEXT="&#x6570;&#x636e;&#x5e93;&#x5bf9;&#x8c61;&#x65e0;&#x9700;&#x5f15;&#x53f7;&#xff0c;&#x56e0;&#x4e3a;&#x4e0d;&#x662f;&#x5b57;&#x7b26;&#x4e32;"/>
+<node CREATED="1606724095539" ID="ID_1711943520" MODIFIED="1606724117607" TEXT="&#x5982;&#x6709;&#x7279;&#x6b8a;&#x5b57;&#x7b26;&#xff0c;&#x7528;&#x4e0a;&#x6807;&#x53f7; `` &#x62ec;&#x8d77;&#x6765;"/>
 </node>
-<node TEXT="&#x5217;&#x51fa;&#x6240;&#x6709;&#x6570;&#x636e;&#x5e93;" ID="7qdfl5sbji0b11oee14pui5sv7" CREATED="1606640116529" MODIFIED="1606640116529">
-<node TEXT="SHOW DATABASES" ID="0up94fl3a5i5tal7pib79pql8b" CREATED="1606640116529" MODIFIED="1606640116530">
-<node TEXT="information_schema" FOLDED="true" ID="6crckvl8r5t5abu4d2ea84f1pc" CREATED="1606640116530" MODIFIED="1606640116530">
-<node TEXT="&#x5b58;&#x50a8;&#x6570;&#x636e;&#x5e93;&#x5bf9;&#x8c61;&#x4fe1;&#x606f;" ID="4ao0novm4lgnd9lnqg4cq94mhf" CREATED="1606640116530" MODIFIED="1606640116530"/>
-<node TEXT="&#x7528;&#x6237;&#x8868;&#x3001;&#x5217;&#x3001;&#x6743;&#x9650;&#x3001;&#x5b57;&#x7b26;&#x96c6;&#x3001;&#x5206;&#x533a;&#x4fe1;&#x606f;&#x7b49;" ID="3inma4a6qagp5ptmnm7btum8en" CREATED="1606640116530" MODIFIED="1606640116530"/>
-<node TEXT="&#x6743;&#x9650;&#x4e0d;&#x540c;&#x53ef;&#x4ee5;&#x770b;&#x5230;&#x7684;&#x4e5f;&#x4e0d;&#x540c;" ID="521q9ilduc2905s8g6698fueru" CREATED="1606640116530" MODIFIED="1606640116530"/>
+<node CREATED="1606640116529" ID="460podmkps1und2vrmnmv2pqmp" MODIFIED="1606640116529" TEXT="&#x521b;&#x5efa;&#x6570;&#x636e;&#x5e93;">
+<node CREATED="1606640116529" ID="7vm1201dp8v8be9c44e92bndm2" MODIFIED="1606640116529" TEXT="CREATE DATABASE dbname"/>
 </node>
-<node TEXT="mysql" FOLDED="true" ID="4bkda66475212bgim068cp68a3" CREATED="1606640116530" MODIFIED="1606640116530">
-<node TEXT="&#x7528;&#x6237;&#x6743;&#x9650;" ID="4tgq8lqmu0t77j07ur4kqdm48m" CREATED="1606640116530" MODIFIED="1606640116530"/>
+<node CREATED="1606640116529" ID="7qdfl5sbji0b11oee14pui5sv7" MODIFIED="1606640116529" TEXT="&#x5217;&#x51fa;&#x6240;&#x6709;&#x6570;&#x636e;&#x5e93;">
+<node CREATED="1606640116529" ID="0up94fl3a5i5tal7pib79pql8b" MODIFIED="1606640116530" TEXT="SHOW DATABASES">
+<node CREATED="1606640116530" ID="6crckvl8r5t5abu4d2ea84f1pc" MODIFIED="1606640116530" TEXT="information_schema">
+<node CREATED="1606640116530" ID="4ao0novm4lgnd9lnqg4cq94mhf" MODIFIED="1606640116530" TEXT="&#x5b58;&#x50a8;&#x6570;&#x636e;&#x5e93;&#x5bf9;&#x8c61;&#x4fe1;&#x606f;"/>
+<node CREATED="1606640116530" ID="3inma4a6qagp5ptmnm7btum8en" MODIFIED="1606640116530" TEXT="&#x7528;&#x6237;&#x8868;&#x3001;&#x5217;&#x3001;&#x6743;&#x9650;&#x3001;&#x5b57;&#x7b26;&#x96c6;&#x3001;&#x5206;&#x533a;&#x4fe1;&#x606f;&#x7b49;"/>
+<node CREATED="1606640116530" ID="521q9ilduc2905s8g6698fueru" MODIFIED="1606640116530" TEXT="&#x6743;&#x9650;&#x4e0d;&#x540c;&#x53ef;&#x4ee5;&#x770b;&#x5230;&#x7684;&#x4e5f;&#x4e0d;&#x540c;"/>
 </node>
-<node TEXT="performance_schema" FOLDED="true" ID="4s3odgh2t0esg12gg25mja17k5" CREATED="1606640116530" MODIFIED="1606640116530">
-<node TEXT="&#x6027;&#x80fd;&#x76f8;&#x5173;&#x52a8;&#x6001;&#x53c2;&#x6570;&#x8868;" ID="3mfbhc1c48mk6rjljgp76q3ei1" CREATED="1606640116530" MODIFIED="1606640116530"/>
-<node TEXT="MySQL 5.5 &#x5f15;&#x5165;" ID="60fpegm4tp6s5ukuvbibt2fk6g" CREATED="1606640116530" MODIFIED="1606640116530"/>
+<node CREATED="1606640116530" ID="4bkda66475212bgim068cp68a3" MODIFIED="1606640116530" TEXT="mysql">
+<node CREATED="1606640116530" ID="4tgq8lqmu0t77j07ur4kqdm48m" MODIFIED="1606640116530" TEXT="&#x7528;&#x6237;&#x6743;&#x9650;"/>
 </node>
-<node TEXT="sys" FOLDED="true" ID="4k5desboj3pgihn1ijefep7doa" CREATED="1606640116530" MODIFIED="1606640116530">
-<node TEXT="&#x57fa;&#x4e8e; IS PS &#x8868;&#x7684;&#x6613;&#x7528;&#x89c6;&#x56fe;" ID="2ibnnel7njv64ae9nccalqq25n" CREATED="1606640116530" MODIFIED="1606640116530"/>
-<node TEXT="MySQL 5.7 &#x5f15;&#x5165;" ID="0jns6bpd7gatv8u82s2ua98gij" CREATED="1606640116530" MODIFIED="1606640116530"/>
+<node CREATED="1606640116530" ID="4s3odgh2t0esg12gg25mja17k5" MODIFIED="1606640116530" TEXT="performance_schema">
+<node CREATED="1606640116530" ID="3mfbhc1c48mk6rjljgp76q3ei1" MODIFIED="1606640116530" TEXT="&#x6027;&#x80fd;&#x76f8;&#x5173;&#x52a8;&#x6001;&#x53c2;&#x6570;&#x8868;"/>
+<node CREATED="1606640116530" ID="60fpegm4tp6s5ukuvbibt2fk6g" MODIFIED="1606640116530" TEXT="MySQL 5.5 &#x5f15;&#x5165;"/>
 </node>
-<node TEXT="test" ID="1aoqt10furi2fum3c7bquj1vt2" CREATED="1606640116530" MODIFIED="1606640116530"/>
+<node CREATED="1606640116530" ID="4k5desboj3pgihn1ijefep7doa" MODIFIED="1606640116530" TEXT="sys">
+<node CREATED="1606640116530" ID="2ibnnel7njv64ae9nccalqq25n" MODIFIED="1606640116530" TEXT="&#x57fa;&#x4e8e; IS PS &#x8868;&#x7684;&#x6613;&#x7528;&#x89c6;&#x56fe;"/>
+<node CREATED="1606640116530" ID="0jns6bpd7gatv8u82s2ua98gij" MODIFIED="1606640116530" TEXT="MySQL 5.7 &#x5f15;&#x5165;"/>
 </node>
-</node>
-<node TEXT="&#x4f7f;&#x7528;&#x6570;&#x636e;&#x5e93;" FOLDED="true" ID="357qep7o1jkd8ugncsmiaj3bdf" CREATED="1606640116530" MODIFIED="1606640116530">
-<node TEXT="USE dbname" ID="43qfurahlln18vvsfp2cmu8qih" CREATED="1606640116531" MODIFIED="1606640116531"/>
-</node>
-<node TEXT="&#x67e5;&#x770b;&#x6240;&#x6709;&#x8868;" FOLDED="true" ID="3i6afgemh2mv6m2o1odlq9vbjt" CREATED="1606640116531" MODIFIED="1606640116531">
-<node TEXT="SHOW TABLES" ID="44pbsp45if7h6og86ueu3q6rbr" CREATED="1606640116531" MODIFIED="1606640116531"/>
-</node>
-<node TEXT="&#x5220;&#x9664;&#x6570;&#x636e;&#x5e93;" FOLDED="true" ID="25qep0l8h5domk7n4p58kg7p74" CREATED="1606640116531" MODIFIED="1606640116531">
-<node TEXT="DROP DATABASE dbname" ID="46iadt9lbk26duvt9ihrj7v030" CREATED="1606640116531" MODIFIED="1606640116531"/>
-</node>
-<node TEXT="&#x521b;&#x5efa;&#x8868;" FOLDED="true" ID="729s4g22nidn3dlt4ct18p9jok" CREATED="1606640116531" MODIFIED="1606640116531">
-<node TEXT="CREATE TABLE tablename (&#xd;&#xa;&#x9;&#x5217;&#x540d; &#x5217;&#x7c7b;&#x578b; &#x7ea6;&#x675f;&#x6761;&#x4ef6;,&#xd;&#xa;&#x9;...,&#xd;&#xa;&#x9;&#x5217;&#x540d; &#x5217;&#x7c7b;&#x578b; &#x7ea6;&#x675f;&#x6761;&#x4ef6;&#xd;&#xa;)" ID="7ppb5hr30rvpvicc9cl7u6odqh" CREATED="1606640116531" MODIFIED="1606716804133"/>
-</node>
-<node TEXT="&#x67e5;&#x770b;&#x8868;&#x5b9a;&#x4e49;" FOLDED="true" ID="3ofi2mt0npmaro0k22a43ul9k2" CREATED="1606640116531" MODIFIED="1606640116531">
-<node TEXT="DESC tablename" FOLDED="true" ID="72nh9499fabrhnf5l64edl9cq9" CREATED="1606640116531" MODIFIED="1606640116531">
-<node TEXT="Field" ID="ID_1610848224" CREATED="1606641468721" MODIFIED="1606641475894"/>
-<node TEXT="Type" ID="ID_1260715125" CREATED="1606641476374" MODIFIED="1606641479821"/>
-<node TEXT="Null" ID="ID_548306602" CREATED="1606641480271" MODIFIED="1606641482773"/>
-<node TEXT="Key" ID="ID_1915673837" CREATED="1606641483918" MODIFIED="1606641485288"/>
-<node TEXT="Default" ID="ID_571472791" CREATED="1606641485704" MODIFIED="1606641488565"/>
-<node TEXT="Extra" ID="ID_1093816820" CREATED="1606641489392" MODIFIED="1606641492327"/>
+<node CREATED="1606640116530" ID="1aoqt10furi2fum3c7bquj1vt2" MODIFIED="1606640116530" TEXT="test"/>
 </node>
 </node>
-<node TEXT="&#x67e5;&#x770b;&#x8868;&#x521b;&#x5efa;&#x8bed;&#x53e5;" FOLDED="true" ID="0rajavb913212en0vji5b6bmdp" CREATED="1606640116531" MODIFIED="1606640116531">
-<node TEXT="SHOW CREATE TABLE tablename" ID="1b7b03e7j52a8ihak88act68k1" CREATED="1606640116532" MODIFIED="1606640116532"/>
-<node TEXT="&#x6bd4; DESC &#x66f4;&#x8be6;&#x7ec6;" FOLDED="true" ID="2l6s4cokm0f0bv2q4b2nnk7msb" CREATED="1606640116532" MODIFIED="1606640116532">
-<node TEXT="engine" ID="ID_8342093" CREATED="1606641500474" MODIFIED="1606641511312"/>
-<node TEXT="charset" ID="ID_1994522337" CREATED="1606641511851" MODIFIED="1606641519596"/>
+<node CREATED="1606640116530" ID="357qep7o1jkd8ugncsmiaj3bdf" MODIFIED="1606640116530" TEXT="&#x4f7f;&#x7528;&#x6570;&#x636e;&#x5e93;">
+<node CREATED="1606640116531" ID="43qfurahlln18vvsfp2cmu8qih" MODIFIED="1606640116531" TEXT="USE dbname"/>
+</node>
+<node CREATED="1606640116531" ID="3i6afgemh2mv6m2o1odlq9vbjt" MODIFIED="1606640116531" TEXT="&#x67e5;&#x770b;&#x6240;&#x6709;&#x8868;">
+<node CREATED="1606640116531" ID="44pbsp45if7h6og86ueu3q6rbr" MODIFIED="1606640116531" TEXT="SHOW TABLES"/>
+</node>
+<node CREATED="1606640116531" ID="25qep0l8h5domk7n4p58kg7p74" MODIFIED="1606640116531" TEXT="&#x5220;&#x9664;&#x6570;&#x636e;&#x5e93;">
+<node CREATED="1606640116531" ID="46iadt9lbk26duvt9ihrj7v030" MODIFIED="1606640116531" TEXT="DROP DATABASE dbname"/>
+</node>
+<node CREATED="1606640116531" ID="729s4g22nidn3dlt4ct18p9jok" MODIFIED="1606640116531" TEXT="&#x521b;&#x5efa;&#x8868;">
+<node CREATED="1606640116531" ID="7ppb5hr30rvpvicc9cl7u6odqh" MODIFIED="1606723300876" TEXT="CREATE TABLE tablename (&#xa;col_name col_type constraints,&#xa; ...,&#xa;col_name col_type constraints&#xa;)"/>
+</node>
+<node CREATED="1606640116531" ID="3ofi2mt0npmaro0k22a43ul9k2" MODIFIED="1606720934156" TEXT="&#x67e5;&#x770b;&#x8868;&#x5b9a;&#x4e49;">
+<node CREATED="1606640116531" ID="72nh9499fabrhnf5l64edl9cq9" MODIFIED="1606640116531" TEXT="DESC tablename">
+<node CREATED="1606641468721" ID="ID_1610848224" MODIFIED="1606641475894" TEXT="Field"/>
+<node CREATED="1606641476374" ID="ID_1260715125" MODIFIED="1606641479821" TEXT="Type"/>
+<node CREATED="1606641480271" ID="ID_548306602" MODIFIED="1606641482773" TEXT="Null"/>
+<node CREATED="1606641483918" ID="ID_1915673837" MODIFIED="1606641485288" TEXT="Key"/>
+<node CREATED="1606641485704" ID="ID_571472791" MODIFIED="1606641488565" TEXT="Default"/>
+<node CREATED="1606641489392" ID="ID_1093816820" MODIFIED="1606641492327" TEXT="Extra"/>
 </node>
 </node>
-<node TEXT="&#x5220;&#x9664;&#x8868;" FOLDED="true" ID="57ab2f44kij29vqiphum2qsnq6" CREATED="1606640116532" MODIFIED="1606640116532">
-<node TEXT="DROP TABLE tablename" ID="2svv948ibogj2tra2nmvcb4dem" CREATED="1606640116532" MODIFIED="1606640116532"/>
-</node>
-<node TEXT="&#x4fee;&#x6539;&#x8868;" FOLDED="true" ID="ID_457878545" CREATED="1606642021134" MODIFIED="1606642024964">
-<node TEXT="&#x5148;&#x5220;&#x9664;&#x518d;&#x65b0;&#x5efa;" FOLDED="true" ID="ID_1107462465" CREATED="1606642026014" MODIFIED="1606642034066">
-<node TEXT="&#x8981;&#x505a;&#x989d;&#x5916;&#x7684;&#x5de5;&#x4f5c;&#xff0c;&#x5982;&#x6570;&#x636e;&#x91cd;&#x65b0;&#x52a0;&#x8f7d;" ID="ID_1428086015" CREATED="1606642034068" MODIFIED="1606642066474"/>
-<node TEXT="&#x5982;&#x679c;&#x6709;&#x670d;&#x52a1;&#x518d;&#x8bbf;&#x95ee;&#xff0c;&#x8981;&#x5148;&#x505c;&#x6389;&#x670d;&#x52a1;" ID="ID_1587107563" CREATED="1606642067012" MODIFIED="1606642088565"/>
-</node>
-<node TEXT="&#x4fee;&#x6539;&#x5217;&#x7c7b;&#x578b;" FOLDED="true" ID="ID_606180843" CREATED="1606642304083" MODIFIED="1606642309513">
-<node TEXT="ALTER TABLE tablename MODIFY col_name col_type" ID="ID_118298600" CREATED="1606642321970" MODIFIED="1606642392204"/>
-</node>
-<node TEXT="&#x589e;&#x52a0;&#x8868;&#x5b57;&#x6bb5;" FOLDED="true" ID="ID_1725183220" CREATED="1606642309907" MODIFIED="1606642318939">
-<node TEXT="" ID="ID_607733128" CREATED="1606642420029" MODIFIED="1606642420029"/>
+<node CREATED="1606640116531" ID="0rajavb913212en0vji5b6bmdp" MODIFIED="1606640116531" TEXT="&#x67e5;&#x770b;&#x8868;&#x521b;&#x5efa;&#x8bed;&#x53e5;">
+<node CREATED="1606640116532" ID="1b7b03e7j52a8ihak88act68k1" MODIFIED="1606640116532" TEXT="SHOW CREATE TABLE tablename"/>
+<node CREATED="1606640116532" ID="2l6s4cokm0f0bv2q4b2nnk7msb" MODIFIED="1606640116532" TEXT="&#x6bd4; DESC &#x66f4;&#x8be6;&#x7ec6;">
+<node CREATED="1606641500474" ID="ID_8342093" MODIFIED="1606641511312" TEXT="engine"/>
+<node CREATED="1606641511851" ID="ID_1994522337" MODIFIED="1606641519596" TEXT="charset"/>
 </node>
 </node>
+<node CREATED="1606640116532" ID="57ab2f44kij29vqiphum2qsnq6" MODIFIED="1606640116532" TEXT="&#x5220;&#x9664;&#x8868;">
+<node CREATED="1606640116532" ID="2svv948ibogj2tra2nmvcb4dem" MODIFIED="1606640116532" TEXT="DROP TABLE tablename"/>
 </node>
-<node TEXT="Data Manipulation Language" FOLDED="true" POSITION="right" ID="4ndedj760m2vsdft0lc484vm61" CREATED="1606640116532" MODIFIED="1606640116532">
-<node TEXT="&#x6dfb;&#x52a0;&#x3001;&#x5220;&#x9664;&#x3001;&#x66f4;&#x65b0;&#x3001;&#x67e5;&#x8be2;&#x6570;&#x636e;&#x5e93;&#x8bb0;&#x5f55;&#xff0c;&#x68c0;&#x67e5;&#x6570;&#x636e;&#x5b8c;&#x6574;&#x6027;" ID="60lt3ss25k77o3h6t8cgjd83mq" CREATED="1606640116532" MODIFIED="1606640116532"/>
+<node CREATED="1606642021134" ID="ID_457878545" MODIFIED="1606642024964" TEXT="&#x4fee;&#x6539;&#x8868;">
+<node CREATED="1606642026014" ID="ID_1107462465" MODIFIED="1606642034066" TEXT="&#x5148;&#x5220;&#x9664;&#x518d;&#x65b0;&#x5efa;">
+<node CREATED="1606642034068" ID="ID_1428086015" MODIFIED="1606642066474" TEXT="&#x8981;&#x505a;&#x989d;&#x5916;&#x7684;&#x5de5;&#x4f5c;&#xff0c;&#x5982;&#x6570;&#x636e;&#x91cd;&#x65b0;&#x52a0;&#x8f7d;"/>
+<node CREATED="1606642067012" ID="ID_1587107563" MODIFIED="1606642088565" TEXT="&#x5982;&#x679c;&#x6709;&#x670d;&#x52a1;&#x518d;&#x8bbf;&#x95ee;&#xff0c;&#x8981;&#x5148;&#x505c;&#x6389;&#x670d;&#x52a1;"/>
 </node>
-<node TEXT="Data Control Language" FOLDED="true" POSITION="right" ID="4s5ig4ikb54l7pcg2ojavqh7ap" CREATED="1606640116532" MODIFIED="1606640116532">
-<node TEXT="&#x5b9a;&#x4e49;&#x6570;&#x636e;&#x5e93;&#x3001;&#x8868;&#x3001;&#x5b57;&#x6bb5;&#x3001;&#x7528;&#x6237;&#x7684;&#x8bbf;&#x95ee;&#x6743;&#x9650;&#x548c;&#x5b89;&#x5168;&#x7ea7;&#x522b;" ID="2erdgrc2ge3q93311kl15ffdv5" CREATED="1606640116532" MODIFIED="1606640116532"/>
-</node>
-<node TEXT="MySQL Monitor" FOLDED="true" POSITION="left" ID="4ig10b4pli567kfintcfo7629l" CREATED="1606640116532" MODIFIED="1606640116532">
-<node TEXT="&#x8fde;&#x63a5;&#x670d;&#x52a1;&#x5668;" FOLDED="true" ID="3t2r83do078bepmfohn5da6tps" CREATED="1606640116532" MODIFIED="1606640116532">
-<node TEXT="mysql -uroot -p" ID="67jfdg1siqdnd7a5sh9pbtb4vp" CREATED="1606640116533" MODIFIED="1606640116533"/>
-</node>
-<node TEXT="&#x547d;&#x4ee4;&#x7ed3;&#x675f;&#x7b26;" FOLDED="true" ID="21v8d89va7cv8c7o3dpne885hr" CREATED="1606640116533" MODIFIED="1606640116533">
-<node TEXT="; \g" FOLDED="true" ID="3mkvsorgqo5kvf3d99afc4m87c" CREATED="1606640116533" MODIFIED="1606641923394">
-<node TEXT="&#x5217;&#x6a2a;&#x5411;&#x6392;&#x5217;&#xff0c;&#x66f4;&#x50cf;&#x8868;&#x683c;" ID="ID_892751294" CREATED="1606641529133" MODIFIED="1606641587684"/>
-</node>
-<node TEXT="\G" FOLDED="true" ID="7t3p064bcifvmldcd2o6dr1vf4" CREATED="1606640116533" MODIFIED="1606641929447">
-<node TEXT="&#x5217;&#x7ad6;&#x5411;&#x6392;&#x5217;&#xff0c;&#x9002;&#x5408;&#x957f;&#x8bb0;&#x5f55;&#x663e;&#x793a;" ID="ID_131577851" CREATED="1606641543727" MODIFIED="1606641607983"/>
+<node CREATED="1606642304083" ID="ID_606180843" MODIFIED="1606722216194" TEXT="&#x4fee;&#x6539;&#x5b57;&#x6bb5;&#x7c7b;&#x578b;">
+<node CREATED="1606642321970" ID="ID_118298600" MODIFIED="1606727756091" TEXT="ALTER TABLE tablename MODIFY col_name col_type">
+<linktarget COLOR="#b0b0b0" DESTINATION="ID_118298600" ENDARROW="Default" ENDINCLINATION="121;0;" ID="Arrow_ID_617639364" SOURCE="ID_1899406467" STARTARROW="None" STARTINCLINATION="121;0;"/>
 </node>
 </node>
-<node TEXT="&#x547d;&#x4ee4;&#x63d0;&#x793a;" FOLDED="true" ID="2kcl3acmmbvoo5rdmsk1rud51b" CREATED="1606640116533" MODIFIED="1606640116533">
-<node TEXT="Query OK" FOLDED="true" ID="4basf7lr0obsr59um9vqflrghr" CREATED="1606640116533" MODIFIED="1606640116533">
-<node TEXT="&#x6240;&#x6709; DDL DML &#x6267;&#x884c;&#x6210;&#x529f;&#xff08;&#x9664;&#x4e86; SELECT&#xff09;" ID="13fek3nngrqa95db6ojtbn33f4" CREATED="1606640116533" MODIFIED="1606640116533"/>
+<node CREATED="1606642309907" ID="ID_1725183220" MODIFIED="1606722216884" TEXT="&#x589e;&#x52a0;&#x8868;&#x5b57;&#x6bb5;">
+<node CREATED="1606642420029" ID="ID_607733128" MODIFIED="1606721631138" TEXT="ALTER TABLE tablename ADD COLUMN col_name col_type"/>
 </node>
-<node TEXT="row affected" FOLDED="true" ID="49n2rnonkl5f3kkstmeovm68em" CREATED="1606640116533" MODIFIED="1606640116533">
-<node TEXT="&#x5f71;&#x54cd;&#x4e86;&#x6570;&#x636e;&#x5e93;&#x8bb0;&#x5f55;&#x7684;&#x884c;&#x6570;&#xff08;DROP &#x4e3a; 0&#xff09;" ID="7mejb5u64sdc8sbk7k0pk1kbjp" CREATED="1606640116533" MODIFIED="1606640116533"/>
+<node CREATED="1606721648193" ID="ID_1259478748" MODIFIED="1606721651866" TEXT="&#x5220;&#x9664;&#x8868;&#x5b57;&#x6bb5;">
+<node CREATED="1606721652820" ID="ID_545680761" MODIFIED="1606721683630" TEXT="ALTER TABLE tablename DROP COLUMN col_name"/>
 </node>
-<node TEXT="sec" FOLDED="true" ID="0df2ci75captivmolfhs6chlvk" CREATED="1606640116533" MODIFIED="1606640116533">
-<node TEXT="&#x64cd;&#x4f5c;&#x6267;&#x884c;&#x79d2;&#x6570;" ID="4juspjnouuaruge2e8mltighb3" CREATED="1606640116533" MODIFIED="1606640116533"/>
+<node CREATED="1606721694795" ID="ID_1880543931" MODIFIED="1606727791326" TEXT="&#x5b57;&#x6bb5;&#x6539;&#x540d;&#x6539;&#x7c7b;&#x578b;">
+<node CREATED="1606721699906" ID="ID_1899406467" MODIFIED="1606727756091" TEXT="ALTER TABLE CHANGE old new col_type">
+<arrowlink DESTINATION="ID_118298600" ENDARROW="Default" ENDINCLINATION="121;0;" ID="Arrow_ID_617639364" STARTARROW="None" STARTINCLINATION="121;0;"/>
+</node>
+</node>
+<node CREATED="1606722465383" ID="ID_1562871119" MODIFIED="1606722737213" TEXT="&#x8c03;&#x6574;&#x5b57;&#x6bb5;&#x987a;&#x5e8f;">
+<node CREATED="1606722477176" ID="ID_1432690946" MODIFIED="1606722873050" TEXT="ADD&#x3001;CHANGE&#x3001;MODIFY &#x6700;&#x540e;">
+<node CREATED="1606722517645" ID="ID_1909469845" MODIFIED="1606722524685" TEXT="FIRST"/>
+<node CREATED="1606722525096" ID="ID_371884400" MODIFIED="1606722531996" TEXT="AFTER col_name"/>
+<node CREATED="1606722605810" ID="ID_322718697" MODIFIED="1606722632746" TEXT="&#x9ed8;&#x8ba4; ADD &#x5230;&#x6700;&#x540e;&#x4e00;&#x5217;"/>
+</node>
+</node>
+<node CREATED="1606722804413" ID="ID_320622537" MODIFIED="1606722814481" TEXT="&#x66f4;&#x6539;&#x8868;&#x540d;">
+<node CREATED="1606722815716" ID="ID_1314885706" MODIFIED="1606722847389" TEXT="ALTER TABLE tablename RENAME [TO] new_name"/>
+</node>
+<node CREATED="1606722738786" ID="ID_556626984" MODIFIED="1606722780758" TEXT="CHANGE&#x3001;FIRST&#x3001;AFTER COLUMN &#x975e; SQL &#x6807;&#x51c6;"/>
+</node>
+</node>
+<node CREATED="1606640116532" ID="4ndedj760m2vsdft0lc484vm61" MODIFIED="1606640116532" POSITION="right" TEXT="Data Manipulation Language">
+<node CREATED="1606640116532" ID="60lt3ss25k77o3h6t8cgjd83mq" MODIFIED="1606722924796" TEXT="&#x6dfb;&#x52a0;&#x3001;&#x5220;&#x9664;&#x3001;&#x66f4;&#x65b0;&#x3001;&#x67e5;&#x8be2;&#x6570;&#x636e;&#x5e93;&#x8868;&#x8bb0;&#x5f55;&#xff0c;&#x68c0;&#x67e5;&#x6570;&#x636e;&#x5b8c;&#x6574;&#x6027;">
+<node CREATED="1606722930731" ID="ID_1208234360" MODIFIED="1606722937898" TEXT="&#x63d2;&#x5165;&#x8bb0;&#x5f55;">
+<node CREATED="1606726448488" ID="ID_1323511498" MODIFIED="1606726502958" TEXT="INSERT INTO tablename (f1, f2, ...) VALUES(v1, v2, ...), (v1, v2, ...), ..."/>
+<node CREATED="1606723880558" ID="ID_67997720" MODIFIED="1606723931531" TEXT="&#x6307;&#x5b9a;&#x5b57;&#x6bb5;&#x540d;&#x987a;&#x5e8f;&#xff0c;&#x540e;&#x9762;&#x503c;&#x6309;&#x6b64;&#x987a;&#x5e8f;&#x6765;"/>
+<node CREATED="1606723464560" ID="ID_300520122" MODIFIED="1606723875582" TEXT="&#x53ef;&#x4ee5;&#x4e0d;&#x6307;&#x5b9a;&#x5b57;&#x6bb5;&#x540d;&#xff0c;&#x4f46;&#x540e;&#x9762;&#x7684;&#x503c;&#x8981;&#x6309;&#x987a;&#x5e8f;&#x5168;&#x90e8;&#x6307;&#x5b9a;"/>
+<node CREATED="1606723501686" ID="ID_1598983124" MODIFIED="1606723554195" TEXT="&#x53ef; NULL&#x3001;&#x9ed8;&#x8ba4;&#x503c;&#x3001;&#x81ea;&#x589e;&#x7684;&#x5b57;&#x6bb5;&#x53ef;&#x7701;&#x7565;&#x503c;"/>
+</node>
+<node CREATED="1606724950973" ID="ID_1027674164" MODIFIED="1606724954594" TEXT="&#x66f4;&#x65b0;&#x8bb0;&#x5f55;">
+<node CREATED="1606724955622" ID="ID_1546959325" MODIFIED="1606726598746" TEXT="UPDATE tablename SET f1=v1, f2=v2, ... [WHERE CONDITION]"/>
+<node CREATED="1606725177794" ID="ID_664919191" MODIFIED="1606726627054" TEXT="UPDATE t1 a1, t2, a2, ... SET a1.f1=v1, ... [WHERE CONDITION]"/>
+<node CREATED="1606725080774" ID="ID_702419456" MODIFIED="1606725096520" TEXT="&#x5982;&#x679c;&#x4e0d;&#x52a0;&#x6761;&#x4ef6;&#xff0c;&#x9ed8;&#x8ba4;&#x4fee;&#x6539;&#x6240;&#x6709;&#x8bb0;&#x5f55;"/>
+<node CREATED="1606725750422" ID="ID_587595230" MODIFIED="1606725774148" TEXT="&#x5b57;&#x6bb5;&#x6307;&#x5b9a;&#x4e0d;&#x4e00;&#x5b9a;&#x662f;&#x503c;&#xff0c;&#x4ea7;&#x751f;&#x503c;&#x7684;&#x8868;&#x8fbe;&#x5f0f;&#x4e5f;&#x884c;"/>
+<node CREATED="1606725682734" ID="ID_1351002282" MODIFIED="1606727111567" TEXT="UPDATE &#x540e;&#x53ef;&#x6307;&#x5b9a;&#x8868;&#x522b;&#x540d;&#xff0c;&#x6307;&#x5b9a;&#x4e86;&#x522b;&#x540d;&#x5c31;&#x9700;&#x7528;&#x522b;&#x540d;&#xff0c;&#x6216;&#x53ea;&#x6709;&#x4e00;&#x4e2a;&#x8868;&#x65f6;&#x7701;&#x7565;&#x8868;&#x540d;">
+<node CREATED="1606727043334" ID="ID_320100918" MODIFIED="1606727820381" TEXT="ERROR 1054 (42S22): Unknown column &apos;table.column&apos; in &apos;field list&apos;">
+<linktarget COLOR="#b0b0b0" DESTINATION="ID_320100918" ENDARROW="Default" ENDINCLINATION="-100;161;" ID="Arrow_ID_883022927" SOURCE="ID_699664309" STARTARROW="None" STARTINCLINATION="209;0;"/>
+</node>
+</node>
+<node CREATED="1606725818655" ID="ID_122663064" MODIFIED="1606725851777" TEXT="&#x591a;&#x8868;&#x66f4;&#x65b0;&#xff1a;&#x591a;&#x7528;&#x4e8e;&#x6839;&#x636e;&#x4e00;&#x4e2a;&#x8868;&#x7684;&#x5b57;&#x6bb5;&#x52a8;&#x6001;&#x66f4;&#x65b0;&#x53e6;&#x5916;&#x4e00;&#x4e2a;&#x8868;&#x7684;&#x5b57;&#x6bb5;"/>
+</node>
+<node CREATED="1606725903209" ID="ID_1788492032" MODIFIED="1606725908825" TEXT="&#x5220;&#x9664;&#x8bb0;&#x5f55;">
+<node CREATED="1606725910314" ID="ID_166584603" MODIFIED="1606725933239" TEXT="DELETE FROM talename [WHERE CONDITION]"/>
+<node CREATED="1606726081256" ID="ID_831699923" MODIFIED="1606726207864" TEXT="DELETE a1, a2, ... FROM t1 a1, t2 a2, ... [WHERE CONDITION]"/>
+<node CREATED="1606727232823" ID="ID_1882912484" MODIFIED="1606727248643" TEXT="DELETE &#x540e;&#x4e0d;&#x6307;&#x5b9a;&#x5219;&#x5220;&#x9664;&#x5f53;&#x524d;&#x8868;"/>
+<node CREATED="1606726001591" ID="ID_1488712669" MODIFIED="1606727289126" TEXT="&#x4e0d;&#x6307;&#x5b9a;&#x6761;&#x4ef6;&#x5219;&#x5220;&#x9664;&#x6240;&#x6709;&#x8bb0;&#x5f55;&#xff08;&#x6e05;&#x7a7a;&#x8868;&#xff09;"/>
+<node CREATED="1606726048604" ID="ID_699664309" MODIFIED="1606727820381" TEXT="FROM &#x540e;&#x53ef;&#x6307;&#x5b9a;&#x522b;&#x540d;">
+<arrowlink DESTINATION="ID_320100918" ENDARROW="Default" ENDINCLINATION="-100;161;" ID="Arrow_ID_883022927" STARTARROW="None" STARTINCLINATION="209;0;"/>
+</node>
+</node>
+</node>
+</node>
+<node CREATED="1606640116532" ID="4s5ig4ikb54l7pcg2ojavqh7ap" MODIFIED="1606640116532" POSITION="right" TEXT="Data Control Language">
+<node CREATED="1606640116532" ID="2erdgrc2ge3q93311kl15ffdv5" MODIFIED="1606640116532" TEXT="&#x5b9a;&#x4e49;&#x6570;&#x636e;&#x5e93;&#x3001;&#x8868;&#x3001;&#x5b57;&#x6bb5;&#x3001;&#x7528;&#x6237;&#x7684;&#x8bbf;&#x95ee;&#x6743;&#x9650;&#x548c;&#x5b89;&#x5168;&#x7ea7;&#x522b;"/>
+</node>
+<node CREATED="1606640116532" ID="4ig10b4pli567kfintcfo7629l" MODIFIED="1606640116532" POSITION="left" TEXT="MySQL Monitor">
+<node CREATED="1606640116532" ID="3t2r83do078bepmfohn5da6tps" MODIFIED="1606640116532" TEXT="&#x8fde;&#x63a5;&#x670d;&#x52a1;&#x5668;">
+<node CREATED="1606640116533" ID="67jfdg1siqdnd7a5sh9pbtb4vp" MODIFIED="1606640116533" TEXT="mysql -uroot -p"/>
+</node>
+<node CREATED="1606640116533" ID="21v8d89va7cv8c7o3dpne885hr" MODIFIED="1606640116533" TEXT="&#x547d;&#x4ee4;&#x7ed3;&#x675f;&#x7b26;">
+<node CREATED="1606640116533" ID="3mkvsorgqo5kvf3d99afc4m87c" MODIFIED="1606641923394" TEXT="; \g">
+<node CREATED="1606641529133" ID="ID_892751294" MODIFIED="1606641587684" TEXT="&#x5217;&#x6a2a;&#x5411;&#x6392;&#x5217;&#xff0c;&#x66f4;&#x50cf;&#x8868;&#x683c;"/>
+</node>
+<node CREATED="1606640116533" ID="7t3p064bcifvmldcd2o6dr1vf4" MODIFIED="1606641929447" TEXT="\G">
+<node CREATED="1606641543727" ID="ID_131577851" MODIFIED="1606641607983" TEXT="&#x5217;&#x7ad6;&#x5411;&#x6392;&#x5217;&#xff0c;&#x9002;&#x5408;&#x957f;&#x8bb0;&#x5f55;&#x663e;&#x793a;"/>
+</node>
+</node>
+<node CREATED="1606640116533" ID="2kcl3acmmbvoo5rdmsk1rud51b" MODIFIED="1606640116533" TEXT="&#x547d;&#x4ee4;&#x63d0;&#x793a;">
+<node CREATED="1606640116533" ID="4basf7lr0obsr59um9vqflrghr" MODIFIED="1606640116533" TEXT="Query OK">
+<node CREATED="1606640116533" ID="13fek3nngrqa95db6ojtbn33f4" MODIFIED="1606640116533" TEXT="&#x6240;&#x6709; DDL DML &#x6267;&#x884c;&#x6210;&#x529f;&#xff08;&#x9664;&#x4e86; SELECT&#xff09;"/>
+</node>
+<node CREATED="1606640116533" ID="49n2rnonkl5f3kkstmeovm68em" MODIFIED="1606640116533" TEXT="row affected">
+<node CREATED="1606640116533" ID="7mejb5u64sdc8sbk7k0pk1kbjp" MODIFIED="1606640116533" TEXT="&#x5f71;&#x54cd;&#x4e86;&#x6570;&#x636e;&#x5e93;&#x8bb0;&#x5f55;&#x7684;&#x884c;&#x6570;&#xff08;DROP &#x4e3a; 0&#xff09;"/>
+</node>
+<node CREATED="1606640116533" ID="0df2ci75captivmolfhs6chlvk" MODIFIED="1606640116533" TEXT="sec">
+<node CREATED="1606640116533" ID="4juspjnouuaruge2e8mltighb3" MODIFIED="1606640116533" TEXT="&#x64cd;&#x4f5c;&#x6267;&#x884c;&#x79d2;&#x6570;"/>
 </node>
 </node>
 </node>

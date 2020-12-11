@@ -1,0 +1,237 @@
+<map version="freeplane 1.8.0">
+<!--To view this file, download free mind mapping software Freeplane from http://freeplane.sourceforge.net -->
+<node TEXT="web.xml" FOLDED="false" ID="ID_1586654480" CREATED="1607075813836" MODIFIED="1607075819257" STYLE="oval">
+<font SIZE="18"/>
+<hook NAME="MapStyle">
+    <properties fit_to_viewport="false" edgeColorConfiguration="#808080ff,#ff0000ff,#0000ffff,#00ff00ff,#ff00ffff,#00ffffff,#7c0000ff,#00007cff,#007c00ff,#7c007cff,#007c7cff,#7c7c00ff"/>
+
+<map_styles>
+<stylenode LOCALIZED_TEXT="styles.root_node" STYLE="oval" UNIFORM_SHAPE="true" VGAP_QUANTITY="24.0 pt">
+<font SIZE="24"/>
+<stylenode LOCALIZED_TEXT="styles.predefined" POSITION="right" STYLE="bubble">
+<stylenode LOCALIZED_TEXT="default" ICON_SIZE="12.0 pt" COLOR="#000000" STYLE="fork">
+<font NAME="SansSerif" SIZE="10" BOLD="false" ITALIC="false"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="defaultstyle.details"/>
+<stylenode LOCALIZED_TEXT="defaultstyle.attributes">
+<font SIZE="9"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="defaultstyle.note" COLOR="#000000" BACKGROUND_COLOR="#ffffff" TEXT_ALIGN="LEFT"/>
+<stylenode LOCALIZED_TEXT="defaultstyle.floating">
+<edge STYLE="hide_edge"/>
+<cloud COLOR="#f0f0f0" SHAPE="ROUND_RECT"/>
+</stylenode>
+</stylenode>
+<stylenode LOCALIZED_TEXT="styles.user-defined" POSITION="right" STYLE="bubble">
+<stylenode LOCALIZED_TEXT="styles.topic" COLOR="#18898b" STYLE="fork">
+<font NAME="Liberation Sans" SIZE="10" BOLD="true"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="styles.subtopic" COLOR="#cc3300" STYLE="fork">
+<font NAME="Liberation Sans" SIZE="10" BOLD="true"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="styles.subsubtopic" COLOR="#669900">
+<font NAME="Liberation Sans" SIZE="10" BOLD="true"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="styles.important">
+<icon BUILTIN="yes"/>
+</stylenode>
+</stylenode>
+<stylenode LOCALIZED_TEXT="styles.AutomaticLayout" POSITION="right" STYLE="bubble">
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level.root" COLOR="#000000" STYLE="oval" SHAPE_HORIZONTAL_MARGIN="10.0 pt" SHAPE_VERTICAL_MARGIN="10.0 pt">
+<font SIZE="18"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,1" COLOR="#0033ff">
+<font SIZE="16"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,2" COLOR="#00b439">
+<font SIZE="14"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,3" COLOR="#990000">
+<font SIZE="12"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,4" COLOR="#111111">
+<font SIZE="10"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,5"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,6"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,7"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,8"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,9"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,10"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,11"/>
+</stylenode>
+</stylenode>
+</map_styles>
+</hook>
+<hook NAME="AutomaticEdgeColor" COUNTER="2" RULE="ON_BRANCH_CREATION"/>
+<node TEXT="Annotation" POSITION="right" ID="ID_1541918273" CREATED="1606965179101" MODIFIED="1606965185043">
+<edge COLOR="#00007c"/>
+<node TEXT="标注开始于 Java EE 6，Servlet 3.0" ID="ID_911577401" CREATED="1606964976732" MODIFIED="1606965004809">
+<node TEXT="告知容器哪些 Servlet 提供服务和额外信息" ID="ID_1224948975" CREATED="1606965011541" MODIFIED="1606965062247"/>
+<node TEXT="之前用 web.xml" ID="ID_1211631086" CREATED="1606965739544" MODIFIED="1606965767340"/>
+</node>
+<node TEXT="@WebServlet" ID="ID_1833607686" CREATED="1606964953864" MODIFIED="1606965190754">
+<node TEXT="属性" ID="ID_552366970" CREATED="1606965244446" MODIFIED="1606965246148">
+<node TEXT="name" ID="ID_688300752" CREATED="1606965201480" MODIFIED="1606965202979">
+<node TEXT="默认为类全限定名（包括包）" ID="ID_289596213" CREATED="1606965437432" MODIFIED="1606967407443"/>
+</node>
+<node TEXT="urlPatterns" ID="ID_1205870498" CREATED="1606965204114" MODIFIED="1606965208524">
+<node TEXT="花括号包起来的 URI 序列" ID="ID_1694761172" CREATED="1606965942325" MODIFIED="1606965959314"/>
+<node TEXT="只有一个 URL 可省略花括号" ID="ID_1357101570" CREATED="1606965961631" MODIFIED="1606965972339"/>
+<node TEXT="必须指定，没有默认" ID="ID_993829157" CREATED="1606966172279" MODIFIED="1606967904713"/>
+</node>
+<node TEXT="loadOnStartup" ID="ID_815901353" CREATED="1606965208975" MODIFIED="1606965223191">
+<node TEXT="默认首次请求才会初始化相应 Servlet" ID="ID_1635020884" CREATED="1606965494917" MODIFIED="1606965545520"/>
+<node TEXT="默认 -1 表示事先不初始化" ID="ID_1819377681" CREATED="1606965548696" MODIFIED="1607066501213"/>
+<node TEXT="0 开始表示优先级别" ID="ID_1631153980" CREATED="1606965588018" MODIFIED="1607066517850"/>
+<node TEXT="越小越优先，数字相同容器自定" ID="ID_1558922807" CREATED="1606966037040" MODIFIED="1606966052706"/>
+</node>
+<node TEXT="格式" ID="ID_33634859" CREATED="1606965796124" MODIFIED="1606965799980">
+<node TEXT="(k=v, k=v, ..., k=v)" ID="ID_203237283" CREATED="1606965806292" MODIFIED="1606965840531"/>
+<node TEXT="只有一个属性可只写 urlPatterns 的值" ID="ID_636185823" CREATED="1606965846687" MODIFIED="1606967931809"/>
+</node>
+</node>
+<node TEXT="如果请求 URI 匹配则由该 Servlet 提供服务" ID="ID_16580564" CREATED="1606965302826" MODIFIED="1606965369546"/>
+</node>
+</node>
+<node TEXT="web.xml" POSITION="left" ID="ID_1076015635" CREATED="1607066655093" MODIFIED="1607066658958">
+<edge COLOR="#007c00"/>
+<node TEXT="部署描述文件" ID="ID_1678165169" CREATED="1607066704019" MODIFIED="1607067064978">
+<node TEXT="WebContent/WEB-INF/web.xml" ID="ID_1850497705" CREATED="1607066675296" MODIFIED="1607067038564"/>
+<node TEXT="Deployment Description" ID="ID_1788295564" CREATED="1607067066771" MODIFIED="1607067067567"/>
+<node TEXT="DD 文件" ID="ID_1654447351" CREATED="1607067068003" MODIFIED="1607067076627"/>
+</node>
+<node TEXT="创建描述文件" ID="ID_1739537302" CREATED="1607067204069" MODIFIED="1607067210478">
+<node TEXT="右键 Deployment Descriptor: 项目名" ID="ID_489346620" CREATED="1607067217463" MODIFIED="1607067252440"/>
+<node TEXT="Generate Deployment Descriptor Sub" ID="ID_404107388" CREATED="1607067253940" MODIFIED="1607067278270"/>
+</node>
+<node TEXT="节点含义" ID="ID_1373791513" CREATED="1607067322397" MODIFIED="1607067329676">
+<node TEXT="web-app" ID="ID_626458749" CREATED="1607067329941" MODIFIED="1607067350916">
+<node TEXT="属性" ID="ID_1003640448" CREATED="1607068509055" MODIFIED="1607068514567">
+<node TEXT="xmlns:xsi" ID="ID_764821158" CREATED="1607068515665" MODIFIED="1607068516310"/>
+<node TEXT="xmlns" ID="ID_203447396" CREATED="1607068516641" MODIFIED="1607068521167"/>
+<node TEXT="xsi:schemaLocation" ID="ID_1543217974" CREATED="1607068528175" MODIFIED="1607068528175">
+<node TEXT="web-app_4_0.xsd" ID="ID_1722424310" CREATED="1607068631135" MODIFIED="1607068631942"/>
+</node>
+<node TEXT="version" ID="ID_1711271630" CREATED="1607068543030" MODIFIED="1607068543832"/>
+</node>
+<node TEXT="为根节点" ID="ID_530453793" CREATED="1607068570616" MODIFIED="1607068578206"/>
+</node>
+<node TEXT="display-name" ID="ID_37586027" CREATED="1607067352328" MODIFIED="1607067362799">
+<node TEXT="Web 应用名称" ID="ID_1437508156" CREATED="1607067367874" MODIFIED="1607067817331"/>
+<node TEXT="Context Root" ID="ID_491450185" CREATED="1607067538857" MODIFIED="1607067969479">
+<node TEXT="应用名称就是环境根目录" ID="ID_128411064" CREATED="1607067706686" MODIFIED="1607067991657"/>
+<node TEXT="META-INFO/context.xml 也可设定" ID="ID_1786228310" CREATED="1607067549938" MODIFIED="1607067585836"/>
+<node TEXT="Eclipse 设定" ID="ID_63738973" CREATED="1607067733514" MODIFIED="1607067796944">
+<node TEXT="右键项目" ID="ID_1317787906" CREATED="1607067799595" MODIFIED="1607067800562"/>
+<node TEXT="点击 Properties" ID="ID_1401590792" CREATED="1607067745836" MODIFIED="1607067757691"/>
+<node TEXT="在 Web Project Settings" ID="ID_1253171731" CREATED="1607067758421" MODIFIED="1607067779358"/>
+</node>
+</node>
+</node>
+<node TEXT="default-context-path" ID="ID_1551551385" CREATED="1607067906617" MODIFIED="1607067914903">
+<node TEXT="Servlet 4.0" ID="ID_960013416" CREATED="1607067916987" MODIFIED="1607067922736"/>
+<node TEXT="建议默认环境路径" ID="ID_466917636" CREATED="1607067923333" MODIFIED="1607067938619"/>
+<node TEXT="容器实现厂商为了兼容可忽略" ID="ID_837374095" CREATED="1607067939301" MODIFIED="1607068014210"/>
+</node>
+<node TEXT="welcome-file-list" ID="ID_1348301525" CREATED="1607068025409" MODIFIED="1607068033752">
+<node TEXT="没有请求指定的文件" ID="ID_1815182397" CREATED="1607068050379" MODIFIED="1607068104128"/>
+<node TEXT="就使用这些默认文件" ID="ID_507049787" CREATED="1607068104356" MODIFIED="1607068124602"/>
+</node>
+<node TEXT="servlet" ID="ID_1429054543" CREATED="1607068237428" MODIFIED="1607068240133">
+<node TEXT="servlet-name" ID="ID_577133199" CREATED="1607068240141" MODIFIED="1607068837925">
+<node TEXT="与标注相同时优先级比标注高" ID="ID_950231445" CREATED="1607068778619" MODIFIED="1607068825583"/>
+<node TEXT="用标注做默认值 web.xml 做更新值" ID="ID_165699255" CREATED="1607068812239" MODIFIED="1607068836735"/>
+</node>
+<node TEXT="servlet-class" ID="ID_1244053848" CREATED="1607068245269" MODIFIED="1607068250819">
+<node TEXT="类的全限定名" ID="ID_1703059421" CREATED="1607068274953" MODIFIED="1607068280087"/>
+<node TEXT="实体类名称" ID="ID_1648036453" CREATED="1607075249058" MODIFIED="1607075252735"/>
+</node>
+<node TEXT="load-on-startup" ID="ID_1389651504" CREATED="1607068251054" MODIFIED="1607068258884">
+<node TEXT="数字相同按顺序来" ID="ID_739338615" CREATED="1607068317006" MODIFIED="1607068347576"/>
+</node>
+</node>
+<node TEXT="servlet-mapping" ID="ID_1937476451" CREATED="1607068284403" MODIFIED="1607068289408">
+<node TEXT="servlet-name" ID="ID_1380529567" CREATED="1607068290731" MODIFIED="1607068295513">
+<node TEXT="注册名称" ID="ID_1607547565" CREATED="1607075239232" MODIFIED="1607075242975"/>
+</node>
+<node TEXT="url-pattern" ID="ID_1244658827" CREATED="1607068295835" MODIFIED="1607068301634">
+<node TEXT="逻辑名称" ID="ID_937340351" CREATED="1607075226631" MODIFIED="1607075391927"/>
+</node>
+</node>
+</node>
+</node>
+<node TEXT="文件组织与部署" POSITION="right" ID="ID_897393380" CREATED="1607304845831" MODIFIED="1607304881403">
+<edge COLOR="#ff0000"/>
+<node TEXT="项目名" ID="ID_1376229297" CREATED="1607075945405" MODIFIED="1607304853934">
+<node TEXT="WEB-INF" ID="ID_1825639749" CREATED="1607075948867" MODIFIED="1607076131106"><richcontent TYPE="DETAILS">
+
+<html>
+  <head>
+    
+  </head>
+  <body>
+    <p>
+      客户端无法直接访问
+    </p>
+  </body>
+</html>
+</richcontent>
+<node TEXT="web.xml" ID="ID_279477112" CREATED="1607075974488" MODIFIED="1607076224039"><richcontent TYPE="DETAILS">
+
+<html>
+  <head>
+    
+  </head>
+  <body>
+    <p>
+      部署描述文件
+    </p>
+  </body>
+</html>
+</richcontent>
+</node>
+<node TEXT="lib" ID="ID_1337145338" CREATED="1607075979697" MODIFIED="1607076171679"><richcontent TYPE="DETAILS">
+
+<html>
+  <head>
+    
+  </head>
+  <body>
+    <p>
+      放置 jar 包
+    </p>
+  </body>
+</html>
+</richcontent>
+</node>
+<node TEXT="classes" ID="ID_1970209079" CREATED="1607075992554" MODIFIED="1607076179972"><richcontent TYPE="DETAILS">
+
+<html>
+  <head>
+    
+  </head>
+  <body>
+    <p>
+      编译后的类文件
+    </p>
+  </body>
+</html>
+</richcontent>
+</node>
+</node>
+<node TEXT="other" ID="ID_1970287862" CREATED="1607075955878" MODIFIED="1607075972051"/>
+</node>
+<node TEXT="http://服务器:端口/项目名/servlet名" ID="ID_1239617077" CREATED="1607076269727" MODIFIED="1607304862660"/>
+<node TEXT="WAR 文件" ID="ID_728556634" CREATED="1607076448019" MODIFIED="1607304866452">
+<node TEXT="Web Archive" ID="ID_1536149638" CREATED="1607076453928" MODIFIED="1607076471252"/>
+<node TEXT="建立 WAR 文件" ID="ID_565255196" CREATED="1607076581122" MODIFIED="1607076595585">
+<node TEXT="jar cvf ../ServletProject.war *" ID="ID_1780576280" CREATED="1607076496325" MODIFIED="1607076535048"/>
+<node TEXT="右键项目 - Export - WAR file" ID="ID_822724366" CREATED="1607076553124" MODIFIED="1607076573237"/>
+</node>
+<node TEXT="采用 zip 格式" ID="ID_238141644" CREATED="1607076599770" MODIFIED="1607076655396"/>
+<node TEXT="可直接放在 tomcat 的 webapps 下" ID="ID_215603421" CREATED="1607076655761" MODIFIED="1607076657293"/>
+</node>
+</node>
+</node>
+</map>

@@ -1111,3 +1111,94 @@ public class ConditionTest {
 }
 ```
 
+### Future 和 Callable
+
+* FutureTask 实现了 Runnable 接口，也实现了 Future 接口
+
+```java
+import java.util.concurrent.*;
+public class FutureCallableDemo {
+    static long fibonacci(long n) {
+        if (n <= 1) return n;
+        return fibonacci(n - 1) + fibonacci(n - 2);
+    }
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        final long n = 10;
+        FutureTask<Long> future = new FutureTask<>(() -> fibonacci(n));
+        System.out.printf("老板，我要第 %d 个斐波那契数，待会来拿...%n", n);
+        new Thread(future).start();
+        while (!future.isDone()) System.out.println("忙别的事去...");
+        System.out.printf("第 %d 个斐波那契数：%d%n", n, future.get());
+    }
+}
+```
+
+* 结合 ExecutorService
+
+```java
+import java.util.concurrent.*;
+public class FutureCallableDemo2 {
+    static long fibonacci(long n) {
+        if (n <= 1) return n;
+        return fibonacci(n - 1) + fibonacci(n - 2);
+    }
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        final long n = 10;
+        ExecutorService service = Executors.newCachedThreadPool();
+        System.out.printf("老板，我要第 %d 个斐波那契数，待会来拿...%n", n);
+        Future<Long> future = service.submit(() -> fibonacci(n));
+        while (!future.isDone()) System.out.println("忙别的事去...");
+        System.out.printf("第 %d 个斐波那契数：%d%n", n, future.get());
+        service.shutdown(); // 不关程序就不会结束
+        System.out.printf("largest pool size: %d%n", ((ThreadPoolExecutor) service).getLargestPoolSize());
+    }
+}
+```
+
+* ExecutorService 的 invokeAny 和 invokeAll
+
+```java
+ExecutorService executor = Executors.newCachedThreadPool();
+
+List<Callable<Integer>> tasks = new ArrayList<>();
+for (int i = 0; i < 5; i++) {
+    final int id = i + 1;
+    tasks.add(() -> id);
+}
+
+// 按顺序 但会阻塞
+List<Future<Integer>> futures = executor.invokeAll(tasks);
+for (Future<Integer> future : futures) System.out.println(future.get());
+
+// 一个完成就返回 故为1
+System.out.println(executor.invokeAny(tasks));
+
+executor.shutdown();
+System.out.printf("largest pool size: %d%n", ((ThreadPoolExecutor) executor).getLargestPoolSize());
+```
+
+* ExecutorCompletionService
+  * 实现 CompletionService 接口
+  * 维护阻塞队列，过 take poll 获取一个已完成的 Future
+
+```java
+List<Callable<Integer>> tasks = new ArrayList<>();
+for (int i = 0; i < 5; i++) {
+    final int id = i + 1;
+    tasks.add(() -> id);
+}
+
+ExecutorService executor = Executors.newCachedThreadPool();
+
+// 不阻塞 但不按顺序
+CompletionService<Integer> service = new ExecutorCompletionService<>(executor);
+// 其实可以省略构造 tasks 直接 submit
+// 但不要把 submit 和 take 放到一个循环，虽然顺序了，但也阻塞了，相当于添加一个执行一个
+for (Callable<Integer> task : tasks) service.submit(task);
+for (int i = 0; i < tasks.size(); i++) System.out.println(service.take().get());
+
+executor.shutdown();
+System.out.printf("largest pool size: %d%n", ((ThreadPoolExecutor) executor).getLargestPoolSize());
+```
+
+* [高并发编程-ExecutorCompletionService深入解析 - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1444259)

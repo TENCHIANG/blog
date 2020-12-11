@@ -1,0 +1,161 @@
+<map version="freeplane 1.8.0">
+<!--To view this file, download free mind mapping software Freeplane from http://freeplane.sourceforge.net -->
+<node TEXT="失业保险" FOLDED="false" ID="ID_1660019777" CREATED="1607403253297" MODIFIED="1607403255804" STYLE="oval">
+<font SIZE="18"/>
+<hook NAME="MapStyle">
+    <properties edgeColorConfiguration="#808080ff,#ff0000ff,#0000ffff,#00ff00ff,#ff00ffff,#00ffffff,#7c0000ff,#00007cff,#007c00ff,#7c007cff,#007c7cff,#7c7c00ff" fit_to_viewport="false"/>
+
+<map_styles>
+<stylenode LOCALIZED_TEXT="styles.root_node" STYLE="oval" UNIFORM_SHAPE="true" VGAP_QUANTITY="24.0 pt">
+<font SIZE="24"/>
+<stylenode LOCALIZED_TEXT="styles.predefined" POSITION="right" STYLE="bubble">
+<stylenode LOCALIZED_TEXT="default" ICON_SIZE="12.0 pt" COLOR="#000000" STYLE="fork">
+<font NAME="SansSerif" SIZE="10" BOLD="false" ITALIC="false"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="defaultstyle.details"/>
+<stylenode LOCALIZED_TEXT="defaultstyle.attributes">
+<font SIZE="9"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="defaultstyle.note" COLOR="#000000" BACKGROUND_COLOR="#ffffff" TEXT_ALIGN="LEFT"/>
+<stylenode LOCALIZED_TEXT="defaultstyle.floating">
+<edge STYLE="hide_edge"/>
+<cloud COLOR="#f0f0f0" SHAPE="ROUND_RECT"/>
+</stylenode>
+</stylenode>
+<stylenode LOCALIZED_TEXT="styles.user-defined" POSITION="right" STYLE="bubble">
+<stylenode LOCALIZED_TEXT="styles.topic" COLOR="#18898b" STYLE="fork">
+<font NAME="Liberation Sans" SIZE="10" BOLD="true"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="styles.subtopic" COLOR="#cc3300" STYLE="fork">
+<font NAME="Liberation Sans" SIZE="10" BOLD="true"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="styles.subsubtopic" COLOR="#669900">
+<font NAME="Liberation Sans" SIZE="10" BOLD="true"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="styles.important">
+<icon BUILTIN="yes"/>
+</stylenode>
+</stylenode>
+<stylenode LOCALIZED_TEXT="styles.AutomaticLayout" POSITION="right" STYLE="bubble">
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level.root" COLOR="#000000" STYLE="oval" SHAPE_HORIZONTAL_MARGIN="10.0 pt" SHAPE_VERTICAL_MARGIN="10.0 pt">
+<font SIZE="18"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,1" COLOR="#0033ff">
+<font SIZE="16"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,2" COLOR="#00b439">
+<font SIZE="14"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,3" COLOR="#990000">
+<font SIZE="12"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,4" COLOR="#111111">
+<font SIZE="10"/>
+</stylenode>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,5"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,6"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,7"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,8"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,9"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,10"/>
+<stylenode LOCALIZED_TEXT="AutomaticLayout.level,11"/>
+</stylenode>
+</stylenode>
+</map_styles>
+</hook>
+<hook NAME="AutomaticEdgeColor" COUNTER="9" RULE="ON_BRANCH_CREATION"/>
+<node TEXT="领取条件" POSITION="right" ID="ID_930873100" CREATED="1607405226552" MODIFIED="1607405229469">
+<edge COLOR="#00ffff"/>
+<node TEXT="失业前用人单位和本人已经缴纳失业保险费满一年" ID="ID_630943323" CREATED="1607405230282" MODIFIED="1607405248055"/>
+<node TEXT="非因本人意愿中断就业" ID="ID_1658658260" CREATED="1607405248444" MODIFIED="1607405257224">
+<node TEXT="终止劳动合同" ID="ID_454856515" CREATED="1607405344346" MODIFIED="1607405348380"/>
+<node TEXT="被单位解除劳动合同" ID="ID_936914604" CREATED="1607405349825" MODIFIED="1607405369115"/>
+<node TEXT="单位不按规定提供劳动条件，提出解除劳动合同" ID="ID_1315433257" CREATED="1607405359722" MODIFIED="1607405500588"/>
+<node TEXT="单位用暴力、胁迫或限制人身自由等强迫劳动，提出" ID="ID_668066648" CREATED="1607405387998" MODIFIED="1607405596434"/>
+<node TEXT="单位克扣、拖欠工资，或不按规定支付加班报酬，提出" ID="ID_256309192" CREATED="1607405424749" MODIFIED="1607405593547"/>
+<node TEXT="单位低于当地最低工资标准，或集体合同约定的工资标准支付工资，提出" ID="ID_752337967" CREATED="1607405478946" MODIFIED="1607405538269"/>
+<node TEXT="单位扣押身份、资质、简历等证件，提出" ID="ID_593972667" CREATED="1607405547771" MODIFIED="1607405569243"/>
+<node TEXT="单位未依法缴纳社保，提出" ID="ID_1929421132" CREATED="1607405569735" MODIFIED="1607405578986"/>
+<node TEXT="法律法规另有规定的" ID="ID_1999237132" CREATED="1607405579648" MODIFIED="1607405590338"/>
+</node>
+<node TEXT="已办理失业登记" ID="ID_1994783407" CREATED="1607405257381" MODIFIED="1607405268866"/>
+<node TEXT="有求职要求" ID="ID_1048698775" CREATED="1607405269169" MODIFIED="1607405270130"/>
+<node TEXT="离职六十天内办理" ID="ID_1349835091" CREATED="1607405310004" MODIFIED="1607405316112"/>
+</node>
+<node TEXT="失业保险政策" POSITION="left" ID="ID_58238435" CREATED="1607403300342" MODIFIED="1607403301018">
+<edge COLOR="#ff0000"/>
+<node TEXT="失业保险金：失业后每月领钱，缓解暂时的支出" ID="ID_1072368455" CREATED="1607403308335" MODIFIED="1607403309019"/>
+<node TEXT="医疗保险：失业后，继续免费享受社会医疗保障" ID="ID_485119663" CREATED="1607403310399" MODIFIED="1607403316027"/>
+<node TEXT="丧葬补助金：参保人身故，家属可以领取补助金" ID="ID_1353465867" CREATED="1607403316224" MODIFIED="1607403320660"/>
+<node TEXT="抚恤金：参保人身故，家属可领取抚恤金" ID="ID_915987936" CREATED="1607403320864" MODIFIED="1607403324665"/>
+<node TEXT="就业服务：失业后提供再就业指引及技能培训补贴" ID="ID_585053782" CREATED="1607403324848" MODIFIED="1607403328813"/>
+</node>
+<node TEXT="领取期限" POSITION="left" ID="ID_765980667" CREATED="1607403428247" MODIFIED="1607403433228">
+<edge COLOR="#0000ff"/>
+<node TEXT="累计缴费 &lt; 1 年：不得领取" ID="ID_661794984" CREATED="1607403441776" MODIFIED="1607403484057"/>
+<node TEXT="&gt;= 1 &amp;&amp; &lt; 5 年：最长 12 个月" ID="ID_661774479" CREATED="1607403468171" MODIFIED="1607403505427"/>
+<node TEXT="&gt;= 5 &amp;&amp; &lt; 10 年：最长 18 个月" ID="ID_1282897730" CREATED="1607403510633" MODIFIED="1607403520297"/>
+<node TEXT="&gt; 10 年：最长 24 个月" ID="ID_588060333" CREATED="1607403522202" MODIFIED="1607403533758"/>
+<node TEXT="重新就业后再次失业" ID="ID_1150980005" CREATED="1607403583890" MODIFIED="1607403640508">
+<node TEXT="缴费时间重新计算" ID="ID_663912912" CREATED="1607403589283" MODIFIED="1607403589784"/>
+<node TEXT="领取失业保险金的期限不重新计算" ID="ID_1160363767" CREATED="1607403590067" MODIFIED="1607403637854"/>
+</node>
+</node>
+<node TEXT="投保规则（武汉）" POSITION="left" ID="ID_1682396755" CREATED="1607403656276" MODIFIED="1607405216457">
+<edge COLOR="#ff00ff"/>
+<node TEXT="缴费基数" ID="ID_1986346524" CREATED="1607403661564" MODIFIED="1607405062023">
+<node TEXT="最低 3399.6" ID="ID_73574249" CREATED="1607405062988" MODIFIED="1607405069199"/>
+<node TEXT="最高 19921" ID="ID_276061110" CREATED="1607405069476" MODIFIED="1607405078377"/>
+</node>
+<node TEXT="缴费比例" ID="ID_641022513" CREATED="1607405082510" MODIFIED="1607405085191">
+<node TEXT="单位 0.7%" ID="ID_1138542137" CREATED="1607405085196" MODIFIED="1607405091316"/>
+<node TEXT="个人 0.3%" ID="ID_359870868" CREATED="1607405092008" MODIFIED="1607405097827"/>
+</node>
+<node TEXT="实缴 = 基数 * 比例" ID="ID_1578978292" CREATED="1607405116218" MODIFIED="1607405128080">
+<node TEXT="最低 23.8 和 10.2" ID="ID_1641868471" CREATED="1607405160753" MODIFIED="1607405175189"/>
+<node TEXT="最高 139.45 和 59.76" ID="ID_215445732" CREATED="1607405175396" MODIFIED="1607405189151"/>
+</node>
+</node>
+<node TEXT="办理地点及所需材料" POSITION="right" ID="ID_427615770" CREATED="1607411944582" MODIFIED="1607411957635">
+<edge COLOR="#00007c"/>
+<node TEXT="社会保险基金管理局下属的各分局失业科、管理站" ID="ID_435774201" CREATED="1607411959783" MODIFIED="1607411991701"/>
+<node TEXT="与社保签订代办协议的各街道劳动保障事务所、邮政储蓄银行" ID="ID_1448281066" CREATED="1607411970545" MODIFIED="1607411983511"/>
+<node TEXT="失业保险金按月发放" ID="ID_1076192499" CREATED="1607412011519" MODIFIED="1607412012271">
+<node TEXT="当月15日前开立银行帐户的，失业保险金当月26日前到帐" ID="ID_1629906972" CREATED="1607412013126" MODIFIED="1607412019614"/>
+<node TEXT="16日后开立银行帐户的，次月26日前到帐" ID="ID_134620777" CREATED="1607412019776" MODIFIED="1607412023932"/>
+<node TEXT="基本医疗保险费从失业保险基金中支付，个人不缴纳基本医疗保险费" ID="ID_230232345" CREATED="1607412236116" MODIFIED="1607412237270"/>
+</node>
+<node TEXT="要准备的材料" ID="ID_1050801600" CREATED="1607412036562" MODIFIED="1607412037571">
+<node TEXT="本人身份证和本人照片" ID="ID_1487375239" CREATED="1607412037577" MODIFIED="1607412041583"/>
+<node TEXT="银行卡或存折的复印件" ID="ID_1078659838" CREATED="1607412041757" MODIFIED="1607412045671"/>
+<node TEXT="所在单位出具的终止或者解除劳动合同书" ID="ID_1100905480" CREATED="1607412045827" MODIFIED="1607412050474">
+<node TEXT="如果企业拒绝出具相关解除劳动关系的书面证明，可以向社保局投诉，寻求帮助" ID="ID_1784056843" CREATED="1607412079768" MODIFIED="1607412081764"/>
+</node>
+<node TEXT="劳动保障行政部门的职业机构出具的求职证明" ID="ID_1723966353" CREATED="1607412050668" MODIFIED="1607412054769"/>
+<node TEXT="劳动保障行政部门规定的其他材料" ID="ID_1390870402" CREATED="1607412054972" MODIFIED="1607412060239"/>
+</node>
+</node>
+<node TEXT="停止领取失业保险金的情形" POSITION="right" ID="ID_1283096831" CREATED="1607412094243" MODIFIED="1607412097522">
+<edge COLOR="#007c00"/>
+<node TEXT="重新就业" ID="ID_845450864" CREATED="1607412097528" MODIFIED="1607412100645"/>
+<node TEXT="应征服兵役" ID="ID_1538494572" CREATED="1607412101483" MODIFIED="1607412112176"/>
+<node TEXT="移居境外" ID="ID_392659855" CREATED="1607412112612" MODIFIED="1607412115248"/>
+<node TEXT="享受基本养老保险待遇" ID="ID_1360290691" CREATED="1607412115468" MODIFIED="1607412123699"/>
+<node TEXT="无正当理由不接收当地政府制定部门或机构介绍的工作或培训" ID="ID_341179077" CREATED="1607412126854" MODIFIED="1607412164967"/>
+</node>
+<node TEXT="技能提升补贴" POSITION="left" ID="ID_380678061" CREATED="1607412258223" MODIFIED="1607412259019">
+<edge COLOR="#7c007c"/>
+<node TEXT="依法参加失业保险，累计缴纳失业保险费36个月（含36个月）以上的" ID="ID_806997755" CREATED="1607412267232" MODIFIED="1607412267820"/>
+<node TEXT="自2017年1月1日起取得初级（五级）、中级（四级）、高级（三级）职业资格证书或职业技能等级证书的" ID="ID_1067101022" CREATED="1607412268488" MODIFIED="1607412275918"/>
+<node TEXT="职工取得初级（五级）职业资格证书或职业技能等级证书：不超过1000元" ID="ID_645382899" CREATED="1607412285522" MODIFIED="1607412286246"/>
+<node TEXT="职工取得中级（四级）职业资格证书或职业技能等级证书：不超过1500元" ID="ID_681088889" CREATED="1607412289955" MODIFIED="1607412290591"/>
+<node TEXT="职工取得高级（三级）职业资格证书或职业技能等级证书：不超过2000元" ID="ID_776407139" CREATED="1607412295404" MODIFIED="1607412298597"/>
+</node>
+<node TEXT="网上申领平台" POSITION="left" ID="ID_355666580" CREATED="1607405632215" MODIFIED="1607405639867">
+<edge COLOR="#7c0000"/>
+<node TEXT="长沙市12333公共服务平台" ID="ID_1149331297" CREATED="1607405678356" MODIFIED="1607412424622" LINK="http://www.cs12333.com/revision/"/>
+<node TEXT="科普：失业保险，你了解多少？" ID="ID_626742823" CREATED="1607412306837" MODIFIED="1607412390056" LINK="https://mp.weixin.qq.com/s?__biz=MzU5OTg3NjI1MQ==&amp;mid=2247488102&amp;idx=1&amp;sn=526f1ccff9067845844f7e69295ce6e0&amp;chksm=feaf6592c9d8ec84366f129e547ccfb4ca72322c41c54ef3f361ca64b60e0761cc86687b9d60&amp;token=298968890&amp;lang=zh_CN#rd"/>
+<node TEXT="千万不要领失业金，失业金领取后果严重？真相来了 - 知乎" ID="ID_1398694823" CREATED="1607412938465" MODIFIED="1607412953220" LINK="https://zhuanlan.zhihu.com/p/107790229"/>
+</node>
+</node>
+</map>

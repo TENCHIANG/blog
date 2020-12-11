@@ -1163,3 +1163,14 @@ person.name = " YY ";
 console.log(`[${person.name}]`); // [YY]
 ```
 
+### 解构、余集、打散
+
+* [解构余集打散.mm](解构余集打散.mm)
+
+### 对象协议
+
+* [对象协议.mm](对象协议.mm)
+
+### 符号
+
+* [Symbol.mm](Symbol.mm)

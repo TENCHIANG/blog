@@ -821,6 +821,7 @@ arr.sort((a, b) => a - b); // 升序
   * 闭包可以作为名称空间管理之用
   * 闭包可以很容易的模拟出类的效果
 * 可以把原型和闭包当做是最基本的类和函数（如 Lua）
+* 闭包的缺点：浪费内存，闭包引用的变量不会被 GC
 
 ```js
 function Counter() {
@@ -1313,8 +1314,9 @@ iter.name; // '[Symbol.iterator]'
 
 ### Symbol.toPrimitive
 
-* 运算过程若须从对象上取得基本类型，可用 valueOf 方法
-* ES6 用 Symbol.toPrimitive 符号代替，**优先**于 valueOf
+* 运算过程若须从对象上取得基本类型
+* ES6 用 Symbol.toPrimitive 符号代替，默认是没有的，valueOf、toString 继承自类型的原型
+* 优先级 get > Symbol.toPrimitive > valueOf > toString
 * 可以使用 `.`、`in` 运算符检测对象的符号属性名，**但 `for-in`、`Object.keys` 不行**
 
 ```js

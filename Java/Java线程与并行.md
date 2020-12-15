@@ -1202,3 +1202,9 @@ System.out.printf("largest pool size: %d%n", ((ThreadPoolExecutor) executor).get
 ```
 
 * [高并发编程-ExecutorCompletionService深入解析 - 云+社区 - 腾讯云](https://cloud.tencent.com/developer/article/1444259)
+
+### ScheduledThreadPoolExecutor
+
+* 为 ExecutorService 的子接口
+* schedule()：指定任务多久后执行一次，返回 ScheduledFuture（Future 子接口）
+* scheduledWithFixedDelay

@@ -840,12 +840,16 @@ counter2(); // 11
 * function 关键字后面加个 `*` 符号，就是生成器**函数**，返回生成器**对象**（不管有没有 yield）
   * 生成器函数不能表示为箭头函数，但是匿名函数可以，因为要有 `function*`
 * 生成器里面用 yield 关键字**产生值**，但不会结束函数，只是把**流程控制**权交给调用者
-  * 调用生成器对象的 next 方法，才会返回生成器函数，运行并暂停到 yield 处
+  * 调用生成器对象的 next 方法，才会返回到生成器函数，运行并暂停到 yield 处
   * next 方法返回一个对象 `{ value, done }`，yield 指定 value 的值，done 设置为 false
   * 生成器函数如果执行完，value 为 undefined，done 为 true
 * 生成器对象实现了 Symbol.iterator 方法（返回迭代器），可直接使用 for-of 迭代生成器对象
   * 内部不断调用 next，直到 done 为 true
   * 所以生成器函数的 return 值不会体现在 for-of 里
+* Gnerator 把整个流程**片段化**
+  * next 运行生成器函数，直到 yield 处
+  * yield 右边有值则使用，否则使用 next 传过来的值，否则为 undefined
+  * 并返回值和控制权到调用者
 
 ```js
 function* range(start, end) {
@@ -874,7 +878,7 @@ gg.next(); // { value: undefined, done: true }
 
 ```js
 function* producer(n) {
-    for (let data = 0; data < n; data++) {
+    for (let data = 0; data < n; data++) {;
         console.log("产生了 ", data);
         yield data;
     }
@@ -889,9 +893,9 @@ function clerk(n, p, c) {
     console.log("执行了", n, "次生产与消费");
     p = p(n);
     c = c(n);
-    p.next();
-    c.next(); // 消费者运行至yield处
-    for (const data of p) // 生产者运行至yield处
+    p.next(); // 生产者运行至 yield 处 生产了 0
+    c.next(); // 消费者运行至 yield 处 消费了 undefined
+    for (const data of p)
         c.next(data); // 将值传给消费者
 }
 clerk(5, producer, consumer);

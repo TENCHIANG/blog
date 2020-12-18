@@ -216,6 +216,7 @@ private synchronized static String newName () { // 线程的默认名称
 * 除了新建和终止，其它状态随时都可能改变的
 * **NEW** （新创建）
   * new Thread 实例，但还没调用 start 方法时
+  * NEW 到 TERMINATED 之前，isAlive 都为真，TERMINATED 为假
 * **RUNNABLE**（可运行）
   * 线程实例已调用 start 方法，不代表着能立刻运行，取决有操作系统有没有分配时间片
   * 就算已经在运行，也不代表始终运行，当时间片用完，就会失去运行权，把机会给别的线程
@@ -236,8 +237,10 @@ private synchronized static String newName () { // 线程的默认名称
 * **TERMINATED**（已终止）
   * run 方法返回，线程正常终止
   * 未捕获的异常导致终止，意外终止
-  * 对线程实例调用 stop 方法，通过抛出 ThreadDeath 强行终止，不推荐，可能会损坏数据
-  * 线程一旦新建并启动 start，对其调用 isAlive 都为 true，直到线程终止
+  * stop 方法（Deprecated）
+    * 通过抛出 ThreadDeath 强行终止
+    * 可能会损坏数据
+  * 此时再调用 start，报错 IllegalThreadStateException
 
 ### 线程的挂起恢复和停止
 
@@ -466,15 +469,22 @@ if (g == null) {
   * **同步代码**：同步语句的代码块、同步方法的方法体
   * 只有锁定且锁定完成才能执行同步代码
   * 同步代码**执行完成或意外**结束，都会解除锁定
-* 可重入：一个对象的同步方法，调用一个对象的另一个同步方法，无阻塞，最外层同步方法返回时才释放锁
-  * 可重入是为了递归和避免死锁
-  * 一个线程可以锁多次相同的对象，锁定操作和解锁操作一一对应
 * 互斥：一个线程可以锁多个不同对象，但一个对象只能被一个线程持有锁
 * 任何被不同线程所共享的可变量，都应同步地访问以防止干扰，然而同步需要代价，且有同步之外的方法防止干扰
 * 线程要执行的第一个动作要同步
 * 将线程最后执行的动作与检测是否已终止的动作同步（isAlive、join）
 * 判断线程是否中断要同步：interruptedException、isInterrupted
 * 对字段写入默认值也要同步
+
+#### 可重入同步 Reentrant synchronization
+
+* Java 的 synchronized 提供的是可重入同步
+* 一个对象的同步方法，调用这个对象的另一个同步方法时
+* 线程取得某对象锁，若执行过程中又要取得这个对象的锁时
+* 无阻塞，直接执行
+* 一个线程可以锁多次相同的对象，锁定操作和解锁操作一一对应
+* **最外层**同步方法返回时才释放锁
+* 可重入是为了递归和**避免死锁**
 
 ### 原子操作与内存模型
 
@@ -670,6 +680,7 @@ public class Box { // 线程安全的 存对象
 * 同步只解决了多线程竞争，是不够的的，还需要多线程直接的协调（或互相通信）
 * 每个对象，除了相关的监视器，还有**等待集**（Wait Set），对象最初创建时，等待集为空
 * 等待集的操作：wait notify notifyAll（都是**原子**的，native 的，都应该在**同步**代码中使用）
+* 在等待集的线程，**不参与 CPU 调度**
 
 ```java
 public synchronized void addTask(String s) {
@@ -687,13 +698,13 @@ public synchronized String getTask() {
 
 ### Object.wait()
 
-* 须在同步代码调用 wait 方法，让当前线程一直等待，直到：
-  * 当前对象上调用 notify、notifyAll 方法
-  * 或者 wait 给定的参数超时（无通知）
-  * 该线程调用 interrupt 方法
-  * 线程中断而等待结束，会抛出 InterruptedException
+* 须在同步代码调用 wait 方法，让当前线程一直等待，**直到**：
+  * 被通知：当前对象上调用 notify、notifyAll 方法
+  * 被超时：或者 wait 给定的参数超时（无通知）
+  * 被中断：该线程调用 interrupt 方法
+    * 线程中断而等待结束，会抛出 InterruptedException
   * 也可能会**伪唤醒**（spurious wakeup），所以 wait 一定要放在测试条件的**循环**里
-* wait 会让线程**释放**锁，进入等待集，从 RUNNABLE 进入 WAITING 或 TIMED_WAITING 状态
+* wait 会让线程**释放对象锁**，进入等待集，从 RUNNABLE 进入 WAITING 或 TIMED_WAITING 状态
   * wait()、wait(long millisecs)、wait(long millisecs, int nanosecs)
   * wait() 等价于 wait(0)、wait(0, 0)，等待不会超时
   * 第一个参数为毫秒，第二个为纳秒，取值范围为 0 ~ 99w
@@ -702,7 +713,8 @@ public synchronized String getTask() {
 ### Object.notify() Object.notifyAll()
 
 * 等待中的线程会被通知、等待超时、中断，从等待进入可运行状态，等着被调度，进而竞争锁，再从 wait 方法之后运行
-* notify 会**随机**唤醒一个线程，notifyAll 会唤醒所有等待中的线程
+* notify 从等待集，**随机**唤醒一个线程，进行调度竞争对象锁
+* notifyAll 会唤醒所有等待中的线程
   * 多个线程可能等同一个对象，而条件或各不相同，所以应该使用 notifyAll
   * 如果通知时没有要等待的线程，就会忽略
 
@@ -932,7 +944,7 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
 
 * ReentrantLock 是一种 Lock，可代替 synchronized
 * lock 方法在 try 外，因为可能会失败，只有获取锁了，才会执行后面的代码
-  * 可重入，一个线程可多次获取同一个锁
+  * 可重入，一个线程可多次获取同一个锁，第二次获取无阻塞
 * unlock 方法在 finally 里，防止线程抛出异常无法解锁
 
 ```java
@@ -1205,6 +1217,228 @@ System.out.printf("largest pool size: %d%n", ((ThreadPoolExecutor) executor).get
 
 ### ScheduledThreadPoolExecutor
 
-* 为 ExecutorService 的子接口
-* schedule()：指定任务多久后执行一次，返回 ScheduledFuture（Future 子接口）
-* scheduledWithFixedDelay
+* **ScheduledExecutorService** （ExecutorService 子接口）
+  * schedule 执行一次，返回 ScheduledFuture（Future 子接口）
+  * scheduledWithFixedDelay、scheduleAtFixedRate 重复执行
+    * initialDelay 后，执行一次，然后以 delay 为周期或间隔，TimeUnit 为单位执行
+    * scheduledWithFixedDelay，**上一个结束**才开始 delay 计时
+    * scheduleAtFixedRate ，**上一个开始**就周期计时
+      * 如果某个任务太久超过 delay
+      * 则只能执行完后立即执行下一个任务
+  * 都是上个任务**执行完再执行**下一个任务，前面的**异常不影响**后面的执行
+  * JDK5 前用 java.util 的 Timer 和 TimerTask（JDK.13），但限制颇多
+* 实现类为 **ScheduledThreadPoolExecutor**（ThreadPoolExecutor 子类）
+  * 可调度线程池
+  * Executors
+    * newScheduledThreadPool 设置**足够**数量线程的池，为了不影响排程
+    * newSingleThreadScheduledExecutor 单个线程的池
+
+```java
+import java.util.concurrent.*;
+public class ScheduledExecutorServiceDemo {
+    public static void main(String[] args) {
+        ScheduledExecutorService service
+                = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleWithFixedDelay(
+            () -> {
+                System.out.println(new java.util.Date());
+                try {
+                    Thread.sleep(2000); // 该工作需要2秒
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }, 2000, 1000, TimeUnit.MILLISECONDS);
+    }
+}
+```
+
+### ForkJoinPool
+
+* **ForkJoinTask** 实现 Future
+  * **fork** 分配线程，执行
+    * 若是 RecursiveTask 或 RecursiveAction，调用其 compute
+  * **join** 取结果，还未完成则阻塞
+  * 抽象子类 **RecursiveTask**
+    * cumpute 子任务返回值
+  * 抽象子类 **RecursiveAction**
+    * cumpute 子任务无需返回值
+* **ForkJoinPool** 实现 ExecutorService
+  * 所有任务执行完毕，线程池会**自动关闭**
+* JDK7 新增，解决分而治之（Divide and conquer）
+  * 一个大问题，可分为性质相同的子问题，子问题还可分为更小的子问题
+  * 将子问题分别（或并行）解决，并合并运算结果（看情况），则整个大问题解决
+  * 例如：斐波那契数
+    * 第 N 个数，可分解为第 N - 1 与第 N - 2 两个数的子问题
+    * 直到第 1 个数和第 2 个数，也就是 1
+* **注意**：并行化一般在开始几层，速度以倍数增加，但不能太多（多线程本身代价）
+* **内部静态类**：内部类要想有静态成员，或在父类静态方法中使用，必须为 `static class`
+
+```java
+import java.util.concurrent.*;
+public class ForkJoinTaskDemo {
+    static class Fibonacci extends RecursiveTask<Long> { // 内部静态类
+        final long n;
+        public Fibonacci(long n) { this.n = n; }
+        public Long compute() {
+            if (n <= 20) return solve(n); // 20 以下不分解
+            ForkJoinTask<Long> subTask = new Fibonacci(n - 1).fork();
+            return new Fibonacci(n - 2).compute() + subTask.join();
+        }
+        static long solve(long n) {
+            if (n <= 1) return n;
+            return solve(n - 1) + solve(n - 2);
+        }
+    }
+    public static void main(String[] args) {
+        Fibonacci fib = new Fibonacci(45);
+        ForkJoinPool pool = new ForkJoinPool();
+        System.out.println(pool.invoke(fib));
+    }
+}
+```
+
+#### Work Stealing
+
+* ForkJoinPool 实现了 **Work-stealing 工作窃取** 算法
+* 其线程如果已完成任务，会寻找并执行其它子任务，**不会闲下来**，始终忙碌
+* ForkJoinPool 会根据处理器数量创建线程
+  * `Runtime.getRuntime().availableProcessors()` 获取可用处理器数量
+  * 就算指定超过的线程数，也没用
+  * 所以适合**计算密集型**任务
+  * 不适合线程容易阻塞的任务，如 I/O 密集型任务
+
+### 并行 Collection
+
+#### java.util.Collections
+
+* Collections.synchronizedList
+  * 返回的实例，保证 List 操作的线程安全
+  * 但不保证 Iterator 操作的线程安全
+  * for 循环使用 Collection 内部也是用的 Iterator
+
+```java
+import java.util.*;
+public class synchronizedListDemo {
+    public static void main(String[] args) {
+        // List不指定类型默认为 Object
+        // Arrays.asList 传的是 new Object[] {} 数组
+        List<Integer> list = Collections.synchronizedList(Arrays.asList(1, 2, 3));
+        synchronized (list) {
+            //Iterator iterator = list.iterator();
+            //while (iterator.hasNext()) System.out.println(iterator.next());
+            for (Integer i : list) System.out.println(i);
+        }
+    }
+}
+```
+
+#### java.util.concurrent
+
+* **CopyOnWriteArrayList** 实现了 List
+  * add、set 写入时，生成一个副本进行写入，写入完成再替换
+  * 写入时效率不高，迭代器操作时效率可以
+* **CopyOnWriteArraySet** 实现了 Set（AbstractSet）
+  * 内部用 CopyOnWriteArrayList 完成 Set 各种操作
+* **BlockingQueue** 为 Queue 子接口
+  * 新增 put、take 等方法
+  * 执行 put 时，队列**满则阻塞**
+  * 执行 take 时，队列**空则阻塞**
+  * **ArrayBlockingQueue** 为实现类之一
+
+```java
+import java.util.concurrent.*;
+public class BlockingQueueDemo {
+    static class Producer implements Runnable {
+        final private BlockingQueue<Integer> productQueue;
+        public Producer(BlockingQueue<Integer> productQueue) {
+            this.productQueue = productQueue;
+        }
+        public void run() {
+            System.out.println("生产者开始生产");
+            for (int p = 1; p <= 10; p++)
+                try {
+                    productQueue.put(p);
+                    System.out.printf("生产整数 %d%n", p);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+        }
+    }
+    static class Consumer implements Runnable {
+        final private BlockingQueue<Integer> productQueue;
+        public Consumer(BlockingQueue<Integer> productQueue) {
+            this.productQueue = productQueue;
+        }
+        public void run() {
+            System.out.println("消费者开始消费");
+            for (int i = 1; i <= 10; i++)
+                try {
+                    int p = productQueue.take();
+                    System.out.printf("消费整数 %d%n", p);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+        }
+    }
+    public static void main(String[] args) {
+        BlockingQueue<Integer> queue = new ArrayBlockingQueue<>(1); // 容量为 1
+        new Thread(new Producer(queue)).start();
+        new Thread(new Consumer(queue)).start();
+    }
+}
+```
+
+* **ConcurrentMap** 为 Map  子接口
+  * 定义了 putIfAbsent、remove、replace 等 **Atomic 原子操作**
+  * JDK8 时为 Map 接口的 default 方法 ：[【JDK8】Map 便利的預設方法](https://openhome.cc/Gossip/CodeData/JDK8/Map.html)
+  * **ConcurrentHashMap** 为其实现类
+  * **ConcurrentNavigableMap** 为其子接口
+    * **ConcurrentSkipListMap** 为其实现类
+    * 可视为支持并行的 **TreeMap**
+* **putIfAbsent** 不在里面才 put，返回对应元素
+
+```java
+default V putIfAbsent(K key, V value) {
+    V v = get(key); // 比起containsKey少一个方法调用
+    return (v == null) ? put(key, value) : v;
+}
+```
+
+* **remove** 指定键元素存在，且等于指定元素，才移除
+
+```java
+default boolean remove(Object key, Object value) {
+    Object curValue = get(key);
+    if (!Objects.equals(curValue, value) ||
+        (curValue == null && !containsKey(key))) {
+        return false;
+    }
+    remove(key);
+    return true;
+}
+```
+
+* **replace** 有两个版本
+  * 指定键元素存在，且等于指定元素，才替换成新元素
+  * 指定键元素存在，就替换成新元素
+
+```java
+default boolean replace(K key, V oldValue, V newValue) {
+    Object curValue = get(key);
+    if (!Objects.equals(curValue, oldValue) ||
+        (curValue == null && !containsKey(key))) {
+        return false;
+    }
+    put(key, newValue);
+    return true;
+}
+
+default V replace(K key, V value) {
+    V curValue;
+    if (((curValue = get(key)) != null) || containsKey(key)) {
+        curValue = put(key, value);
+    }
+    return curValue;
+}
+```
+

@@ -321,6 +321,12 @@ powercfg -h off
 * [Markdown数学符号&公式_诗蕊的专栏-CSDN博客](https://blog.csdn.net/katherine_hsr/article/details/79179622/)
 * [有道云笔记中，在Markdown下写公式时，如何让几行公式左对齐，而不是默认的居中对齐？ - 知乎](https://www.zhihu.com/question/60028634)
 
+### git markdown 标题
+
+* markdown 标题，在 git 作为锚点，实现目录跳转，怎么在 URL 表示
+* 空格转为 `-`，其它符号移除
+* 所以改标题为 `#git-markdown-标题`
+
 ### 快捷打开蓝牙服务
 
 * 只要连接过蓝牙设备，但是打开蓝牙设备的服务很繁琐，其本质只是一条命令

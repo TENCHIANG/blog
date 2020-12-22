@@ -496,17 +496,22 @@ NaN !== NaN // true
 #### Falsy Family
 
 * 除了 `0`、`NaN`、`''`、`null`、`undefined`、`false` 是假的，其它都是真的
+* 检测对象属性存在与否，如果为 undefined 就当不存在
+  * 用 typeof，或 void 表达式检测即可
+  * 不要直接用 undefined，非关键字可以做变量被覆盖
+* 如果值可能是 undefined，就用 in 关键字
 
 ```js
 function has(obj, key) { return typeof obj[key] !== "undefined"; }
-var obj = { x: undefined, y: 0 };
-has(obj, "x"); // false
-has(obj, "y"); // true
-has(obj, "z"); // false
-```
+var o = { x: undefined, y: 0 };
+has(o, "x"); // false
+has(o, "y"); // true
+has(o, "z"); // false
 
-* 属性不存在或为 undefined 返回 false，用 typeof 是避免 undefined 被覆盖
-* 属性为 `0`、`NaN`、`''`、`null`、`false` 也返回 true
+"x" in o; // true
+"y" in o; // true
+"z" in o; // false
+```
 
 ### 位运算
 

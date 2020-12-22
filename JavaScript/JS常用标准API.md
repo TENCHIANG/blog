@@ -477,4 +477,338 @@ age 11
 ### 正则表达式 Regular Expression
 
 * 1956，数学家 Stephen Kleene
+* 正则字面量：**/regex/**，会建立 RegExp 实例
+  * 也可以用字符串 new RegExp
+  * 但是字符串需要转义（Escape）
+* 不同语言实现的正则表达式都有差别，参考：[語言實作：Regex](https://openhome.cc/Gossip/Regex/)
 
+#### 字面字符 元字符
+
+* 正则表达式，包括两种字符
+* **Literal**、字面字符、字面值：按照字面意义匹配（字母和数字）
+* **Metacharacter**、元字符：有特殊意义
+  * 反斜杠开头的字符（转义字符）
+  * 大部分符号
+  * 要匹配元字符，前面加反斜杠转义，字面值不影响
+* 常用字符
+  * 字母、数字
+  * \\\ ---> 匹配 \\
+  * \xhh ---> 1 字节 16 进制，指定的字符
+  * \uhhhh ---> 2 字节 16 进制，指定的字符
+  * \n ---> \u00A 换行
+  * \v ---> \u00B 垂直定位
+  * \f ---> \u00C 换页
+  * \r ---> \u00D 返回
+  * \b ---> \u008 退格
+  * \t ---> \u009 制表
+* 如 XY，表示 X 之后 跟着 Y，才匹配
+* X|Y，表示 X 或 Y
+* [XYZ]，表示 X 或 Y 或 Z，用字符类表示多个或
+
+#### 字符类
+
+* 把字符用方括号，打包成字符类（Character Class）
+  * 字符类中，任意一个字符匹配，则整个字符类匹配
+* [abc]：a 或 b 或 c
+* [^a-z]：除了小写字母
+* [a-zA-Z]：小写字母，或大写字母
+* [a-d[m-p]]：a ~ d，或 m ~ p（并集），等价于 [a-dm-p]
+* [a-z&&[def]]：小写字母中，d 或 e 或 f（交集），等价于 [def]
+* [a-z&&[\^bc]]：小写字母中，除了 b 和 c（差集），等价于[ad-z]
+
+#### 预定字符类
+
+* 字符类缩写、预定字符类（Predefined Character Class），本身就包含方括号
+* 点：任意字符
+* \d：数字，[0-9]
+* \D：非数字，[\^0-9]
+* \s：空字符
+  * \u0020 半角空白
+  * \f\n\r\t\v\u00a0\u1680\u180e
+  * \u2000-\u200a
+  * \u2028\u2029\u202f\u205f\u3000（全角空白）\ufeff
+* \S：非空字符，[\^\s]
+* \w：[a-zA-Z0-9]
+* \W：[\^a-zA-Z0-9]
+
+#### 贪婪量词
+
+* 贪婪量词（Greedy Quantifier）：**只有最长的才匹配**
+* X?：一次或零次
+* X*：多次一次或零次
+* X+：起码一次
+* X{n}：出现 n 次，[n, n]
+* X{n,}：起码出现 n 次，[n, 正无穷)
+* X{n,m}：起码出现 n 次，但不要超过 m 次，[n, m)
+
+#### 非贪婪量词
+
+* 逐步量词（Reluctant Quantifier）、懒惰量词、非贪婪（non-greedy）量词：**最短的也匹配**
+* 在贪婪量词后面加问号，即可变为非贪婪
+* match 默认第一次匹配就返回
+  * 在正则字面量后面加 g，表示全局匹配
+  * 此时 match 返回数组，包含所有匹配
+
+```js
+var s = "xfooxxxxxxfoo";
+s.match(/.*foo/g); // [ 'xfooxxxxxxfoo' ]
+s.match(/.*?foo/g); // [ 'xfoo', 'xxxxxxfoo' ]
+```
+
+#### 边界匹配
+
+* 定位点、锚点（Anchor），用于**边界匹配**
+* \^ 行头
+* $ 行尾
+* \b 单个字的边界
+* \B 非单字边界
+* \A 输入开头
+* \G 前一个符合项目结尾
+* \z 输入结尾
+* \Z 非最后终端机（final terminator）的输入结尾
+
+```js
+var s = "Justin dog Monica doggie Irene";
+s.split(/dog/); // [ 'Justin ', ' Monica ', 'gie Irene' ] 把doggie也给切了
+s.split(/\bdog\b/); // [ 'Justin ', ' Monica doggie Irene' ] 把dog作为一个字切
+```
+
+#### 分组与捕获
+
+* 用括号，给正则表达式分组
+  * 作为子正则表达式，还可搭配量词使用
+  * 复杂的，或嵌套的，分组讨论
+* 如**电子邮件格式**
+  * 用户名，开头须是英文字母，之后可出现数字，(^[a-zA-Z]+\d*)
+  * @ 分隔符
+  * 域名，可以多层，须是英文字母或数字，(\\w+\\.)+
+  * com 结尾
+  * 合并：`/^([a-zA-Z]+\d*)@(\w+\.)+com/`
+* 匹配了分组的字符串，会被**捕获**（Capture）
+* 后面可以**回溯引用**（Back reference）
+  * 为了回头引用，要知道**分组计数**，以**左括号**计数
+    * `((A)(B(C)))`，有 4 个分组
+    * `((A)(B(C)))`、`A`、`(B(C))`、`(C)`
+  * 回溯引用时，用**反斜杠**，接上分组序号（从 1 开始）
+    * \d\d 表示两个数字
+    * (\d\d)\1 表示四个数字，前两个数字等于后两个数字，如 1212
+    * 匹配单引号或双引号里的内容
+      * `["'][^"']*["']`，但没规定两边引号必须一致
+      * `(["'])[^"']*\1`，分组解决
+
+#### 扩展符号
+
+* `(?...)`，扩展符号（Extension Notation），对分组的匹配结果，进行二次处理或筛选
+  * 用扩展符号的分组，都**不会捕捉**其匹配结果
+* `(?:...)`，不捕获该分组，避免过多分组
+* `(?<name>)`，分组别名，用反斜杠 k 尖括号引用，`\k<name>`，ES9
+* `(?=...)`，Lookahead，只要头指定尾
+* `(?!...)`，Negative Lookahead，只要头指定逆尾
+* `(?<=...)`，Lookbehind，只要尾指定头
+* `(?<!...)`，Negative Lookbehind，只要尾指定逆头
+* 括号不要有空格
+
+```js
+var s = "Justin Lin, Monica Huang, Irene Lin";
+s.match(/\w+/g); // [ 'Justin', 'Lin', 'Monica', 'Huang', 'Irene', 'Lin' ]
+
+s.match(/\w+ (Lin)/g); // [ 'Justin Lin', 'Irene Lin' ] 指定尾
+s.match(/\w+ (?=Lin)/g); // [ 'Justin ', 'Irene ' ] 指定尾不要尾
+s.match(/\w+ (?!Lin)/g); // 指定逆尾不要尾
+
+var s = "data-h1,cust-address,data-pre";
+s.match(/(data)-\w+/g); // [ 'data-h1', 'data-pre' ] 指定头
+s.match(/(?<=data)-\w+/g); // [ '-h1', '-pre' ] 指定头不要头
+s.match(/(?<!data)-\w+/g); // [ '-address' ] 指定逆头不要头
+```
+
+* [正则表达式的先行断言(lookahead)和后行断言(lookbehind) - 庄昌宽 - 博客园](https://www.cnblogs.com/sdgjytu/p/3669364.html)
+
+#### 正则修饰符
+
+* 为 JS 额外提供的功能
+  * i 忽略大小写
+  * g 全局匹配
+  * m 多行文字
+  * u 开启 Unicode 模式（ES6）
+  * y 粘性匹配（Sticky Match）（ES6）
+    * 以 RegExp 实例，lastIndex 属性为索引
+    * 从索引处开始匹配
+  * s 点包括换行符（ES9）
+* 可同时指定多个 flags
+* 可用 RegExp 实例的属性，判断有没有立相应的 flag
+  * 返回字符串：flags
+  * 返回布尔值：global、ignoreCase、multiline、sticky、unicode、dotAll
+
+```js
+var re = /.*?foo/ig;
+re.flags; // 'gi'
+re.global; // true
+re.ignoreCase; // true
+```
+
+| 简写 | 实例属性（只读） | 功能                     |
+| ---- | ---------------- | ------------------------ |
+| i    | ignoreCase       | 忽略大小写               |
+| g    | global           | 全局匹配                 |
+| m    | multiline        | 支持多行                 |
+| 无   | flags            | 启用的修饰符简写，字母序 |
+| u    | unicode          | Unicode 模式             |
+| s    | dotAll           | 点代表任意字符           |
+| y    | sticky           | 粘性匹配（Sticky Match） |
+
+#### search replace
+
+* search 找到第一个符合的，就返回索引，否则 -1
+* replace 默认替换第一个，加 g 替换所有
+  * 参数一：正则实例
+  * 参数二：替换字符串
+    * 若分组则可用
+    * $n 表示第 n 个分组的捕获结果
+    * $& 表示整个匹配的字符串
+    * $\<name> 分组的别名（ES9）
+  * 参数二也可以是回调（匹配才执行）
+    * 参数一：匹配的字符串
+    * 后面的参数就是捕获字符串
+      * 未捕获为空字符串
+      * 未分组则没有这个参数
+    * 倒数参数二：匹配的字符串索引
+    * 倒数参数一：原字符串
+    * 如果对分组取别名，还有个参数：空原型对象
+      * 装的是别名，捕获串字符对，无则空字符串
+    * 返回替换的字符串，什么都不返回则返回 `'undefined'`
+
+```js
+var s = "xfooxxxxxxfoo";
+s.search(/foo$/); // 10
+s.replace(/.*?foo/, "Orz"); // 'Orzxxxxxxfoo'
+s.replace(/.*?foo/g, "Orz"); // 'OrzOrz'
+
+var mail = "woshidengge@foxmail.com";
+var mailRe = /^(?<user>[a-zA-Z]+\d*)@(?<domain>\w+\.)+com/;
+mail.replace(mailRe, "$<user>@$<domain>org"); // 'woshidengge@foxmail.org'
+
+mail.replace(mailRe, (...args) => console.log(args));
+/*
+[
+  'woshidengge@foxmail.com', 匹配的字符串
+  'woshidengge', 捕获1
+  'foxmail.', 捕获2
+  0, 匹配的字符串的索引
+  'woshidengge@foxmail.com', 原字符串
+  [Object: null prototype] { user: 'woshidengge', domain: 'foxmail.' } 别名映射
+]
+'undefined' 返回undefined转字符串
+*/
+```
+
+#### match matchAll
+
+* 未指定 global 时，匹配返回数组，不匹配返回 null
+  * 数组是对象混着数组
+
+```js
+var s = "0970-666888";
+s.match(/(?<first>\d{4})-(?<last>\d{6})/);
+/*
+[
+  '0970-666888',  匹配的字符串
+  '0970', 捕获1
+  '666888', 捕获1
+  index: 0, 匹配的字符串的索引
+  input: '0970-666888', 原字符串
+  groups: [Object: null prototype] { first: '0970', last: '666888' } 别名映射
+]
+*/
+```
+
+#### 正则符号协议
+
+* String 实例的 split、search、replace、match、matchAll 方法
+* 本质上是调用 RegExp 的，只不过以 Symbol 的形式，参数反过来而已
+* 可以继承 RegExp，重写相关方法，可以添加但不要修改，[RegExp 的 Symbol 協定](https://openhome.cc/Gossip/Regex/RegExpSymbol.html)
+
+```js
+var s = "aaa1bbb2ccc";
+var r = /\d/;
+s.split(r); // [ 'aaa', 'bbb', 'ccc' ]
+r[Symbol.split](s); // 同理
+
+class Xre extends RegExp {
+    [Symbol.match](s) {
+        if (!this.global) return super[Symbol.match](s);
+        let res = [];
+        res.matchedAll = [];
+        let matched;
+        while (matched = this.exec(s)) {
+            res.push(matched[0]); // 匹配的字符串
+            res.matchedAll.push(matched); // 匹配的详细结果
+        }
+        return res.length ? res : null;
+    }
+}
+var r = new Xre(/(\d{4})-(\d{6})/g);
+var s = "0970-666888 0971-168168";
+console.log(s.match(r));
+```
+
+#### Unicode 模式
+
+* u，unicode
+* 为了支持 \u{}，也就是大于两字节的字符
+  * 否则 \u{} 做正则，被当成多个 u
+  * 大于两字节的，只能做两个字符处理
+
+```js
+/\uD834\uDD1E/.test("\u{1D11E}"); // true
+/\u{1D11E}/u.test("\u{1D11E}"); // true
+```
+
+* 反过来，Unicode 模式，以码点为单位，找不到**半边字**
+
+```js
+/\uD834/.test("\u{1D11E}"); // true 非unicode模式一半的字也找得到
+/\uD834/u.test("\u{1D11E}"); // false unicode模式以码点为单位
+```
+
+* `\S`，`\W`，`.` 也能正确处理大、于两字节的字符了
+
+```js
+var s = "\u{1D11E}";
+/^\S$/u.test(s);
+/^\W$/u.test(s);
+/^.$/u.test(s);
+// 当然 无^$ 不加u 也能匹配，因为没限制位置了
+```
+
+#### Unicode Category Property
+
+* 每个 Unicode 字符都属于某一分类（Category）
+* 如一般分类（General Category Property）
+* 有 Letter、Uppercase Letter，缩写为 L、Lu
+* Letter 分类，都是字母
+  * 英文字母，大小写，全角半角
+  * 希腊字母，α、β、γ 等
+* [UTS #18: Unicode Regular Expressions](https://www.unicode.org/reports/tr18/#General_Category_Property)
+
+#### Unicode Script Property
+
+* 则是以语言文字，给字符分类
+* Han，表示汉字，包括繁体、简体、日韩、越南的全部汉字
+* Greek，希腊
+* [UAX #24: Unicode Script Property](https://www.unicode.org/reports/tr24/)
+
+#### Unicode Property Escape
+
+* ES9 开始，也就是 **Unicde 属性转义**（字符类）
+  * 打开 Unicode 模式
+  * 用 `\p{}` 可以很方便的表示某一类字符
+  * `\P{}` 自然就是某一类字符之外的字符
+* 格式：\p{属性名=属性值}
+  * 某些属性可以只写属性名或属性值：ASCII、Alphabetic、Lowercase、Emoji
+  * 空格用下划线替代，中划线省略（右边小写）
+* `\p{General_Category=Letter}`、`\p{gc=Letter}`、`\p{Letter}`、`\p{L}`
+* 都表示一般分类里面的字母分类
+* 还有其它的常见分类：Uppercase_Letter（Lu）、Lowercase_Letter（Ll）、Number（包括罗马数字）、Decimal_Number
+* `\p{Script=Greek}`、`\p{Scropt_Extensions=Greek}`、`\p{sc=Greek}`、`\p{scx=Han}`
+* ECMAScript 规范的，UnicodeMatchProperty、UnicodeMatchPropertyValue

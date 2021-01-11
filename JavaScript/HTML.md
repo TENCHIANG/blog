@@ -137,7 +137,7 @@
 
 ### 注释
 
-* 注释以 \<!-- 开头 --> 结尾，支持多行
+* 注释以 `<!--` 开头 `-->` 结尾，支持多行
 
 ## URL 简介
 
@@ -228,3 +228,314 @@
 * 有两个属性 href 和 target，如果写了 \<base>，必须指定一个属性
 * href 相对 URL 的前缀
 * target 如何打开相对 URL
+
+## 网页元素的属性
+
+元素属性（attribute），以键值对的形式定制元素的行为；不区分大小写，键和值之间用等号 `=` 连接，值一般加双引号；有的属性没有值，相当于布尔值开关，只要属性名即可。
+
+### 全局属性
+
+就是所有元素都可以用的属性。
+
+#### id
+
+元素在网页内的唯一标识符，在 URL 最后，id 值前面加上 `#`，可以作为锚点，可以跳转到相应位置。
+
+如果 id 值包含连接符 `-`，URL 不会做特殊处理。
+
+#### class
+
+对元素分类，表示属于同一个组件；一个元素可以同时具有多个 class 属性值，用空格分隔。
+
+```js
+document.body.firstChild.className; // 与元素的 class 属性值一样
+document.body.firstChild.classList; // DOMTokenList 数组
+```
+
+#### title
+
+元素的附加说明，鼠标悬浮其上时，会显示其属性值。
+
+#### tableindex
+
+网页也可用键盘进行操作，如允许 Tab 键遍历网页元素：元素可以通过 Tab 获得焦点，被称为**焦点元素**或当前元素；可以通过键盘对焦点元素进行操作，如对焦点元素进行回车，就是访问链接或者输入文字。
+
+`tableindex` 属性决定了 Tab 的顺序，属性值是一个整数值
+
+* 负整数：通常是 `-1`，该元素不参与 Tab，但是可以也获得焦点，JS 的`focus`方法
+* 零：参与 Tab，但顺序由浏览器决定，通常按源码顺序
+* 正整数：参与 Tab，若多个元素 `tableindex` 相同，则按源码顺序
+
+设置为零是有意义的，元素若没有设置 `tableindex`，默认能 Tab 遍历的只有链接、输入框等。
+
+#### accessKey
+
+属性值需是单个可打印字符，只有配合功能键才能获取其焦点
+
+* Windows、Linux：`Alt`
+* Mac：`Ctrl + Alt`
+
+注意优先级**低于**浏览器级别快捷键，若有冲突则不会有效。
+
+#### style
+
+元素 CSS 内联样式，语句之间用分号 `;` 分隔。
+
+#### hidden
+
+布尔属性，无元素值，表示该元素不在页面上渲染；但优先级**低于** CSS 的可见性。
+
+#### lang dir
+
+`lang` 指定元素使用的语言，须符合 BCP47 标准：
+
+* zh：中文
+* zh-Hans：简体中文
+* zh-hant：繁体中文
+* en：英语
+* en-US：美国英语
+* en-GB：英国英语
+
+`dir` 指定改元素的文字内容阅读方向：
+
+* ltr：从左到右，如汉语、英语
+* rtl：从右到左，如阿拉伯语、波斯语、希伯来语
+* auto：浏览器决定
+
+#### contenteditable
+
+元素的 textContent 是否可编辑，默认不可编辑，非布尔属性：
+
+* true、空字符串：内容可以编辑
+* false：不可编辑
+
+JS 中，该属性名为 contentEditable。
+
+```html
+<p contenteditable="true">鼠标点击，该文字可以修改</p>
+```
+
+对于开关类型的属性，加属性值便于 JS，不加便于 HTML。
+
+网页元素属性值，多个单词则直接或以连接符 `-` 连接，在 JS 则去掉符号，以小驼峰表示。
+
+spellcheck 不是例外，本身只是一个单词而已。
+
+#### spellcheck
+
+是否打开拼写检查，默认打开：
+
+* true：打开
+* false：关闭
+
+只有在拼写检查已打开，且可编辑时，错误的单词才会被提示
+
+```html
+<p contenteditable="true" spellcheck="true">separate 容易写错成 seperate</p>
+```
+
+#### data-
+
+元素的自定义附加数据，也叫数据集（dataset），方便 CSS、JS 获取。
+
+JS 通过元素的 dataset 属性访问，为一个 DOMStringMap 对象，其中的附加数据，其属性名去掉 `data-` 前缀、连接符变小驼峰。
+
+CSS 则通过属性选择器和 attr 获取，本质上是访问网页元素的属性。
+
+```html
+<a href="#" class="tooltip" data-tip="tip">链接</a>
+<div data-role-name="mobile">Mobile only content</div>
+<style>
+    .tooltip { display: inline-block; }
+    .tooltip:after { content: attr(data-tip); }
+    div[data-role-id="mobile"] { display: none; }
+</style>
+<script>
+    document.querySelector("body > div").dataset.roleName;
+</script>
+```
+
+参考：[jQuery.data() 的实现方式 - 裴小星的博客 - ITeye博客](https://www.iteye.com/blog/xxing22657-yahoo-com-cn-1042440)
+
+#### 事件处理属性
+
+event handler，用来响应用户的动作，属性名一般以 `on-` 开头，属性值都是 JS 代码：
+
+> onabort, onautocomplete, onautocompleteerror, onblur, oncancel, oncanplay, oncanplaythrough, onchange, onclick, onclose, oncontextmenu, oncuechange, ondblclick, ondrag, ondragend, ondragenter, ondragexit, ondragleave, ondragover, ondragstart, ondrop, ondurationchange, onemptied, onended, onerror, onfocus, oninput, oninvalid, onkeydown, onkeypress, onkeyup, onload, onloadeddata, onloadedmetadata, onloadstart, onmousedown, onmouseenter, onmouseleave, onmousemove, onmouseout, onmouseover, onmouseup, onmousewheel, onpause, onplay, onplaying, onprogress, onratechange, onreset, onresize, onscroll, onseeked, onseeking, onselect, onshow, onsort, onstalled, onsubmit, onsuspend, ontimeupdate, ontoggle, onvolumechange, onwaiting
+
+## 字符编码
+
+通过网页的响应头：
+
+```
+Content-Type: text/html; charset=UTF-8
+```
+
+通过网页的 `<meta>` 标签：
+
+```html
+<meta charset="UTF-8">
+```
+
+### 码点
+
+code point：每个字符的数字表示；因为不是所有字符都是可打印的：
+
+* 控制字符：如换行、回车
+* 有特殊意义的：如大于小于号，HTML 中用来包括标签
+* 没有一种输入法，可以输入所有 Unicode 字符
+* 网页不允许混合多种字符编码
+
+HTML 使用码点：`&#` 开头的十进制，或 `&#x` 开头的十六进制；注意码点只能表示**文本内容**，不能表示标签会被当成文本内容，所以码点也有转义的效果。
+
+```html
+<p>hello</p> <!-- 等同于 -->
+<p>&#104;&#101;&#108;&#108;&#111;</p>
+<p>&#x68;&#x65;&#x6c;&#x6c;&#x6f;</p>
+```
+
+在 HTML 文本内容中，码点也叫实体编号，实体也叫实体名称，都比直接打字符强（如空格）。
+
+不管是数字表示还是实体表示，都可以表示正常情况无法输入的字符，逃脱（escape）了浏览器的限制，也叫转义。
+
+### 字符实体
+
+entity：除了码点用数字表示字符，HTML 还可用 `&` 开头 `;` 结尾的若干字符，表示一个字符，相当于为字符取了别名：
+
+* 连续空格：`&nbsp;`、`<` `&lt;`、`>` `&gt;`、`"` `&quot;`、`'` `&apos;`、`&` `&amp;`、`©` `&copy;`、`®` `&reg;`
+* `#` `&num;`、`§` `&sect;`、`¥` `&yen;`、`$` `&dollar;`、`£` `&pound;`、`¢` `&cent;`、`%` `&percnt;`、`*` `&ast;`
+* `@` `&commat;`、`^` `&Hat;`、`±` `&plusmn;`
+
+参考：[Character Entity Reference Chart](https://dev.w3.org/html5/html-author/charref)、[HTML 字符实体](www.3wschool.com.cn/html/html_entities.htm)
+
+## 网页的语义结构
+
+每个 HTML 标签都是有语义（semantic）的，要根据其语义用，不要随便用，这样可维护性才高；所谓符合语义即：在恰当的位置使用恰当的标签。
+
+```html
+<body>
+    <header> <!-- 页眉 -->
+        <h1>公司名称</h1>
+        <ul>
+            <li><a href="/home">首页</a></li>
+            <li><a href="/about">关于</a></li>
+            <li><a href="/contact">联系</a></li>
+        </ul>
+        <form target="/search">
+            <input name"q" type="search" />
+            <input type="submit" />
+        </form>
+    </header>
+    <main> <!-- 主体 -->
+        <article>
+            <header>
+                <h1>文章标题</h1>
+                <p>张三，发表于2010年1月1日</p>
+                <aside>
+                	<p>本段是文章的重点。</p>
+                </aside>
+            </header>
+            <footer>
+                <p>© 禁止转载</p>
+            </footer>
+        </article>
+    </main>
+    <aside>侧边栏</aside>
+    <footer> <!-- 页尾 -->
+    	<p>&copy; 2020 XXX 公司</p>
+    </footer>
+</body>
+```
+
+#### header
+
+可用于多个场景，所以网页可以有多个 header 标签，但是一个具体场景只能有一个，如网页只能有一个页眉；同时 header 标签里也不能直接包含 header 或 footer 标签。
+
+* 网页的头部（页眉）：可放网站导航和搜索栏
+* 文章的头部：放文章标题、作者
+* 区块的头部
+
+#### footer
+
+也可用于多个场景，但是内部不能放 footer、header，与 header 类似
+
+* 网页尾部（页尾）：版权信息
+* 文章尾部
+* 章节尾部
+
+#### main
+
+表示页眉的主体，只能有一个；且是顶层标签，不能放在 header、footer、article、aside、nav 等标签中。
+
+此外搜索栏等功能性区块不要放页面主体，除非当前就是搜索页面。
+
+#### article
+
+表示页面里面一段完整的内容，具有独立的意义，如一篇文章，一个页面可有多个。
+
+#### aside
+
+与网页或文章间接相关的部分：
+
+* 侧边栏（不一定在侧边）
+* 文章级别的 aside：评论、注释
+
+#### section
+
+一个含有主体的独立部分，如文章的章节、段落，一般不能只有一个；也适合表示幻灯片：一个 section 一页幻灯片；一般 section 都有标题（h1 ~ h6），一个 article 可以包括多个 section 反之亦然。
+
+```html
+<article>
+	<h1>文章标题</h1>
+    <section>
+        <h2>第一章</h2>
+    	<p>...</p>
+    </section>
+    <section>
+        <h2>第二章</h2>
+    	<p>...</p>
+    </section>
+</article>
+```
+
+#### nav
+
+页面或文档的导航信息，一般在 header 标签里，不在 footer 里；可有多个：一个站点导航、一个文章导航。
+
+```html
+<nav>
+  <ol>
+    <li><a href="item-a">商品 A</a></li>
+    <li><a href="item-b">商品 B</a></li>
+    <li>商品 C</li>
+  </ol>
+</nav>
+```
+
+#### h1 ~ h6
+
+标题，有六个等级，叫做标题几；下一级标题是上一级标题的子标题，同级标题可以有多个，但不要越级。
+
+```html
+<body>
+  <h1>JavaScript 语言介绍</h1>
+    <h2>概述</h2>
+    <h2>基本概念</h2>
+      <h3>网页</h3>
+      <h3>链接</h3>
+    <h2>主要用法</h2>
+</body>
+```
+
+#### hgroup
+
+如果主标题包含多级标题，如副标题；hgroup 只能包含 h1 ~ h6，不能包含其他标签。
+
+```html
+<hgroup>
+  <h1>Heading 1</h1>
+  <h2>Subheading 1</h2>
+  <h2>Subheading 2</h2>
+</hgroup>
+```
+

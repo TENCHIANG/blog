@@ -349,3 +349,8 @@ tasklist | findstr PID # 根据 PID 查看程序名
 netstat -ano | findstr 5554
 ```
 
+### 修改 DNS 后
+
+```cmd
+ipconfig /flushdns # 清空一下缓存
+```
